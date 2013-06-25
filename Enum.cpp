@@ -32,7 +32,12 @@ namespace ITERATOR {
 
 namespace ENUM1{
 
-	class CEnum {
+	/******************************************************
+	 * class CEnum.
+	 *
+	 *
+ 	 */
+	class CEnum : public ITERATOR::Iterable {
 	private:
 		std::map<int,std::string>				map;
 		std::map<int,std::string>::iterator		it;
@@ -111,6 +116,11 @@ namespace ENUM1{
 		}
 	};
 
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	void	main( void )
 	{
 		cout << __FUNCTION__ << endl;
@@ -153,6 +163,11 @@ namespace ENUM1{
 
 namespace ENUM2{
 	
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	class CEnum : public ITERATOR::Iterable {
 	private:
 		map<string,int>						m_map;
@@ -225,6 +240,11 @@ namespace ENUM2{
 		}
 	};
 
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	void	main( void )
 	{
 		cout << __FUNCTION__ << endl;
@@ -266,12 +286,27 @@ namespace ENUM2{
 
 namespace ENUM3 {
 	
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	class CEnum;
 	class CEnumIterator;
 
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	class CEnumIterator : public ITERATOR::Iterable
 	{
 		friend class CEnum;
+	private:
+		CEnumIterator( void );
+		CEnumIterator( CEnumIterator& );
+		CEnumIterator& operator=( CEnumIterator& );
+
 	private:
 		CEnum&			rEnum;
 		CEnumIterator( CEnum& Enum );
@@ -284,12 +319,17 @@ namespace ENUM3 {
 		string&		Name( void ) const;
 	};
 
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	class CEnum 
 	{
 		friend class CEnumIterator;
 	private:
-		map<int,string>					m;
-		map<int,string>::iterator		it;
+		std::map<int,std::string>					m;
+		std::map<int,std::string>::iterator			it;
 		
 		int	currId;
 		CEnumIterator		EnumIterator;
@@ -303,55 +343,97 @@ namespace ENUM3 {
 		int					Insert( int, string );
 		int					Append( string );
 		void				Erase( int );
+
+
+	protected:
+		string&				Find( int id ) const {
+			std::map<int,string>::const_iterator	it = m.find( id );
+		}
 	};
 	
 	
+	/******************************************************
+	 *
+ 	 */
 	CEnum::CEnum( void ) : EnumIterator(*this), currId(0) {
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	CEnumIterator&	CEnum::Iterator( void ){
 		return(EnumIterator);
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	int		CEnum::Insert( int id, string str ){
 		currId = id;
 		m[ currId ]	= str;
 		return(currId);
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	int		CEnum::Append( string str ){
 		return(Insert(++currId,str));
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	void	CEnum::Erase( int id ){
 		m.erase( id );
 	}
-	
-	
-	
+		
+	/******************************************************
+	 *
+ 	 */
 	CEnumIterator::CEnumIterator( CEnum& Enum ) : rEnum(Enum) {
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	void	CEnumIterator::First( void ){
 		rEnum.it = rEnum.m.begin();
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	void	CEnumIterator::Next( void ){
 		(rEnum.it)++;
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	bool	CEnumIterator::hasNext( void ) const {
 		return(rEnum.it!=rEnum.m.end());
 	}
 	
+	/******************************************************
+	 *
+ 	 */
 	int		CEnumIterator::ID( void ) const {
 		return(rEnum.it->first);
 	}
 		
+	/******************************************************
+	 *
+ 	 */
 	string&	CEnumIterator::Name( void ) const {
 		return(rEnum.it->second);
 	}
 	
+	/******************************************************
+	 *
+	 *
+	 *
+ 	 */
 	void	main( void )
 	{
 		cout << __FUNCTION__ << endl;
@@ -370,7 +452,7 @@ namespace ENUM3 {
 		Enum.Append( "ID_008" );
 		Enum.Append( "ID_009" );
 
-		CEnumIterator it = Enum.Iterator();
+		CEnumIterator& it = Enum.Iterator();
 		cout << "[while loop]" << endl;
 		it.First();
 		while( it.hasNext() ){
@@ -391,5 +473,5 @@ namespace ENUM3 {
 
 void main( void )
 {
-	ENUM2::main();
+	ENUM3::main();
 }
