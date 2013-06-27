@@ -12,6 +12,11 @@ namespace RANGE1 {
 		virtual bool		hasNext( void ) const = 0;
 	};
 	
+	class Aggregate {
+	public:
+		virtual Iterator*	newIterator( void ) = 0;
+	};
+
 	template<typename T>
 	class TIterator : public Iterator {
 	private:
@@ -35,10 +40,46 @@ namespace RANGE1 {
 		}
 	};
 	
+	
+	// Built-in Types
 	typedef TIterator<int>			IteratorInt;
 	typedef TIterator<float>		IteratorFloat;
 	typedef	TIterator<double>		IteratorDouble;
 
+	template<typename T>
+	class TRange : public Aggregate {
+	public:
+		T					MIN, MAX;
+	//	TIterator<T>*		pIT;
+		TIterator<T>		IT;
+		
+		TRange( T min, T max, T step )
+	//		: MIN(min), MAX(max), pIT(new TIterator<T>(min,max,step)) {
+			: MIN(min), MAX(max), IT(min,max,step) {
+		}
+		
+		bool		inRange( T v ) const {
+			return((MIN<=v)&&(v<=MAX));
+		}
+		
+		bool		outRange( T v ) const {
+			return((v<MIN)||(v>MAX));
+		}
+		
+		bool		isUnder( T v ) const {
+			return(v<MIN);
+		}
+		
+		bool		isOver( T v ) const {
+			return(v>MAX);
+		}
+		
+	public:
+		Iterator*		newIterator( void ){
+	//		return(pIT);
+			return(&IT);
+		}
+	};
 	
 	class CRange {
 	public:
@@ -67,6 +108,7 @@ namespace RANGE1 {
 	public:
 		template<typename T>
 		bool		InRange( T value ) const {
+			
 		}
 		
 	public:
@@ -96,6 +138,15 @@ namespace RANGE1 {
 		
 		for( pIt->First(); pIt->hasNext(); pIt->Next() ){
 			cout << pIt->Current() << endl;
+		}
+		
+		TRange<int>		intrange(0,10,1);
+		pIt = (IteratorInt*)intrange.newIterator();
+		
+		pIt->First();
+		while( pIt->hasNext() ){
+			cout << pIt->Current() << endl;
+			pIt->Next();
 		}
 	}
 	
