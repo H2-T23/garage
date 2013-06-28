@@ -1,4 +1,5 @@
 #pragma once
+#include <afxdao.h>
 
 class CMdb2Txt {
   CMdb2Txt(const CMdb2Txt&);
