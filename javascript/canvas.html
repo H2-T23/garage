@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script type="text/javascript" language="javascript" src="matrix2D.js"></script>
+<script type="text/javascript" language="javascript"><!--
+function	sample(){
+	// 描画コンテキストの取得 
+	var canvas = document.getElementById('sample1');
+	if(canvas.getContext){
+		var context = canvas.getContext('2d');
+
+		//左から20純Hら40の位置に、幅50高さ100の四角形を描く
+		context.fillRect(20,40,50,100); 
+
+		//色を指定する
+		context.strokeStyle = 'rgb(00,00,255)'; //枠線の色は青
+		context.fillStyle = 'rgb(255,00,00)'; //塗りつぶしの色は赤
+
+		//左から200純Hら80の位置に、幅100高さ50の四角の枠線を描く
+		context.strokeRect(200,80,100,50);
+
+		//左から150純Hら75の位置に、半径60の半円を反時計回り（左回り）で描く
+		context.arc(150,75,60,Math.PI*1,Math.PI*2,true);
+		context.fill();
+	}
+}
+
+function	drawLine1(fromX,fromY,toX,toY){
+	alert( "from point(" + fromX + "," +  fromY + ")" );
+	alert( "to   point(" + toX + "," +  toY + ")" );
+
+	var canvas = document.getElementById( "canvas1" );
+	if( canvas && canvas.getContext ){
+		var context = canvas.getContext('2d');
+		context.strokeStyle = 'rgb(00,00,255)';	
+		context.beginPath();
+		context.lineWidth = 1;
+		context.moveTo(fromX,fromY);
+		context.lineTo(toX,toY);
+		context.stroke();		
+	}else{
+		alert( "err:drawLine1()" );
+	}
+}
+
+function	drawCanvas(){
+	var a = new Point(100,100);
+	var b = new Point(150,100);
+
+	drawLine1(a.x, a.y, b.x, b.y);
+
+	a.rot( -30 );
+	b.rot( -30 );
+	drawLine1(a.x, a.y, b.x, b.y);
+
+	var affine = new Matrix2D();
+	affine.rot( DegreeToRadian(60) );
+	var c = affine.transformXY(100,100);
+	var d = affine.transformXY(150,100);
+	drawLine1( c.x, c.y, d.x, d.y );
+}
+
+//--></script>
+</head>
+
+<body>
+<h2></h2>
+<hr>
+<canvas id="sample1" style="background-color:yellow;">
+	図形を表示するには、canvasタグをサポートしたブラウザが必要です。
+</canvas>
+<hr>
+<canvas id="canvas1" style="background-color:lightblue" width="300" height="200" onclick="drawCanvas()">
+</canvas>
+<hr>
+</body>
+</html>
