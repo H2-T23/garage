@@ -1,0 +1,114 @@
+<html>
+<head>
+<HTA:APPLICATION
+	BORDER="thick"
+	INNERBORDER="no"
+	CAPTION="yes"
+	SCROLL="no"
+	SYSMENU="yes"
+	MAXIMIZEBUTTON="no"
+	MINIMIZEBUTTON="no"
+	>
+<title></title>
+<script type="text/javascript" language="javascript">
+<!--
+function	UpdateClock(){
+	var now = new Date();
+	document.title =  now.toLocaleString();
+	document.getElementById( "clock" ).innerText = now.toLocaleTimeString();
+}
+function	StartUp(){
+	resizeTo(300,300);
+	UpdateClock();
+	setInterval("UpdateClock()",1000);
+}
+//-->
+</script>
+</head>
+
+<body onload="StartUp()">
+<script type="text/javascript" language="javascript">
+<!--
+	// ****************
+	//      下準備   
+	// ****************
+	vDate		= new Date();													// 今日の日付データ取得 
+//	vWeekTbl	= new Array("日", "月", "火", "水", "木", "金", "土");			// 曜日テーブル定義 
+	vWeekTbl	= new Array("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat");	// 曜日テーブル定義 
+	vMonthTbl	= new Array(31, 28, 31, 30, 31, 30, 31 ,31, 30, 31, 30, 31);	// 月テーブル定義 
+	vYear		= vDate.getFullYear();											// 年の取得 
+
+	if( (((vYear % 4) == 0) && ((vYear % 100) != 0)) || ((vYear % 400) == 0) ){	// うるう年だったら... 
+	   vMonthTbl[ 1 ]	= 29;			// ２月を２９日とする
+	}
+
+	vMonth		= vDate.getMonth();											// 月を取得(0月～11月)
+	vToday		= vDate.getDate();											// 今日の'日'を退避
+
+	vDate.setDate( 1 );														// 日付を'１日'に変えて、
+	vWeek		= vDate.getDay();                              	   			// '１日'の曜日を取得
+	vTblLine	= Math.ceil( (vWeek + vMonthTbl[ vMonth ]) / 7 );			// カレンダーの行数
+	vTable		= new Array( 7 * vTblLine );								// 表のセル数分定義
+
+
+	for( i=0; i<(7 * vTblLine); i++ ){			// vTableを掃除する
+		vTable[ i ] = "　";
+	}
+
+	for( i=0; i<vMonthTbl[ vMonth ]; i++ ){	// 日付を埋め込む
+		vTable[ i + vWeek ]	= i + 1;
+	}
+
+
+	// ***********************
+	//      カレンダーの表示  
+	// ***********************
+	document.write( "<table style='border-width: thin; border-style: solid; -moz-border-radius: 20%' align='center' border='0'>" );								// 表の作成開始
+	document.write( "<tr><td colspan='7' bgcolor='lightblue'>" );			// 見出し行セット
+	document.write( "<strong>", vYear, "/", (vMonth + 1), "</strong>" );
+	document.write( "</td></tr>" );
+
+	document.write( "<tr>" );											// 曜日見出しセット
+	for( i=0; i<7; i++ ){												// 一行(１週間)ループ
+		document.write( "<td align='center'" );
+
+		if( i == 0 ){
+			document.write( "bgcolor='#fa8072'>" );           // 日曜のセルの色
+		}else{
+			document.write( "bgcolor='#ffebcd'>" );           // 月～土のセルの色
+		}
+
+		document.write( "<strong>", vWeekTbl[ i ], "</strong>" );		// '日'から'土'の表示
+		document.write( "</td>" );
+	}
+	document.write( "</tr>" );
+
+	for( i=0; i<vTblLine; i++ )								// 表の「行」のループ
+	{
+		document.write( "<tr>" );								// 行の開始
+		for( j=0; j<7; j++ )									// 表の「列」のループ
+		{
+			document.write( "<td align='center' " );			// 列(セル)の作成
+
+			myDat	= vTable[ j + (i * 7) ];						// 書きこむ内容の取得
+			if( myDat == vToday ){
+				document.write( "bgcolor='#00ffff'>" );				// 今日のセルの色
+			}else if( j == 0 ){
+				document.write( "bgcolor='#ffb6c1'>" );				// 日曜のセルの色
+			}else{               
+				document.write( "bgcolor='#ffffe0'>" );				// 平日のセルの色
+			}
+
+			document.write( "<strong>", myDat, "</strong>" );			// 日付セット
+			document.write( "</td>" );                             // 列(セル)の終わり
+		}
+
+	   document.write( "</tr>" );								// 行の終わり
+	}
+
+	document.write( "</table>" );								// 表の終わり
+// -->
+</script>
+<div style="font-family:'Comic Sans MS';font-size:1.8em;" id="clock" align="center"></div>
+</body>
+</html>
