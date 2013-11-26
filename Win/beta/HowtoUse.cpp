@@ -23,20 +23,28 @@ public:
 	DWORD		m_dwStyle;
 	DWORD		m_dwExStyle;
 	
-	CCtrl( DWORD dwStyle, DWORD dwExStyle ) : m_dwStyle(dwStyle), m_dwExStyle(dwExStyle) {}
+	CCtrl(DWORD dwStyle, DWORD dwExStyle = 0) : m_dwStyle(dwStyle), m_dwExStyle(dwExStyle) {}
 };
 
 
 class CStatic : public CCtrl {
 public:
+	CStatic( void )
+	: CCtrl((WS_CHILD | WS_VISIBLE)){}
+
+	BOOL	Create( LPCTSTR lpCaption, CRect& rect, CWnd* pParentWnd, UINT uID, HINSTANCE hInstance ){
+		m_hWnd =  CreateWindowEx( m_dwExStyle, _T("static"), lpCaption, m_dwStyle, rect.x, rect.y, rect.w, rect.h, pParentWnd->m_hWnd, (HMENU)uID, hInstance, NULL );
+		return(m_hWnd ? TRUE : FALSE);
+	}
 };
 
 class CButton : public CCtrl {
 public:
-	CButton( void ) : CCtrl((WS_CHILD | WS_VISIBLE), 0) {}
+	CButton( void )
+	: CCtrl((WS_CHILD | WS_VISIBLE)){}
 	
 	BOOL	Create( LPCTSTR lpCaption, CRect& rect, CWnd* pParentWnd, UINT uID, HINSTANCE hInstance ){
-		m_hWnd =  CreateWindowEx( m_dwExStyle, _T("button"), lpCaption, m_dwStyle, rect.x, rect.y, rect.w, rect.y, pParentWnd->m_hWnd, (HMENU)uID, hInstance, NULL );
+		m_hWnd =  CreateWindowEx( m_dwExStyle, _T("button"), lpCaption, m_dwStyle, rect.x, rect.y, rect.w, rect.h, pParentWnd->m_hWnd, (HMENU)uID, hInstance, NULL );
 		return(m_hWnd ? TRUE : FALSE);
 	}
 };
@@ -48,7 +56,8 @@ public:
  */
 class CInputPanel : public CPanelWnd {
 protected:
-	CButton		m_btn1;
+	CStatic		m_stc;
+	CButton		m_btnA, m_btnB;
 	
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		
@@ -58,12 +67,33 @@ protected:
 		rect.x = 10;
 		rect.y = 10;
 		rect.w = 100;
-		rect.h = 400;
+		rect.h = 30;
 		
-		if( m_btn1.Create( _T("A"), rect, this, 1001, lpCreateStruct->hInstance ) ){
-			MessageBox(NULL,_T("Create Button."),_T("OK"),MB_OK);
+		m_stc.Create( _T("static text"), rect, this, 1000, lpCreateStruct->hInstance );
+		
+		rect.y += rect.h;
+		
+		if( m_btnA.Create( _T("A"), rect, this, 1001, lpCreateStruct->hInstance ) ){
+			MessageBox(NULL,_T("Create Button A."),_T("OK"),MB_OK);
+		}
+		
+		rect.x += rect.w;
+		
+		if( m_btnA.Create( _T("B"), rect, this, 1002, lpCreateStruct->hInstance ) ){
+			MessageBox(NULL,_T("Create Button B."),_T("OK"),MB_OK);
 		}
 		return TRUE;
+	}
+	
+	virtual void	OnCommand( UINT uID, HWND hWndCtrl, UINT nCodeNotify ){
+		switch(uID){
+		case 1001:
+			MessageBox(NULL,_T("button A click"),_T("OK"),MB_OK);
+			break;
+		case 1002:
+			MessageBox(NULL,_T("button B click"),_T("OK"),MB_OK);
+			break;
+		}
 	}
 };
 
