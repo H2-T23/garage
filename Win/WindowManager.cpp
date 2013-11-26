@@ -43,14 +43,17 @@ public:
 	static LRESULT CALLBACK	WindowProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){
 		CLASS* pThis = NULL;
 		
-		if( uMsg == WM_NCCREATE ){
+		if( uMsg == WM_NCCREATE )
+		{
 			LPCREATESTRUCT pCreateStruct	= (LPCREATESTRUCT)lParam;
 			pThis = (CLASS*)pCreateStruct->lpCreateParams;
 
 			SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)pThis );
 
 			pThis->m_hWnd	= hWnd;
-		}else{
+		}
+		else
+		{
 			pThis	= (CLASS*)GetWindowLongPtr( hWnd, GWLP_USERDATA );
 		}
 

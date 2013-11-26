@@ -46,8 +46,16 @@ function	drawLine1(fromX,fromY,toX,toY){
 }
 
 function	drawCanvas(){
-	var a = new Point(100,100);
-	var b = new Point(150,100);
+	var viewport = new ViewportTransform(0,0,1);
+
+	var a = new Point(0,0);
+	var b = new Point(100,100);
+
+	a = viewport.toWorldPoint( a );
+	alert( a.x + "," + a.y );
+
+	b = viewport.toWorldPoint( b );
+	alert( b.x + "," + b.y );	
 
 	drawLine1(a.x, a.y, b.x, b.y);
 
@@ -62,18 +70,62 @@ function	drawCanvas(){
 	drawLine1( c.x, c.y, d.x, d.y );
 }
 
+function	getMousePosition(e){
+	var obj = new Object();
+	if( e ){
+		obj.x	= e.pageX;
+		obj.y	= e.pageY;
+	}else{
+		obj.x	= event.x + document.body.scrollLeft;
+		obj.y	= event.y + document.body.scrollTop;
+	}
+	return obj;
+}
+
+function	setPosition(){
+	target = document.getElementById('sampleform');
+	window.document.onmousemove = function(e){
+		target.onmouseX.value	= getMousePosition(e).x;
+		target.onmouseY.value	= getMousePosition(e).y;
+	}
+}
+
+
+function	onApply(){
+	alert("onApply");
+}
 //--></script>
 </head>
 
-<body>
+<body onLoad="setPosition()">
 <h2></h2>
 <hr>
 <canvas id="sample1" style="background-color:yellow;">
 	図形を表示するには、canvasタグをサポートしたブラウザが必要です。
 </canvas>
 <hr>
+<form action="" method="" id="sampleform">
+<ul>
+<li>onmouseX : <input type="text" value="" name="onmouseX" /></li>
+<li>onmouseY : <input type="text" value="" name="onmouseY" /></li>
+</ul>
+</form>
+<hr>
 <canvas id="canvas1" style="background-color:lightblue" width="300" height="200" onclick="drawCanvas()">
 </canvas>
 <hr>
+
+<form name="parameter">
+<table name="point">
+	<tr>
+	<td><input name="11" size="6" value=""/><td>
+	<td><input name="12" size="6" value=""/><td>
+	<td><input name="13" size="6" value=""/><td>
+	<td><input name="14" size="6" value=""/><td>	
+	</tr>
+</table>
+<button type="button" name="btnApply" onclick="onApply()">apply</button>
+</form>
+
 </body>
 </html>

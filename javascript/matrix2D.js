@@ -12,6 +12,10 @@ function	Point(x,y){
 	this.y = y;
 };
 
+Point.prototype.toString = function(){
+	return "(" + this.x + "," + this.y + ")";
+};
+
 Point.prototype.rot = function(degree){
 	_x = this.x;
 	_y = this.y;
@@ -19,12 +23,6 @@ Point.prototype.rot = function(degree){
 
 	this.x	= Math.ceil( _x * Math.cos(_r) - _y * Math.sin(_r) );
 	this.y	= Math.ceil( _x * Math.sin(_r) + _y * Math.cos(_r) );
-//	if( 0 > this.x ){
-//		this.x *= -1;
-//	}
-//	if( 0 > this.y ){
-//		this.y *= -1;
-//	}
 };
 
 
@@ -113,3 +111,118 @@ Matrix2D.prototype = {
 							((this.m10 * p.x) + (this.m11 * p.y) + this.m12)	);
 	},
 };
+
+/*
+device coordinate.
+
+	origin(0.0)
+		＋―――――――――→Ｘ:300
+		｜
+		｜
+		｜
+		｜		・Ａ(50,50)
+		｜
+		｜
+		｜
+		｜
+		↓
+		Ｙ:200
+
+world coordinate.
+
+		Ｙ:200
+		↑
+		｜
+		｜
+		｜
+		｜
+		｜		・Ａ(x,y)
+		｜
+		｜
+		｜
+		＋―――――――――→Ｘ:300
+	origin(0.0)
+
+
+polar coordinates
+
+	A(x,y) -> (r,θ)
+
+		r	= √(x^2 + y^2)
+		θ	= tan(y/x)*-1
+
+                y
+				｜
+				｜       
+	y = rsinθ	｜--------+ (x,y)        
+                ｜      ／|
+				｜    ／  |   r = √(x^2 + y^2)
+				｜  ／    |
+				｜／θ    | 
+	――――――＋―――――――― x
+               0｜        x = r cosθ
+				｜
+				｜
+
+*/
+
+function	Polar(theta,r){
+	this.theta = theta;
+	this.r = r;
+};
+
+Polar.prototype = {
+	toString : function(){
+		return "[θ:" + this.theta + "][" + this.r + "]";
+	},
+
+	set : function(x,y){
+		this.r		= Math.sqrt( x*x * y*y );
+		this.theta	= -Math.tan( y / x );
+	},
+
+	toPoint : function(){
+		return new Point( r * Math.cos(this.theta) ,
+						  r * Math.sin(this.theta) );
+	},
+};
+
+function	ViewportTransform(_x,_y,_scale){
+	this.x		= _x;
+	this.y		= _y;
+	this.scale	= _scale;
+};
+
+ViewportTransform.prototype = {
+	// World to Device.
+	toScreenPoint : function(pt){
+		return new Point(	(pt.x * this.scale + this.x)	,
+							(this.y - pt.y * this.scale)	);
+	},
+
+	toScreenX : function(x){
+		return (x * this.scale + this.x);
+	},
+
+	toScreenY : function(y){
+		return (this.y - y * this.scale);
+	},
+
+	// Device to World.
+	toWorldPoint : function(pt){
+		return new Point(	((pt.x - this.x) / this.scale)	,	
+							((pt.y - this.y) / this.scale)	);
+	},
+
+	toWorldX : function(x){
+		return ((x - this.x) / this.scale);
+	},
+
+	toWorldY : function(y){
+		return ((y- this.y) / this.scale);
+
+
+	},
+};
+
+

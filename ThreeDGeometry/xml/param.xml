@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Camera>
+	<LookAtX>100</LookAtX>
+	<LookAtY>100</LookAtY>
+	<LookAtZ>100</LookAtZ>
+	<EyeX>100.0</EyeX>
+	<EyeY>1.234</EyeY>
+	<EyeZ>100</EyeZ>
+</Camera>
