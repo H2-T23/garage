@@ -89,10 +89,10 @@ protected:
 
 					GetCursorPos( &hit.pt );
 				//	ScreenToClient( lpNmhdr->hwndFrom, &hit.pt );
-					ScreenToClient( chklistview.m_hWnd, &hit.pt );
+					chklistview.ScreenToClient( &hit.pt );
 
 				//	chklistview.HitTest( lpNmhdr->hwndFrom, &hit );
-					chklistview.HitTest( chklistview.m_hWnd, &hit );
+					chklistview.HitTest( &hit );
 					if( hit.flags & LVHT_ONITEMSTATEICON ){
 						PostMessage( (WM_APP + 100), 0, (LPARAM)hit.iItem );
 					}
@@ -152,20 +152,22 @@ protected:
 	CLabel		label;
 	CButton		btnA, btnB;
 	CListView	listview;
+	CHeaderCtrl	header;
 
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		CComponentWnd::InitCommCtrlEx();
 
 		CRect	rc( 10, 10, 100, 30 );
-		label.Create( this, rc, 1001, _T("Label") );
+		label.Create(this, rc, 1001, _T("Label"));
 
 		rc.Set( 10, 50, 100, 30 );
-		btnA.Create( this, rc, 1011, _T("A") );
+		btnA.Create(this, rc, 1011, _T("A"));
+
 		rc.Set( 10, 100, 100, 30 );
-		btnB.Create( this, rc, 1012, _T("B") );
+		btnB.Create(this, rc, 1012, _T("B"));
 
 		rc.Set( 120, 10, 300, 300 );
-		if( listview.Create( this, rc, 1100 ) ){
+		if( listview.Create(this, rc, 1100) ){
 			listview.InsertColumn( 0, _T("Col1") );
 			listview.InsertColumn( 1, _T("Col2") );
 			listview.InsertItem( 0, 0, _T("Item1") );
@@ -174,7 +176,85 @@ protected:
 			listview.SetItem( 1, 1, _T("SubItem2") );
 		}
 
+		rc.Set( 10, 200, 100, 50 );
+		if( header.Create(this, rc, 1111) ){
+			header.InsertItem( 0, _T("Name") );
+			header.InsertItem( 1, _T("Image") );
+		}
+
 		return TRUE;
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CTabPanel : public CPanel {
+protected:
+	CTabCtrl	tabctrl;
+
+	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		CComponentWnd::InitCommCtrlEx();
+
+		CRect	rc;
+		GetClientRect( &rc );
+
+		if( tabctrl.Create(this, rc, 200) ){
+			tabctrl.InsertItem( 0, _T("A") );
+			tabctrl.InsertItem( 1, _T("B") );
+			tabctrl.InsertItem( 2, _T("C") );
+			tabctrl.InsertItem( 3, _T("D") );
+			tabctrl.InsertItem( 4, _T("E") );
+			tabctrl.InsertItem( 5, _T("F") );
+		}
+
+		return TRUE;
+	}
+
+	virtual void	OnNotify( WPARAM wParam, LPARAM lParam ){
+		LPNMHDR lpNmhdr = (LPNMHDR)lParam;
+		if( lpNmhdr == NULL ){
+			return ;
+		}
+
+		if( NM_RCLICK == lpNmhdr->code )
+		{
+			TCHITTESTINFO	info;
+			GetCursorPos( &info.pt );
+			tabctrl.ScreenToClient( &info.pt );
+
+			int nIdx = tabctrl.HitTest( &info );
+			if( nIdx >= 0 ){
+				tabctrl.DeleteItem( nIdx );
+				tabctrl.SetCurSel( 0 );
+			}
+		}
+
+		if( TTN_GETDISPINFO == lpNmhdr->code )
+		{
+			LPTOOLTIPTEXT lpText = (LPTOOLTIPTEXT)lParam;
+
+			if( 0 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab A");
+			}else
+			if( 1 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab B");
+			}else
+			if(	2 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab C");
+			}else
+			if( 3 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab D");
+			}else
+			if(	4 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab E");
+			}else
+			if( 5 == lpText->hdr.idFrom ){
+				lpText->lpszText	= _T("tab F");
+			}
+		}
 	}
 };
 
@@ -187,14 +267,18 @@ class CMainForm : public CForm {
 protected:
 	CCtrlPanel		wndCtrlPanel;
 	CListViewPanel	wndListViewPanel;
+	CTabPanel		wndTab;
 
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 
 		CRect	rect(10, 10, 600, 600);
 		wndCtrlPanel.Create( this, rect );
 
-		rect.Set( 650, 10, 500, 500 );
+		rect.Set( 650,  10, 600, 300 );
 		wndListViewPanel.Create( this, rect );
+
+		rect.Set( 650, 350, 600, 250 );
+		wndTab.Create( this, rect );
 
 		return TRUE;
 	}
