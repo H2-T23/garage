@@ -44,14 +44,106 @@ protected:
 };
 
 /**********************************************************************************
+ * 
+ *
+ *
+ */
+class CButton	: public CComponentWnd {
+protected:
+	virtual LPCTSTR			ClassName( void ) const {	return(_T("BUTTON"));	}
+};
+
+/**********************************************************************************
+ * 
+ *
+ *
+ */
+class CTabCtrl	: public CComponentWnd {
+protected:
+	virtual LPCTSTR			ClassName( void ) const { return(WC_TABCONTROL);	}
+	virtual DWORD			WindowStyle( void ) const { return(CComponentWnd::WindowStyle() | TCS_TOOLTIPS);	}
+
+public:
+	int		InsertItem( int nItem, TCITEM& tcItem ){
+		return TabCtrl_InsertItem(m_hWnd, nItem, &tcItem);
+	}
+
+	int		InsertItem( int nItem, LPTSTR lpszCaption ){
+		TCITEM	tcItem;
+		tcItem.mask		= TCIF_TEXT;
+		tcItem.pszText	= lpszCaption;
+		return InsertItem(nItem, tcItem);
+	}
+
+	BOOL	DeleteItem( int nItem ){
+		return TabCtrl_DeleteItem(m_hWnd, nItem);
+	}
+
+	BOOL	DeleteAllItems( void ){
+		return TabCtrl_DeleteAllItems(m_hWnd);
+	}
+
+	BOOL	GetItemRect( int nItem, LPRECT lpRect ) const {
+		return TabCtrl_GetItemRect(m_hWnd, nItem, lpRect);
+	}
+
+	int		SetCurSel( int nItem ){
+		return TabCtrl_SetCurSel(m_hWnd, nItem);
+	}
+
+	int		GetCurSel( void ) const {
+		return TabCtrl_GetCurSel(m_hWnd);
+	}
+
+	int		HitTest( LPTCHITTESTINFO lpInfo ){
+		return TabCtrl_HitTest(m_hWnd, lpInfo );
+	}
+};
+
+/**********************************************************************************
  *
  *
  *
  */
-class CButton : public CComponentWnd {
+class CHeaderCtrl : public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const {	return(_T("BUTTON"));	}
+	virtual LPCTSTR			ClassName( void ) const		{	return(WC_HEADER);	}
+
+public:
+	int		GetItemCount( void ) const {
+		return Header_GetItemCount(m_hWnd);
+	}
+
+	int		InsertItem( int nItem, LPTSTR lpszCaption, int nWidth = 100 ){
+		HD_ITEM	hdItem;
+		hdItem.mask			= HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
+		hdItem.pszText		= lpszCaption;
+		hdItem.fmt			= HDF_CENTER | HDF_STRING;
+		hdItem.cchTextMax	= lstrlen(hdItem.pszText);
+		return InsertItem(nItem, &hdItem );
+	}
+
+	int		InsertItem( int nItem, HD_ITEM* pItem ){
+		return Header_InsertItem(m_hWnd, nItem, pItem);
+	}
+
+	int		DeleteItem( int nItem ){
+		return Header_DeleteItem(m_hWnd, nItem);
+	}
+
+	BOOL	GetItem( int nItem, HD_ITEM* pItem ){
+		return Header_GetItem(m_hWnd, nItem, pItem);
+	}
+
+	BOOL	SetItem( int nItem, HD_ITEM* pItem ){
+		return Header_SetItem(m_hWnd, nItem, pItem);
+	}
+
+	BOOL	GetItemRect( int nItem, LPRECT lpRect ){
+		return Header_GetItemRect(m_hWnd, nItem, lpRect);
+	}
 };
+
 
 /**********************************************************************************
  *
@@ -61,7 +153,7 @@ protected:
 class CListView : public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{	return(WC_LISTVIEW);	}
-	virtual DWORD			WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT);	}
+	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT);	}
 
 public:
 	int		InsertColumn( int idx, LPTSTR lpszText, int nWidth = 0 ){
@@ -118,8 +210,8 @@ public:
 		return ListView_GetCheckState(m_hWnd, nIdx);
 	}
 
-	int		HitTest( HWND hwndFrom, LVHITTESTINFO* pHitTest ){
-		return ListView_HitTest(hwndFrom, pHitTest);
+	int		HitTest( LVHITTESTINFO* pHitTest ){
+		return ListView_HitTest(m_hWnd, pHitTest);
 	}
 };
 
