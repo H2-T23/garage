@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUIToolKit", "GUIToolKit\GUIToolKit.vcxproj", "{BC6704D8-F323-48E7-8C81-8291BD2F8785}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC6704D8-F323-48E7-8C81-8291BD2F8785}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC6704D8-F323-48E7-8C81-8291BD2F8785}.Debug|Win32.Build.0 = Debug|Win32
+		{BC6704D8-F323-48E7-8C81-8291BD2F8785}.Release|Win32.ActiveCfg = Release|Win32
+		{BC6704D8-F323-48E7-8C81-8291BD2F8785}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

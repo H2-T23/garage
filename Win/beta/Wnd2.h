@@ -23,6 +23,12 @@ class CWnd {
 public:
 	HWND	m_hWnd;
 
+	virtual DWORD		ClassStyle( void ) const		{return 0;}
+	virtual DWORD		ClassExStyle( void ) const		{return 0;}
+	virtual DWORD		ClassWndExStyle( void ) const	{return 0;}
+	virtual DWORD		DefaultStyle( void ) const		{return 0;}
+	virtual DWORD		DefaultExStyle( void ) const	{return 0;}	
+	
 public:
 	CWnd(void):m_hWnd(NULL){}
 	CWnd(const HWND hWnd):m_hWnd(hWnd){}
@@ -218,6 +224,7 @@ private:
 	void	Cls_OnPaint( HWND hWnd ){
 		OnPaint();
 	}
+	
 	BOOL	Cls_OnEraseBkgnd( HWND hWnd, HDC hDC ){
 		return OnEraseBkgnd( hDC );
 	}

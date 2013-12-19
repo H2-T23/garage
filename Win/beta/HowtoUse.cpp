@@ -1,6 +1,6 @@
 // HowtoUse.cpp 
 #include <stdio.h>
-#include "Wnd.h"
+#include "Wnd2.h"
 
 template<typename T>
 class TSize {
@@ -60,7 +60,6 @@ protected:
 	CButton		m_btnA, m_btnB;
 	
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
-		
 		MessageBox(NULL, _T("InputPanel"), _T("OK"), MB_OK);
 		
 		CRect	rect;
@@ -86,6 +85,8 @@ protected:
 	}
 	
 	virtual void	OnCommand( UINT uID, HWND hWndCtrl, UINT nCodeNotify ){
+		MessageBox(NULL,_T("OnCommand()"),_T("OK"),MB_OK);
+		
 		switch(uID){
 		case 1001:
 			MessageBox(NULL,_T("button A click"),_T("OK"),MB_OK);
@@ -102,17 +103,60 @@ protected:
  *
  *
  */
+class CDrawPanel : public CPanelWnd {
+protected:
+	virtual LPCTSTR		ClassName( void ) const	{
+		return(_T("DrawPanel"));
+	}
+	
+	virtual DWORD		ClassStyle( void ) const {
+		return(CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS);
+	}
+	
+	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		MessageBox(NULL,_T("CDrawPanel::OnCreate()"),_T("OK"),MB_OK);
+		return TRUE;
+	}
+
+#if 0
+	virtual void	OnPaint( void ){
+		MessageBox(NULL,_T("OnPaint()"),_T("OK"),MB_OK);
+
+		PAINTSTRUCT ps;
+		HDC hDC = BeginPaint( m_hWnd, &ps );
+		if( hDC ){
+			
+			MoveToEx( hDC, 10, 10, NULL );
+			LineTo( hDC, 100, 100 );
+			
+			EndPaint( m_hWnd, &ps );
+		}
+	}
+#endif
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CSampleFrame : public CFrameWnd {
 protected:
 	CInputPanel		m_wndInput;
+	CDrawPanel		m_wndDraw;
 	
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
-		if( IsWindow(m_hWnd) )
-			MessageBox( NULL, _T("IsWindow()==TRUE."), _T("OK"), MB_OK );
-		else
-			MessageBox( NULL, _T("IsWindow()==FALSE."), _T("OK"), MB_OK );
+	//	if( IsWindow(m_hWnd) )
+	//		MessageBox( NULL, _T("IsWindow()==TRUE."), _T("OK"), MB_OK );
+	//	else
+	//		MessageBox( NULL, _T("IsWindow()==FALSE."), _T("OK"), MB_OK );
 		
-		m_wndInput.Create(_T(""),WS_BORDER | WS_CHILD | WS_VISIBLE,0,300,0,300,300,m_hWnd);
+		if( !m_wndDraw .Create(_T(""),WS_BORDER | WS_CHILD | WS_VISIBLE,0,10,10,100,100,m_hWnd) ){
+			MessageBox(NULL,_T("CDrawPanel::Create().Faild"),_T("OK"),MB_OK);			
+		}
+		if( !m_wndInput.Create(_T(""),WS_BORDER | WS_CHILD | WS_VISIBLE,0,300,0,300,300,m_hWnd) ){
+			MessageBox(NULL,_T("CInputPanel::Create().Faild"),_T("OK"),MB_OK);
+		}
 		return TRUE;
 	}
 };
