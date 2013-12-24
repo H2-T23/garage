@@ -18,8 +18,10 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <algorithm>
 
-#include "Rect.h"
+#include "Types.h"
+#include "DC.h"
 
 /****************************************************************************************
  *
@@ -43,7 +45,7 @@ public:
 	operator HWND(){return(m_hWnd);}
 
 protected:
-    virtual DWORD				ClassStyle( void ) const		{return 0;}
+    virtual DWORD				ClassStyle( void ) const		{return CS_DBLCLKS;}
 	virtual DWORD				ClassExStyle( void ) const		{return 0;}
     virtual DWORD				ClassWndExStyle( void ) const	{return 0;}
     virtual DWORD				WindowStyle( void ) const		{return 0;}

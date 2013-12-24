@@ -5,7 +5,7 @@
  *
  *
  */
-class CPoint : public RECT {
+class CPoint : public POINT {
 public:
 	CPoint( void ){
 		Set(0, 0);

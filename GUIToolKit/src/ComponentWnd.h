@@ -4,8 +4,6 @@
 
 #include "Wnd.h"
 
-
-
 /*
 WC_BUTTON				_T("BUTTON")
 WC_STATIC				_T("STATIC")
@@ -45,9 +43,18 @@ protected:
 	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER);	}
 
 public:
-	BOOL	Create( CWnd* pParent, CRect& rect, INT nID, LPCTSTR lpszText = NULL ){
-		m_hWnd	= CreateWindowEx( WindowExStyle(), ClassName(), lpszText, WindowStyle(), rect.X(), rect.Y(), rect.Width(), rect.Height(), pParent->m_hWnd, (HMENU)nID, GetModuleHandle(NULL), NULL );
+	BOOL	Create( CWnd& Parent, CRect& rect, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
+		m_hWnd	= CreateWindowEx( dwExStyle == 0 ? WindowExStyle() : dwExStyle, ClassName(), lpszText, dwStyle == 0 ? WindowStyle() : dwStyle, rect.X(), rect.Y(), rect.Width(), rect.Height(), Parent.m_hWnd, (HMENU)nID, GetModuleHandle(NULL), NULL );
 		return(m_hWnd ? TRUE : FALSE);
+	}
+	BOOL	Create( CWnd* pParent, CRect* lpRect, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
+		return(CComponentWnd::Create(*pParent, *lpRect, nID, lpszText, dwStyle, dwExStyle));
+	}
+	BOOL	Create( CWnd* pParent, CRect& rect, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
+		return(CComponentWnd::Create(*pParent, rect, nID, lpszText, dwStyle, dwExStyle));
+	}
+	BOOL	Create( CWnd* pParent, int x, int y, int w, int h, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
+		return(CComponentWnd::Create(*pParent, CRect(x,y,w,h), nID, lpszText, dwStyle, dwExStyle));
 	}
 
 public:
@@ -71,7 +78,7 @@ public:
  */
 class CLabel : public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(WC_STATIC);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_STATIC);	}
 };
 
 /**********************************************************************************
@@ -81,7 +88,45 @@ protected:
  */
 class CButton	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(WC_BUTTON);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_BUTTON);	}
+};
+
+/**********************************************************************************
+ * 
+ *
+ *
+ */
+class CCheckBox	: public CButton {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(BS_AUTOCHECKBOX | CButton::WindowStyle());	}
+
+public:
+	int		GetCheck( void ) const			{ return Button_GetCheck(m_hWnd);	}
+	void	SetCheck( int nCheck ) const	{ Button_SetCheck(m_hWnd, nCheck);	}
+};
+
+/**********************************************************************************
+ * 
+ *
+ *
+ */
+class CRadioButton	: public CButton {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(BS_AUTORADIOBUTTON | CButton::WindowStyle());	}
+
+public:
+	int		GetState( void ) const			{ return Button_GetState(m_hWnd);	}
+	void	SetState( int nState ) const	{ Button_SetState(m_hWnd, nState);	}
+};
+
+/**********************************************************************************
+ * 
+ *
+ *
+ */
+class CGroupBox	: public CButton {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(BS_GROUPBOX | CButton::WindowStyle() | WS_CLIPSIBLINGS);	}
 };
 
 /**********************************************************************************
@@ -289,3 +334,9 @@ class CVirtualListView : public CListView {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT | LVS_OWNERDATA);	}
 };
+
+/**********************************************************************************
+ *
+ *
+ *
+ */

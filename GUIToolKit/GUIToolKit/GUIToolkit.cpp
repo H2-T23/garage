@@ -144,14 +144,35 @@ protected:
  *
  *
  */
-class CCtrlPanel : public CPanel {
+class CCtrlPanel : public TCommandListener<CCtrlPanel,CPanel> {
+private:
+	void		OnBtnAClick( int nID ){
+		if( nID == 1011 ){
+		}
+	}
+
+	void		OnBtnBClick( int nID ){
+		if( nID == 1012 ){
+		}
+	}
+
+public:
+	CCtrlPanel( void ){
+		AddCommandListener( 1011, &CCtrlPanel::OnBtnAClick );
+		AddCommandListener( 1012, &CCtrlPanel::OnBtnBClick );
+	}
+
 protected:
-	CLabel		label;
-	CButton		btnA, btnB;
-	CListView	listview;
-	CHeaderCtrl	header;
-	CEdit		editA;
-	CUpDown		updownA;
+	CLabel			label;
+	CButton			btnA, btnB;
+	CListView		listview;
+	CHeaderCtrl		header;
+	CEdit			editA;
+	CUpDown			updownA;
+
+	CGroupBox		groupbox;
+	CCheckBox		checkbox1, checkbox2;
+	CRadioButton	radio1, radio2;
 
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		CComponentWnd::InitCommCtrlEx();
@@ -173,7 +194,7 @@ protected:
 			updownA.SetPos(40);
 		}
 
-		rc.Set( 120, 10, 300, 300 );
+		rc.Set( 120, 10, 300, 100 );
 		if( listview.Create(this, rc, 1100) ){
 			listview.InsertColumn( 0, _T("Col1") );
 			listview.InsertColumn( 1, _T("Col2") );
@@ -183,10 +204,16 @@ protected:
 			listview.SetItem( 1, 1, _T("SubItem2") );
 		}
 
-		rc.Set( 10, 200, 100, 50 );
+		rc.Set( 10, 200, 300, 50 );
 		if( header.Create(this, rc, 1111) ){
 			header.InsertItem( 0, _T("Name") );
 			header.InsertItem( 1, _T("Image") );
+		}
+
+		rc.Set( 10, 280, 400, 100 );
+		if( groupbox.Create(this, rc, 1200, _T("GroupBox")) ){
+			radio1.Create(&groupbox, 10, 30, 130, 30, 1201, _T("check1"));
+			radio2.Create(&groupbox, 10, 60, 130, 30, 1202, _T("check2"));
 		}
 
 		return TRUE;
@@ -270,12 +297,29 @@ protected:
  *
  *
  */
+class CDrawPanel : public CPanel {
+protected:
+	void	OnPaint( HDC hDC ){
+		CDC		dc(hDC);
+
+		CRect	rc(10, 10, 100, 100);
+
+		dc.DrawRect( rc, RGB(0xFF,0x00,0xFF) );
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CMainForm : public CForm {
 protected:
 	CCtrlPanel		wndCtrlPanel;
 	CListViewPanel	wndListViewPanel;
 	CTabPanel		wndTab;
-
+	CDrawPanel		wndDraw;
+	
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		CComponentWnd::InitCommCtrlEx();
 
@@ -287,6 +331,9 @@ protected:
 
 		rect.Set( 350, 550, 400, 250 );
 		wndTab.Create( this, rect );
+
+		rect.Set( 450, 10, 500, 200 );
+		wndDraw.Create( this, rect );
 
 		return TRUE;
 	}
