@@ -285,7 +285,8 @@ protected:
 	void	subAxis( float d, float s ){
 		const double	pi = 3.14;
 
-		glBegin( GL_QUAD_STRIP );
+	//	glBegin( GL_QUAD_STRIP );
+		glBegin( GL_LINES );
 		{
 			for( double i=0; i<=6.0; i++ ){
 				double t	= (i * 2 * pi / 6);
@@ -314,6 +315,85 @@ protected:
 		glRotatef( -90, 0, 0, 1 );
 		subAxis( d, s );
 		glPopMatrix();
+	}
+
+	GLint DrawPlane( GLdouble w, GLdouble d ,GLdouble h)
+	{
+		GLdouble norm[3];
+		glPushMatrix();
+	//	glBegin( GL_POLYGON );
+		glBegin(GL_LINE_LOOP);
+			norm[0]=1;norm[1]=0;norm[2]=0;
+			glNormal3dv (norm);
+			glVertex3d( w/2.0 , h ,   d/2.0 );
+			glVertex3d( w/2.0 , h ,  -d/2.0  );
+			glVertex3d(-w/2.0 , h ,  -d/2.0  );
+			glVertex3d(-w/2.0 , h ,   d/2.0  );
+		glEnd();
+		glPopMatrix();
+
+		return(0) ;
+	}
+
+	GLint DrawBox(GLdouble d, GLdouble w, GLdouble h)
+	{
+		GLdouble norm[3];
+	
+		glPushMatrix();
+		glTranslated(-d/2.0,-w/2.0,-h/2.0);
+		glBegin( GL_POLYGON );
+			norm[0]=0;norm[1]=-1;norm[2]=0;
+			glNormal3dv (norm);
+			glVertex3d( 0 , 0 , 0 );
+			glVertex3d( d , 0 , 0 );
+			glVertex3d( d , 0 , h );
+			glVertex3d( 0 , 0 , h );
+		glEnd();
+		glBegin( GL_POLYGON );
+			norm[0]=0;norm[1]=-1;norm[2]=0;
+			glNormal3dv (norm);
+			glVertex3d( 0 , w , 0 );
+			glVertex3d( d , w , 0 );
+			glVertex3d( d , w , h );
+			glVertex3d( 0 , w , h );
+		glEnd();
+
+		glBegin( GL_POLYGON );
+			norm[0]=0;norm[1]=0;norm[2]=1;
+			glNormal3dv (norm);
+			glVertex3d( 0 , 0 , h );
+			glVertex3d( d , 0 , h );
+			glVertex3d( d , w , h );
+			glVertex3d( 0 , w , h );
+		glEnd();
+		glBegin( GL_POLYGON );
+			norm[0]=0;norm[1]=0;norm[2]=1;
+			glNormal3dv (norm);
+			glVertex3d( 0 , 0 , 0 );
+			glVertex3d( d , 0 , 0 );
+			glVertex3d( d , w , 0 );
+			glVertex3d( 0 , w , 0 );
+		glEnd();
+
+		glBegin( GL_POLYGON );
+			norm[0]=-1;norm[1]=0;norm[2]=0;
+			glNormal3dv (norm);
+			glVertex3d( 0 , 0 , 0 );
+			glVertex3d( 0 , 0 , h );
+			glVertex3d( 0 , w , h );
+			glVertex3d( 0 , w , 0 );
+		glEnd();
+		glBegin( GL_POLYGON );
+			norm[0]=-1;norm[1]=0;norm[2]=0;
+			glNormal3dv (norm);
+			glVertex3d( d , 0 , 0 );
+			glVertex3d( d , 0 , h );
+			glVertex3d( d , w , h );
+			glVertex3d( d , w , 0 );
+		glEnd();
+		glPopMatrix();
+
+		return(0) ;
 	}
 
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
@@ -355,7 +435,10 @@ protected:
 		};
 
 
+		glColor3f( 1, 0, 1 );
+
 		Axis( 0.05, 2.0 );
+		DrawPlane( 5.0, 5.0 , 0.0 );
 
 		// ‘O
 	//	glBegin(GL_POLYGON);
