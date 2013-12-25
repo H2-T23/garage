@@ -62,6 +62,13 @@ public:
 
 	BOOL		ScreenToClient( LPPOINT lpPoint ) const							{ return ::ScreenToClient(m_hWnd, lpPoint);				}
 
+
+	BOOL		SetWindowPos( HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags ) const {
+		return ::SetWindowPos(m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+	}
+
+	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint = FALSE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
+
 public:
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCrreateStruct ){ return TRUE; }
 	virtual void	OnDestroy( void )	{	}

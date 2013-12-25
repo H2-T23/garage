@@ -208,6 +208,10 @@ public:
 	int		HitTest( LPTCHITTESTINFO lpInfo ){
 		return TabCtrl_HitTest(m_hWnd, lpInfo );
 	}
+
+	int		AdjustRect( BOOL bLarger, CRect& rc ){
+		return TabCtrl_AdjustRect(m_hWnd, bLarger, &rc);
+	}
 };
 
 /**********************************************************************************
@@ -251,6 +255,13 @@ public:
 
 	BOOL	GetItemRect( int nItem, LPRECT lpRect ){
 		return Header_GetItemRect(m_hWnd, nItem, lpRect);
+	}
+
+	BOOL	SetLayout( RECT& rc, WINDOWPOS& wpos ){
+		HDLAYOUT	hdLayout;
+		hdLayout.prc	= &rc;
+		hdLayout.pwpos	= &wpos; 
+		return Header_Layout(m_hWnd, &hdLayout); 
 	}
 };
 

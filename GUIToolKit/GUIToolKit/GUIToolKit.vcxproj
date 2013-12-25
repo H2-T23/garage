@@ -77,6 +77,18 @@
   <ItemGroup>
     <ClCompile Include="GUIToolkit.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\CommandListener.h" />
+    <ClInclude Include="..\src\ComponentWnd.h" />
+    <ClInclude Include="..\src\DC.h" />
+    <ClInclude Include="..\src\Form.h" />
+    <ClInclude Include="..\src\Observar.h" />
+    <ClInclude Include="..\src\OpneGL.h" />
+    <ClInclude Include="..\src\Panel.h" />
+    <ClInclude Include="..\src\Types.h" />
+    <ClInclude Include="..\src\UseGUIToolkit.h" />
+    <ClInclude Include="..\src\Wnd.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

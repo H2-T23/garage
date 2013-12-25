@@ -1,5 +1,7 @@
 #include "UseGUIToolkit.h"
 
+#include "OpneGL.h"
+
 /**********************************************************************************
  *
  *
@@ -225,15 +227,271 @@ protected:
  *
  *
  */
+class CHeaderPanel : public CPanel {
+protected:
+	CHeaderCtrl		header;
+
+	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		CComponentWnd::InitCommCtrlEx();
+
+		if( header.Create(this, 0, 0, 0, 0, 1000, NULL, (WS_CHILD | WS_BORDER | HDS_BUTTONS)) ){
+			header.InsertItem( 0, _T("NAME") );
+			header.InsertItem( 1, _T("IMAGE") );
+		}
+
+		return TRUE;
+	}
+
+	void	OnSize(  UINT state, int cx, int cy ){
+		CRect		rc(0, 0, cx, cy);
+		WINDOWPOS	wpos;
+		header.SetLayout( rc, wpos );
+		header.SetWindowPos( wpos.hwndInsertAfter, wpos.x, wpos.y, wpos.cx, wpos.cy, (wpos.flags | SWP_SHOWWINDOW) );
+	}
+
+	void	OnNotify( WPARAM wParam, LPARAM lParam ){
+	
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CDrawPanel : public CPanel {
+protected:
+	void	OnPaint( HDC hDC ){
+		CDC		dc(hDC);
+
+		CRect	rc(10, 10, 100, 100);
+
+		dc.DrawRect( rc, RGB(0xFF,0x00,0xFF) );
+	}
+};
+
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class COpenGLPanel : public CPanel {
+protected:
+	virtual DWORD		WindowStyle( void ) const { return(CPanel::WindowStyle() | WS_CLIPSIBLINGS | WS_CLIPCHILDREN); }
+
+	COpenGL			GL;
+
+	void	subAxis( float d, float s ){
+		const double	pi = 3.14;
+
+		glBegin( GL_QUAD_STRIP );
+		{
+			for( double i=0; i<=6.0; i++ ){
+				double t	= (i * 2 * pi / 6);
+				glNormal3f( cos(t), 0, sin(t) );
+				glVertex3f( d * cos(t), -s, d * sin(t) );
+				glVertex3f( d * cos(t),  s, d * sin(t) );
+			}
+		}
+		glEnd();
+
+		glTranslatef( 0, s, 0 );
+		glRotatef( -90, 1, 0, 0 );
+	}
+
+	void	Axis( float d, float s ){
+		glPushMatrix();
+		subAxis( d, s );
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotatef( 90, 1, 0, 0 );
+		subAxis( d, s );
+		glPopMatrix();
+
+		glPushMatrix();
+		glRotatef( -90, 0, 0, 1 );
+		subAxis( d, s );
+		glPopMatrix();
+	}
+
+	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+	
+		if( GL.Startup( GetDC(m_hWnd) ) ){
+			glClearColor( 0, 0, 0.5, 1 );
+			glClearDepth( 1 );
+			glEnable( GL_DEPTH_TEST );
+			glEnable( GL_CULL_FACE );
+		}
+
+		return TRUE;
+	}
+
+	virtual void	OnPaint( HDC hDC ){
+		CDC	dc(hDC);
+
+		wglMakeCurrent( hDC, GL.m_hRC );
+#if 0
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		glColor3f( 1, 0, 1 );
+		glRectd(-0.5,-0.5,0.5,0.5);
+#else
+
+	//	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		static GLfloat vertices [8][3] =
+		{
+			{-0.5f, -0.5f,  0.5f},
+			{ 0.5f, -0.5f,  0.5f},
+			{ 0.5f,  0.5f,  0.5f},
+			{-0.5f,  0.5f,  0.5f},
+			{ 0.5f, -0.5f, -0.5f},
+			{-0.5f, -0.5f, -0.5f},
+			{-0.5f,  0.5f, -0.5f},
+			{ 0.5f,  0.5f, -0.5f}
+		};
+
+
+		Axis( 0.05, 2.0 );
+
+		// ‘O
+	//	glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3fv(vertices[0]);
+			glVertex3fv(vertices[1]);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3fv(vertices[2]);
+			glVertex3fv(vertices[3]);
+		glEnd();
+
+		// Œã
+	//	glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3fv(vertices[4]);
+			glVertex3fv(vertices[5]);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3fv(vertices[6]);
+			glVertex3fv(vertices[7]);
+		glEnd();
+
+		// ‰E
+	//	glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3fv(vertices[1]);
+			glVertex3fv(vertices[4]);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3fv(vertices[7]);
+			glVertex3fv(vertices[2]);
+		glEnd();
+
+		// ¶
+	//	glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3fv(vertices[5]);
+			glVertex3fv(vertices[0]);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3fv(vertices[3]);
+			glVertex3fv(vertices[6]);
+		glEnd();
+
+		// ã
+//		glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3fv(vertices[3]);
+			glVertex3fv(vertices[2]);
+			glVertex3fv(vertices[7]);
+			glVertex3fv(vertices[6]);
+		glEnd();
+
+		// ‰º
+//		glBegin(GL_POLYGON);
+		glBegin(GL_LINE_LOOP);
+			glColor3f(1.0f, 0.0f, 0.0f);
+			glVertex3fv(vertices[1]);
+			glVertex3fv(vertices[0]);
+			glVertex3fv(vertices[5]);
+			glVertex3fv(vertices[4]);
+		glEnd();
+#endif
+		glFinish();
+		SwapBuffers( hDC );
+		wglMakeCurrent( NULL, NULL );
+	}
+
+	virtual void	OnSize( UINT state, int cx, int cy ) {
+		if( cx == 0 && cy == 0 )
+			return;
+
+		CRect	rc;
+		GetClientRect( &rc );
+
+		GLfloat	w	= 0.6 * rc.Width();
+		GLfloat	h	= 0.6 * rc.Height();
+
+		glViewport( 100, 100, w, h );
+
+		glMatrixMode( GL_PROJECTION );
+		glLoadIdentity();
+
+		gluPerspective(45, w/h, 0.1, 100);
+
+		glMatrixMode( GL_MODELVIEW );
+		glLoadIdentity();
+		gluLookAt( 0.5, 1.5, 2.5, 0, 0, 0, 0, 1, 0 );
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CTabPanel : public CPanel {
 protected:
-	CTabCtrl	tabctrl;
+	CTabCtrl			tabctrl;
+	CDrawPanel			wndDraw;
+	CHeaderPanel		wndHeader;
+	CListViewPanel		wndListView;
+	CCtrlPanel			wndCtrl;
+	COpenGLPanel		wndOpenGL;
+
+	typedef std::vector<CPanel*>	VecPanel;
+	VecPanel	vecPanel;
 
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		CComponentWnd::InitCommCtrlEx();
 
 		CRect	rc;
 		GetClientRect( &rc );
+
+		wndDraw.Create( this, rc );
+		wndDraw.ShowWindow( SW_HIDE );
+
+		wndHeader.Create( this, rc );
+		wndHeader.ShowWindow( SW_HIDE );
+
+		wndListView.Create( this, rc );
+		wndListView.ShowWindow( SW_HIDE );
+
+		wndCtrl.Create( this, rc );
+		wndListView.ShowWindow( SW_HIDE );
+
+		wndOpenGL.Create( this, rc );
+		wndOpenGL.ShowWindow( SW_HIDE );
+
+		vecPanel.push_back( &wndDraw		);
+		vecPanel.push_back( &wndHeader		);
+		vecPanel.push_back( &wndListView	);
+		vecPanel.push_back( &wndCtrl		);
+		vecPanel.push_back( &wndOpenGL		);
 
 		if( tabctrl.Create(this, rc, 200) ){
 			tabctrl.InsertItem( 0, _T("AAAA") );
@@ -244,13 +502,59 @@ protected:
 			tabctrl.InsertItem( 5, _T("FFFF") );
 		}
 
+		TabChange( 0 );
+
 		return TRUE;
+	}
+
+	void		TabChange( int nCurSel ){
+		if( tabctrl.GetCurSel() != nCurSel )
+			tabctrl.SetCurSel( nCurSel );
+
+		VecPanel::iterator it = vecPanel.begin();
+		for( int i=0; it!=vecPanel.end(); i++, it++ ){
+			(*it)->ShowWindow( nCurSel == i ? SW_SHOW : SW_HIDE );
+		}
+	}
+
+	void		Resize(){
+		CRect	rc;
+		GetClientRect( &rc );
+		
+		tabctrl.MoveWindow( rc.X(), rc.Y(), rc.Width(), rc.Height(), TRUE );
+		tabctrl.GetClientRect( &rc );
+		tabctrl.AdjustRect( FALSE, rc );
+
+		rc.X( rc.X() + 5 );
+		rc.Y( rc.Y() + 5 );
+		rc.Width( rc.Width() - 5 );
+		rc.Height( rc.Height() - 5 );
+
+		VecPanel::iterator it = vecPanel.begin();
+		for( int i=0; it!=vecPanel.end(); i++, it++ ){
+			(*it)->MoveWindow(rc.X(), rc.Y(), rc.Width(), rc.Height(), TRUE );
+		}
+	}
+
+	virtual void	OnMove( int x, int y) {
+		if( x && y )
+			Resize();
+	}
+
+	virtual void	OnSize( UINT state, int cx, int cy ) {
+		if( cx && cy )
+			Resize();
 	}
 
 	virtual void	OnNotify( WPARAM wParam, LPARAM lParam ){
 		LPNMHDR lpNmhdr = (LPNMHDR)lParam;
 		if( lpNmhdr == NULL ){
 			return ;
+		}
+
+		if( TCN_SELCHANGE == lpNmhdr->code )
+		{
+			TabChange( tabctrl.GetCurSel() );
 		}
 
 		if( NM_RCLICK == lpNmhdr->code )
@@ -297,45 +601,26 @@ protected:
  *
  *
  */
-class CDrawPanel : public CPanel {
-protected:
-	void	OnPaint( HDC hDC ){
-		CDC		dc(hDC);
-
-		CRect	rc(10, 10, 100, 100);
-
-		dc.DrawRect( rc, RGB(0xFF,0x00,0xFF) );
-	}
-};
-
-/**********************************************************************************
- *
- *
- *
- */
 class CMainForm : public CForm {
 protected:
-	CCtrlPanel		wndCtrlPanel;
-	CListViewPanel	wndListViewPanel;
 	CTabPanel		wndTab;
-	CDrawPanel		wndDraw;
 	
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		CComponentWnd::InitCommCtrlEx();
 
-		CRect	rect( 10, 10, 500, 400 );
-		wndCtrlPanel.Create( this, rect );
-
-		rect.Set( 10,  550, 400, 300 );
-		wndListViewPanel.Create( this, rect );
-
-		rect.Set( 350, 550, 400, 250 );
+		CRect	rect( 10, 10, 800, 600 );
 		wndTab.Create( this, rect );
 
-		rect.Set( 450, 10, 500, 200 );
-		wndDraw.Create( this, rect );
-
 		return TRUE;
+	}
+
+	void	OnSize( UINT state, int x, int y ){
+		if( x == 0 && y == 0 )
+			return;
+
+		CRect	rc;
+		GetClientRect( &rc );
+		wndTab.MoveWindow( rc.X(), rc.Y(), rc.Width(), rc.Height(), TRUE );
 	}
 };
 
