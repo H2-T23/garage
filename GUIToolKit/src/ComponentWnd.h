@@ -39,7 +39,7 @@ WNDCLS_PAGER		WC_PAGESCROLLER		_T("SysPager")
  */
 class CComponentWnd : public CWnd {
 protected:
-	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));					}
+	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));								}
 	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER);	}
 
 public:
@@ -222,6 +222,7 @@ public:
 class CHeaderCtrl : public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{	return(WC_HEADER);	}
+	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | HDS_BUTTONS);	}
 
 public:
 	int		GetItemCount( void ) const {
@@ -229,12 +230,13 @@ public:
 	}
 
 	int		InsertItem( int nItem, LPTSTR lpszCaption, int nWidth = 100 ){
-		HD_ITEM	hdItem;
+		HD_ITEM	hdItem = {0};
 		hdItem.mask			= HDI_FORMAT | HDI_TEXT | HDI_WIDTH;
+		hdItem.cxy			= nWidth;
 		hdItem.pszText		= lpszCaption;
 		hdItem.fmt			= HDF_CENTER | HDF_STRING;
 		hdItem.cchTextMax	= lstrlen(hdItem.pszText);
-		return InsertItem(nItem, &hdItem );
+		return InsertItem(nItem, &hdItem);
 	}
 
 	int		InsertItem( int nItem, HD_ITEM* pItem ){
