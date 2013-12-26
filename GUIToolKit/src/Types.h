@@ -25,6 +25,17 @@ public:
 		this->y = y;
 	}
 
+	void		Set( CPoint const& pt ){
+		this->x = pt.x;
+		this->y = pt.y;
+	}
+
+	CPoint&	operator=( CPoint const& pt ){
+		x = pt.x;
+		y = pt.y;
+		return *this;
+	}
+
 	CPoint&	operator+( CPoint const& pt ){
 		this->x += pt.x;
 		this->y += pt.y;
@@ -55,6 +66,13 @@ public:
 		return *this;
 	}
 };
+
+CPoint		operator-( CPoint const& ptA, CPoint const& ptB ) {
+	CPoint	pt;
+	pt.x	= (ptA.x - ptB.x);
+	pt.y	= (ptA.y - ptB.y);
+	return pt;
+}
 
 /****************************************************************************************
  *
@@ -88,17 +106,24 @@ public:
  */
 class CRect : public RECT {
 public:
-	CRect(void){
+	CRect( void ){
 		Set(0,0,0,0);
 	}
 
-	CRect(int x, int y, int w, int h){
+	CRect( int x, int y, int w, int h ){
 		Set(x,y,w,h);
 	}
 
+	void	Set( RECT& rc ){
+		top		= rc.top;
+		left	= rc.left;
+		bottom	= rc.bottom;
+		right	= rc.right;
+	}
+
 	void	Set( int x, int y, int w, int h ){
-		X(x);
-		Y(y);
+		X( x );
+		Y( y );
 		Width( w );
 		Height( h );
 	}
@@ -128,7 +153,7 @@ public:
 	int		Width( void ) const		{ return(right - left);	}
 	int		Height( void ) const	{ return(bottom - top);	}
 
-	int		SetRectEmpty( void ){
+	void	SetRectEmpty( void ){
 		Set(0,0,0,0);
 	}
 	
@@ -138,5 +163,26 @@ public:
 
 	bool	IsValidRect( void ) const {
 		return( (0 < Width()) && (0 < Height()) );
+	}
+
+	bool	PtInRect( CPoint const& pt ) const {
+		return(::PtInRect(this, pt) == FALSE ? false : true);
+	}
+
+	CPoint	CenterPoint( void ) const {
+		CPoint pt;
+		pt.x	= (left + Width()/2);
+		pt.y	= (top  + Height()/2);
+		return pt;
+	}
+
+	CPoint	TopLeft( void ) const {
+		CPoint pt(left, top);
+		return pt;
+	}
+
+	CPoint	BottomRight( void ) const {
+		CPoint pt(right, bottom);
+		return pt;
 	}
 };
