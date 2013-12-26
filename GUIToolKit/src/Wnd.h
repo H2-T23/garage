@@ -38,12 +38,12 @@ public:
 	CWnd(CWnd const& rWnd):m_hWnd(rWnd.m_hWnd){}
 	virtual ~CWnd( void ) {}
 
+public:
 	HWND        operator=(const HWND hWnd){
 			m_hWnd = hWnd;
 			return(m_hWnd);
 	}
 
-public:
 	CWnd&         operator=(CWnd const& rWnd){
 			m_hWnd = rWnd.m_hWnd;
 			return(*this);       
@@ -74,108 +74,108 @@ public:
 		return ::SetWindowPos(m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
 	}
 
-	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint = FALSE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
+	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint=TRUE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
 
-	BOOL		Invalidate( BOOL bErace = TRUE )									{ return ::InvalidateRect(m_hWnd, NULL, bErace);		}
-	BOOL		InvalidateRect( const RECT* lpRect, BOOL bErase=TRUE )				{ return ::InvalidateRect(m_hWnd, lpRect, bErase);		}
+	BOOL		Invalidate( BOOL bErace = TRUE ) const								{ return ::InvalidateRect(m_hWnd, NULL, bErace);		}
+	BOOL		InvalidateRect( const RECT* lpRect, BOOL bErase=TRUE ) const		{ return ::InvalidateRect(m_hWnd, lpRect, bErase);		}
 
 	BOOL		SetWindowText( LPCTSTR lpString ) const								{ return ::SetWindowText(m_hWnd, lpString);				}
 	int			GetWindowText( LPTSTR lpString, int nMaxCount ) const				{ return ::GetWindowText(m_hWnd, lpString, nMaxCount);	}
 
 public:
-	virtual BOOL	OnCreate( LPCREATESTRUCT lpCrreateStruct ){ return TRUE; }
-	virtual void	OnDestroy( void )	{	}
+	virtual BOOL	OnCreate			( LPCREATESTRUCT lpCrreateStruct ){ return TRUE; }
+	virtual void	OnDestroy			( void )	{	}
 
-	virtual void	OnCommand( UINT uID, HWND hWndCtrl, UINT nCodeNotify )	{	}
-	virtual void	OnNotify( WPARAM wParam, LPARAM lParam )				{	}
-	virtual void	OnTimer( UINT )	{	}	
-	virtual void	OnPaint( HDC )	{	}
-	virtual BOOL	OnEraseBkgnd( HDC hDC ){ return TRUE; }
+	virtual void	OnCommand			( UINT uID, HWND hWndCtrl, UINT nCodeNotify )	{	}
+	virtual void	OnNotify			( WPARAM wParam, LPARAM lParam )				{	}
+	virtual void	OnTimer				( UINT )	{	}	
+	virtual void	OnPaint				( HDC )		{	}
+	virtual BOOL	OnEraseBkgnd		( HDC hDC ){ return TRUE; }
 
-	virtual void	OnMove( int x, int y)	{	}
-	virtual void	OnSize( UINT state, int cx, int cy )	{	}
-	virtual void	OnClose( void )	{	}
+	virtual void	OnMove				( int x, int y)					{	}
+	virtual void	OnSize				( UINT state, int cx, int cy )	{	}
+	virtual void	OnClose				( void )						{	}
 	// focus.s
-	virtual void	OnSetFocus	( HWND hWndOldFocus )	{	}
-	virtual void	OnKillFocus	( HWND hWndNewFocus )	{	}
+	virtual void	OnSetFocus			( HWND hWndOldFocus )	{	}
+	virtual void	OnKillFocus			( HWND hWndNewFocus )	{	}
 	// keyboard message.
-	virtual void	OnKeyDown	( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
-	virtual void	OnKeyUp		( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
-	virtual void	OnChar		( TCHAR ch, int nRepeat )							{	}
-	virtual void	OnSysKeyDown( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
-	virtual void	OnSysKeyUp	( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
-	virtual void	OnSysChar	( TCHAR ch, int nRepeat )							{	}	
+	virtual void	OnKeyDown			( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
+	virtual void	OnKeyUp				( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
+	virtual void	OnChar				( TCHAR ch, int nRepeat )							{	}
+	virtual void	OnSysKeyDown		( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
+	virtual void	OnSysKeyUp			( UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	}
+	virtual void	OnSysChar			( TCHAR ch, int nRepeat )							{	}	
 	// mouse message.
-	virtual void	OnMouseMove		( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnLButtonDown	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnLButtonDblclk	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnLButtonUp		( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnRButtonDown	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnRButtonDblclk	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnRButtonUp		( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnMButtonDown	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnMButtonDblclk	( int x, int y, UINT KeyFlags )	{	}
-	virtual void	OnMButtonUp		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnMouseMove			( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnLButtonDown		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnLButtonDblclk		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnLButtonUp			( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnRButtonDown		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnRButtonDblclk		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnRButtonUp			( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnMButtonDown		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnMButtonDblclk		( int x, int y, UINT KeyFlags )	{	}
+	virtual void	OnMButtonUp			( int x, int y, UINT KeyFlags )	{	}
 	// menu message.
-	virtual void	OnInitMenu		( HMENU hMenu )											{	}
-	virtual void	OnInitMenuPopup	( HMENU hMenu, UINT item, BOOL fSystemMenu )			{	}
-	virtual void	OnMenuSelect	( HMENU hMenu, int item, HMENU hMenuPopup, UINT flags )	{	}
-	virtual DWORD	OnMenuChar		( HMENU hMenu, UINT ch, UINT flags )					{	return 0;	}
+	virtual void	OnInitMenu			( HMENU hMenu )											{	}
+	virtual void	OnInitMenuPopup		( HMENU hMenu, UINT item, BOOL fSystemMenu )			{	}
+	virtual void	OnMenuSelect		( HMENU hMenu, int item, HMENU hMenuPopup, UINT flags )	{	}
+	virtual DWORD	OnMenuChar			( HMENU hMenu, UINT ch, UINT flags )					{ return 0;	}
 	// scroll message.
-	virtual void	OnHScroll		( HWND hWndCtl, UINT code, int pos )	{	}
-	virtual	void	OnVScroll		( HWND hWndCtl, UINT code, int pos )	{	}
+	virtual void	OnHScroll			( HWND hWndCtl, UINT code, int pos )	{	}
+	virtual	void	OnVScroll			( HWND hWndCtl, UINT code, int pos )	{	}
 
 private:
 	BOOL			Cls_OnCreate		( HWND hWnd, LPCREATESTRUCT lpCreateStruct )			{ return OnCreate( lpCreateStruct );			}
 	void			Cls_OnDestroy		( HWND hWnd )											{ OnDestroy(); PostQuitMessage( 0 );			}
 	
-	void	Cls_OnCommand( HWND hWnd, int id, HWND hWndCtrl, UINT nCodeNotify )	{	OnCommand(id, hWndCtrl, nCodeNotify);	}
-	void	Cls_OnNotify( HWND hWnd, WPARAM wParam, LPARAM lParam )				{	OnNotify(wParam, lParam);				}
-	void	Cls_OnTimer( HWND hWnd, UINT id )									{	OnTimer(id);							}
-
+	void			Cls_OnCommand		( HWND hWnd, int id, HWND hWndCtrl, UINT nCodeNotify )	{ OnCommand(id, hWndCtrl, nCodeNotify);	}
+	void			Cls_OnNotify		( HWND hWnd, WPARAM wParam, LPARAM lParam )				{ OnNotify(wParam, lParam);				}
+	void			Cls_OnTimer			( HWND hWnd, UINT id )									{ OnTimer(id);							}
 	// paint message.
-	void	Cls_OnPaint( HWND hWnd ){
+	void			Cls_OnPaint			( HWND hWnd ){
 		PAINTSTRUCT		ps;
 		HDC hDC = ::BeginPaint( m_hWnd, &ps );
 		OnPaint( hDC );
 		::EndPaint( m_hWnd, &ps );
 	}
 	// 
-	BOOL	Cls_OnEraseBkgnd( HWND hWnd, HDC hDC ){	return OnEraseBkgnd( hDC );	}
+	BOOL			Cls_OnEraseBkgnd	( HWND hWnd, HDC hDC )												{ return OnEraseBkgnd( hDC );					}
 
-	void	Cls_OnMove( HWND hWnd, int x, int y)				{	OnMove(x,y);				}
-	void	Cls_OnSize( HWND hWnd, UINT state, int cx, int cy )	{	OnSize(state, cx, cy);		}
-	void	Cls_OnClose( HWND hWnd )							{	OnClose();					}
+	void			Cls_OnMove			( HWND hWnd, int x, int y)											{ OnMove(x,y);									}
+	void			Cls_OnSize			( HWND hWnd, UINT state, int cx, int cy )							{ OnSize(state, cx, cy);						}
+	void			Cls_OnClose			( HWND hWnd )														{ OnClose();									}
 	// focus message.
-	void	Cls_OnSetFocus	( HWND hWnd, HWND hWndOldFocus )		{	OnSetFocus(hWndOldFocus);	}
-	void	Cls_OnKillFocus	( HWND hWnd, HWND hWndNewFocus )		{	OnKillFocus(hWndNewFocus);	}
+	void			Cls_OnSetFocus		( HWND hWnd, HWND hWndOldFocus )									{ OnSetFocus(hWndOldFocus);						}
+	void			Cls_OnKillFocus		( HWND hWnd, HWND hWndNewFocus )									{ OnKillFocus(hWndNewFocus);					}
 	// keyboard message.
-	void	Cls_OnKeyDown		( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	OnKeyDown(uVk, fDown, nRepeat, uFlags);		}
-	void	Cls_OnKeyUp			( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	OnKeyUp(uVk, fDown, nRepeat, uFlags);		}
-	void	Cls_OnChar			( HWND hWnd, TCHAR ch,             int nRepeat )				{	OnChar(ch, nRepeat);						}
-	void	Cls_OnSysKeyDown	( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	OnSysKeyDown(uVk, fDown, nRepeat, uFlags);	}
-	void	Cls_OnSysKeyUp		( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )	{	OnSysKeyUp(uVk, fDown, nRepeat, uFlags);	}
-	void	Cls_OnSysChar		( HWND hWnd, TCHAR ch,             int nRepeat )				{	OnSysChar(ch, nRepeat);						}
+	void			Cls_OnKeyDown		( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )		{ OnKeyDown(uVk, fDown, nRepeat, uFlags);		}
+	void			Cls_OnKeyUp			( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )		{ OnKeyUp(uVk, fDown, nRepeat, uFlags);			}
+	void			Cls_OnChar			( HWND hWnd, TCHAR ch,             int nRepeat )					{ OnChar(ch, nRepeat);							}
+	void			Cls_OnSysKeyDown	( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )		{ OnSysKeyDown(uVk, fDown, nRepeat, uFlags);	}
+	void			Cls_OnSysKeyUp		( HWND hWnd, UINT uVk, BOOL fDown, int nRepeat, UINT uFlags )		{ OnSysKeyUp(uVk, fDown, nRepeat, uFlags);		}
+	void			Cls_OnSysChar		( HWND hWnd, TCHAR ch,             int nRepeat )					{ OnSysChar(ch, nRepeat);						}
 	// mouse message.
-	void	Cls_OnMouseMove		( HWND hWnd,                    int x, int y, UINT KeyFlags )	{	OnMouseMove(x, y, KeyFlags);		}
-	void	Cls_OnLButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnLButtonDown(x, y, KeyFlags);		}
-	void	Cls_OnLButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnLButtonDblclk(x, y, KeyFlags);	}
-	void	Cls_OnLButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )	{	OnLButtonUp(x, y, KeyFlags);		}
-	void	Cls_OnRButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnRButtonDown(x, y, KeyFlags);		}
-	void	Cls_OnRButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnRButtonDblclk(x, y, KeyFlags);	}
-	void	Cls_OnRButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )	{	OnRButtonUp(x, y, KeyFlags);		}
-	void	Cls_OnMButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnMButtonDown(x, y, KeyFlags);		}
-	void	Cls_OnMButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )	{	OnMButtonDblclk(x, y, KeyFlags);	}
-	void	Cls_OnMButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )	{	OnMButtonUp(x, y, KeyFlags);		}
-	void	Cls_OnMouseWheel	( HWND hWnd, int xPos, int yPos, int zDelta, UINT fwKeys )		{		}
+	void			Cls_OnMouseMove		( HWND hWnd,                    int x, int y, UINT KeyFlags )		{ OnMouseMove(x, y, KeyFlags);					}
+	void			Cls_OnLButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnLButtonDown(x, y, KeyFlags);				}
+	void			Cls_OnLButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnLButtonDblclk(x, y, KeyFlags);				}
+	void			Cls_OnLButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )		{ OnLButtonUp(x, y, KeyFlags);					}
+	void			Cls_OnRButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnRButtonDown(x, y, KeyFlags);				}
+	void			Cls_OnRButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnRButtonDblclk(x, y, KeyFlags);				}
+	void			Cls_OnRButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )		{ OnRButtonUp(x, y, KeyFlags);					}
+	void			Cls_OnMButtonDown	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnMButtonDown(x, y, KeyFlags);				}
+	void			Cls_OnMButtonDblclk	( HWND hWnd, BOOL fDoubleClick, int x, int y, UINT KeyFlags )		{ OnMButtonDblclk(x, y, KeyFlags);				}
+	void			Cls_OnMButtonUp		( HWND hWnd,                    int x, int y, UINT KeyFlags )		{ OnMButtonUp(x, y, KeyFlags);					}
+	void			Cls_OnMouseWheel	( HWND hWnd, int xPos, int yPos, int zDelta, UINT fwKeys )			{												}
 	// menu message.
-	void	Cls_OnInitMenu		( HWND hWnd, HMENU hMenu )											{	OnInitMenu(hMenu);								}
-	void	Cls_OnInitMenuPopup	( HWND hWnd, HMENU hMenu, UINT item, BOOL fSystemMenu )				{	OnInitMenuPopup(hMenu, item, fSystemMenu);		}
-	void	Cls_OnMenuSelect	( HWND hWnd, HMENU hMenu, int item, HMENU hMenuPopup, UINT flags )	{	OnMenuSelect(hMenu, item, hMenuPopup, flags);	}
-	DWORD	Cls_OnMenuChar		( HWND hwnd, UINT ch, UINT flags, HMENU hMenu )						{	return OnMenuChar(hMenu, ch, flags);			}
+	void			Cls_OnInitMenu		( HWND hWnd, HMENU hMenu )											{ OnInitMenu(hMenu);							}
+	void			Cls_OnInitMenuPopup	( HWND hWnd, HMENU hMenu, UINT item, BOOL fSystemMenu )				{ OnInitMenuPopup(hMenu, item, fSystemMenu);	}
+	void			Cls_OnMenuSelect	( HWND hWnd, HMENU hMenu, int item, HMENU hMenuPopup, UINT flags )	{ OnMenuSelect(hMenu, item, hMenuPopup, flags);	}
+	DWORD			Cls_OnMenuChar		( HWND hwnd, UINT ch, UINT flags, HMENU hMenu )						{ return OnMenuChar(hMenu, ch, flags);			}
 	// scroll message.
-	void	Cls_OnHScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )	{	OnHScroll(hWndCtl, code, pos);	}
-	void	Cls_OnVScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )	{	OnVScroll(hWndCtl, code, pos);	}
+	void			Cls_OnHScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )						{ OnHScroll(hWndCtl, code, pos);				}
+	void			Cls_OnVScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )						{ OnVScroll(hWndCtl, code, pos);				}
+
 public:
 	virtual LRESULT		WindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam ){
 		switch(uMsg){
@@ -289,12 +289,11 @@ public:
 	}
 
 private:
-	static
-	LRESULT CALLBACK		MainWindowProc(	HWND	hWnd
-										,	UINT	uMsg
-										,	WPARAM	wParam
-										,	LPARAM	lParam
-										)
+	static	LRESULT CALLBACK		MainWindowProc(	HWND	hWnd
+												,	UINT	uMsg
+												,	WPARAM	wParam
+												,	LPARAM	lParam
+												)
 	{
 		CLASS*	pThis = NULL;
 		if( uMsg == WM_NCCREATE )
