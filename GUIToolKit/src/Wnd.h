@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <list>
@@ -30,16 +31,22 @@
  */
 class CWnd {
 public:
-	HWND		m_hWnd;
+	HWND				m_hWnd;
+public:
+	CWnd(void):m_hWnd(NULL){}
+	CWnd(const HWND hWnd):m_hWnd(hWnd){}
+	CWnd(CWnd const& rWnd):m_hWnd(rWnd.m_hWnd){}
+	virtual ~CWnd( void ) {}
+
+	HWND        operator=(const HWND hWnd){
+			m_hWnd = hWnd;
+			return(m_hWnd);
+	}
 
 public:
-	CWnd( void ) : m_hWnd(NULL) {}
-	CWnd( CWnd const& wnd ) : m_hWnd(wnd.m_hWnd) {}
-
-public:
-	CWnd&	operator=(CWnd const& wnd){
-		m_hWnd = wnd.m_hWnd;
-		return(*this);
+	CWnd&         operator=(CWnd const& rWnd){
+			m_hWnd = rWnd.m_hWnd;
+			return(*this);       
 	}
 
 	operator HWND(){return(m_hWnd);}
@@ -68,6 +75,12 @@ public:
 	}
 
 	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint = FALSE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
+
+	BOOL		Invalidate( BOOL bErace = TRUE )									{ return ::InvalidateRect(m_hWnd, NULL, bErace);		}
+	BOOL		InvalidateRect( const RECT* lpRect, BOOL bErase=TRUE )				{ return ::InvalidateRect(m_hWnd, lpRect, bErase);		}
+
+	BOOL		SetWindowText( LPCTSTR lpString ) const								{ return ::SetWindowText(m_hWnd, lpString);				}
+	int			GetWindowText( LPTSTR lpString, int nMaxCount ) const				{ return ::GetWindowText(m_hWnd, lpString, nMaxCount);	}
 
 public:
 	virtual BOOL	OnCreate( LPCREATESTRUCT lpCrreateStruct ){ return TRUE; }
@@ -113,14 +126,8 @@ public:
 	virtual	void	OnVScroll		( HWND hWndCtl, UINT code, int pos )	{	}
 
 private:
-	BOOL	Cls_OnCreate( HWND hWnd, LPCREATESTRUCT lpCreateStruct ){
-		return OnCreate( lpCreateStruct );
-	}
-
-	void	Cls_OnDestroy( HWND hWnd ){
-		OnDestroy();
-		PostQuitMessage( 0 );
-	}
+	BOOL			Cls_OnCreate		( HWND hWnd, LPCREATESTRUCT lpCreateStruct )			{ return OnCreate( lpCreateStruct );			}
+	void			Cls_OnDestroy		( HWND hWnd )											{ OnDestroy(); PostQuitMessage( 0 );			}
 	
 	void	Cls_OnCommand( HWND hWnd, int id, HWND hWndCtrl, UINT nCodeNotify )	{	OnCommand(id, hWndCtrl, nCodeNotify);	}
 	void	Cls_OnNotify( HWND hWnd, WPARAM wParam, LPARAM lParam )				{	OnNotify(wParam, lParam);				}
@@ -221,10 +228,9 @@ public:
 			Cls_OnNotify(m_hWnd, wParam, lParam);
 			return 0;
 		}
-		return ::DefWindowProcA(m_hWnd, uMsg, wParam, lParam);
+		return DefWindowProc(m_hWnd, uMsg, wParam, lParam);
 	}
 };
-
 
 /****************************************************************************************
  *
@@ -234,7 +240,7 @@ public:
 template<typename CLASS>
 class TWnd : public CWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const = 0;
+	virtual LPCTSTR				ClassName( void ) const					= 0;
 
 public:
 	BOOL	Create(	LPCTSTR		lpWindowName
