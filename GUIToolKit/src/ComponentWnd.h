@@ -353,3 +353,141 @@ protected:
  *
  *
  */
+class CToolbar	: public CComponentWnd {
+protected:
+	virtual LPCTSTR			ClassName( void ) const		{	return(TOOLBARCLASSNAME);	}
+
+	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+
+		if( !CComponentWnd::OnCreate(lpCreateStruct) )
+			return FALSE;
+
+		ButtonStructSize();
+
+		TBADDBITMAP	tbAddBmp	= {0};
+		tbAddBmp.hInst			= lpCreateStruct->hInstance;
+		tbAddBmp.nID			= IDB_STD_SMALL_COLOR;
+
+		AddBitmap( &tbAddBmp );
+
+		TBBUTTON	tbBtn[] = {
+			{ MAKELONG(STD_FILENEW	, 0)	, NULL, TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("New")	},
+			{ MAKELONG(STD_FILEOPEN	, 0)	, NULL, TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Open")	},
+			{ MAKELONG(STD_FILESAVE	, 0)	, NULL, 0				, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Save")	},
+			{ MAKELONG(0			, 0)	, NULL, 0				, 0				, {0}, 0, (INT_PTR)_T("")		},
+			{ MAKELONG(STD_COPY		, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Copy")	},
+			{ MAKELONG(STD_CUT		, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Cut")	},
+			{ MAKELONG(STD_PASTE	, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Paste")	},
+		};
+
+		AddButtons( sizeof(tbBtn)/sizeof(TBBUTTON), tbBtn );
+		AutoSize();
+
+		return TRUE;
+	}
+
+public:
+	void	ButtonStructSize( void ){
+		CWnd::SendMessage( TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0 );
+	}
+
+	void	AddBitmap( LPTBADDBITMAP lpTbAddBitmap ){
+		CWnd::SendMessage( TB_ADDBITMAP, 0, (LPARAM)lpTbAddBitmap );
+	}
+
+	void	AddButtons( int nButtons, LPTBBUTTON lpButtons ){
+		CWnd::SendMessage( TB_ADDBUTTONS, (WPARAM)nButtons, (LPARAM)lpButtons );
+	}
+
+	void	AutoSize( void ){
+		CWnd::SendMessage( TB_AUTOSIZE, 0, 0 );
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CRebar	: public CComponentWnd {
+protected:
+	virtual LPCTSTR			ClassName( void ) const		{ return(REBARCLASSNAME);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() |/* RBS_AUTOSIZE |*/ RBS_BANDBORDERS | CCS_NODIVIDER);	}
+	virtual DWORD			WindowExStyle( void ) const	{ return(WS_EX_TOOLWINDOW);	}
+
+public:
+	void		SetBarInfo( LPREBARINFO lpRebarInfo ){
+		CWnd::SendMessage( RB_SETBARINFO, 0, (LPARAM)lpRebarInfo );
+	}
+
+	void		SetBarInfo( void ){
+		REBARINFO info = {0};
+		info.cbSize	= sizeof(REBARINFO);
+		this->SetBarInfo( &info );
+	}
+
+	void		InsertBand( LPREBARBANDINFO lpRebarBandInfo ){
+		CWnd::SendMessage( RB_INSERTBAND, (WPARAM)-1, (LPARAM)lpRebarBandInfo );
+	}
+};
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CComboBox	: public CComponentWnd {
+protected:
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_COMBOBOX);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | CBS_DROPDOWNLIST | CBS_HASSTRINGS);	}
+
+public:
+	int			GetText( LPTSTR lpszText, int szText ) const {
+		return GetWindowText(lpszText, szText);
+	}
+
+	int			GetTextLength( void ) const {
+		return GetWindowTextLength();
+	}
+
+	BOOL		SetText( LPCTSTR lpszText ) const {
+		return SetWindowText(lpszText);
+	}
+
+	int			GetCount( void ) const {
+		return ComboBox_GetCount(m_hWnd);
+	}
+
+	int			ResetContent( void ) const {
+		return ComboBox_ResetContent(m_hWnd);
+	}
+
+	int			AddString( LPCTSTR lpszText ){
+		return ComboBox_AddString(m_hWnd, lpszText);
+	}
+
+	int			InsertString( int idx, LPCTSTR lpszText ) const {
+		return ComboBox_InsertString(m_hWnd, idx, lpszText);
+	}
+
+	int			DeleteString( int idx ) const {
+		return ComboBox_DeleteString(m_hWnd, idx);
+	}
+
+	int			GetLBTextLen( int idx ) const {
+		return ComboBox_GetLBTextLen(m_hWnd, idx);
+	}
+
+	int			GetLBText( int idx, LPTSTR lpszText ) const {
+		return ComboBox_GetLBText(m_hWnd, idx, lpszText);
+	}
+
+	int			GetCurSel( void ) const {
+		return ComboBox_GetCurSel(m_hWnd);
+	}
+
+	int			SetCurSel( int nCurSel ) const {
+		return ComboBox_SetCurSel(m_hWnd, nCurSel);
+	}
+
+};
