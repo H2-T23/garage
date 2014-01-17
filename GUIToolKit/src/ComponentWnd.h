@@ -40,7 +40,7 @@ WNDCLS_PAGER		WC_PAGESCROLLER		_T("SysPager")
 class CComponentWnd : public CWnd {
 protected:
 	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));								}
-	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER);	}
+	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);	}
 
 public:
 	BOOL	Create( CWnd& Parent, CRect& rect, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
@@ -65,7 +65,7 @@ public:
 
 			INITCOMMONCONTROLSEX	icc;
 			icc.dwSize	= sizeof(INITCOMMONCONTROLSEX);
-			icc.dwICC	= ICC_WIN95_CLASSES;
+			icc.dwICC	= ICC_WIN95_CLASSES | ICC_COOL_CLASSES | ICC_BAR_CLASSES;
 			InitCommonControlsEx( &icc );
 		}
 	}
@@ -136,8 +136,77 @@ protected:
  */
 class CEdit	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(WC_EDIT);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_EDIT);	}
+
+public:
+	int			GetText( LPTSTR lpch, int cchMax ) const			{ return GetWindowText(lpch, cchMax);	}
+	int			GetTextLength( void ) const							{ return GetWindowTextLength();			}
+	BOOL		SetText( LPCTSTR lpsz ) const						{ return SetWindowText(lpsz);			}
+
+	void		LimitText( int cchMax ) const						{ return Edit_LimitText(m_hWnd, cchMax);		}
+
+	int			GetLineCount( void ) const							{ return Edit_GetLineCount(m_hWnd);					}
+	int			GetLine( int line, LPTSTR lpch, int cchMax ) const	{ return Edit_GetLine(m_hWnd, line, lpch, cchMax);	}
+
+	DWORD		GetSel( void ) const					{ return Edit_GetSel(m_hWnd);					}
+	void		SetSel( int nStart, int nEnd ) const	{ return Edit_SetSel(m_hWnd, nStart, nEnd);		}
+	void		ReplaceSel( LPCTSTR lpszReplace ) const	{ return Edit_ReplaceSel(m_hWnd, lpszReplace);	}
+
+	BOOL		GetModify( void ) const					{ return Edit_GetModify(m_hWnd);				}
+	void		SetModify( UINT uModified ) const		{ return Edit_SetModify(m_hWnd, uModified);		}
+
+	BOOL		ScrollCaret( void ) const				{ return Edit_ScrollCaret(m_hWnd);				}
+
+	BOOL		CanUndo( void ) const					{ return Edit_CanUndo(m_hWnd);					}
+	BOOL		Undo( void ) const						{ return Edit_Undo(m_hWnd);						}
+	void		EmptyUndoBuffer( void ) const			{ return Edit_EmptyUndoBuffer(m_hWnd);			}
+
+	void		SetPasswordChar( UINT ch ) const		{ return Edit_SetPasswordChar(m_hWnd, ch);		}
+
+
+public:
+	BOOL		MultiLine( void ) const {
+		return ModifyStyle( 0, (ES_LEFT | ES_MULTILINE | ES_WANTRETURN), TRUE );
+	}
+
+	BOOL		ReadOnly( BOOL bOnOff ) const {
+		DWORD	dwStyle	= (ES_READONLY);
+		if( bOnOff )
+			return ModifyStyle( 0, dwStyle, TRUE );
+		return ModifyStyle( dwStyle, 0, TRUE );
+	}
+
+	BOOL		VScroll( BOOL bOnOff ) const {
+		DWORD	dwStyle	= (WS_VSCROLL | ES_AUTOVSCROLL);
+		if( bOnOff )
+			return ModifyStyle( 0, dwStyle, TRUE );
+		return ModifyStyle( dwStyle, 0, TRUE );
+	}
+
+	BOOL		HScroll( BOOL bOnOff ) const {
+		DWORD	dwStyle	= (WS_HSCROLL | ES_AUTOHSCROLL);
+		if( bOnOff )
+			return ModifyStyle( 0, dwStyle, TRUE );
+		return ModifyStyle( dwStyle, 0, TRUE );
+	}
 };
+
+class CMultiEdit	: public CEdit {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL | ES_AUTOHSCROLL);	}
+};
+
+class CNumberEdit	: public CEdit {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | ES_NUMBER);	}
+};
+
+class CPasswordEdit	: public CEdit {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | ES_PASSWORD);	}
+};
+
+
 
 /**********************************************************************************
  * 
@@ -146,8 +215,8 @@ protected:
  */
 class CUpDown	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(UPDOWN_CLASS);	}
-	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | UDS_ALIGNRIGHT | UDS_SETBUDDYINT );	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(UPDOWN_CLASS);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | UDS_ALIGNRIGHT | UDS_SETBUDDYINT );	}
 
 public:
 	void	SetBuddy( CWnd* pBuddyWnd ){
@@ -170,8 +239,8 @@ public:
  */
 class CTabCtrl	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const { return(WC_TABCONTROL);	}
-	virtual DWORD			WindowStyle( void ) const { return(CComponentWnd::WindowStyle() | TCS_TOOLTIPS);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_TABCONTROL);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | TCS_TOOLTIPS);	}
 
 public:
 	int		InsertItem( int nItem, TCITEM& tcItem ){
@@ -357,35 +426,6 @@ class CToolbar	: public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{	return(TOOLBARCLASSNAME);	}
 
-	virtual BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
-
-		if( !CComponentWnd::OnCreate(lpCreateStruct) )
-			return FALSE;
-
-		ButtonStructSize();
-
-		TBADDBITMAP	tbAddBmp	= {0};
-		tbAddBmp.hInst			= lpCreateStruct->hInstance;
-		tbAddBmp.nID			= IDB_STD_SMALL_COLOR;
-
-		AddBitmap( &tbAddBmp );
-
-		TBBUTTON	tbBtn[] = {
-			{ MAKELONG(STD_FILENEW	, 0)	, NULL, TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("New")	},
-			{ MAKELONG(STD_FILEOPEN	, 0)	, NULL, TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Open")	},
-			{ MAKELONG(STD_FILESAVE	, 0)	, NULL, 0				, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Save")	},
-			{ MAKELONG(0			, 0)	, NULL, 0				, 0				, {0}, 0, (INT_PTR)_T("")		},
-			{ MAKELONG(STD_COPY		, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Copy")	},
-			{ MAKELONG(STD_CUT		, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Cut")	},
-			{ MAKELONG(STD_PASTE	, 0)	, NULL,	TBSTATE_ENABLED	, BTNS_AUTOSIZE	, {0}, 0, (INT_PTR)_T("Paste")	},
-		};
-
-		AddButtons( sizeof(tbBtn)/sizeof(TBBUTTON), tbBtn );
-		AutoSize();
-
-		return TRUE;
-	}
-
 public:
 	void	ButtonStructSize( void ){
 		CWnd::SendMessage( TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0 );
@@ -491,3 +531,16 @@ public:
 	}
 
 };
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
