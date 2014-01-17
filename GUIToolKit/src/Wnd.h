@@ -69,21 +69,69 @@ public:
 
 	BOOL		ScreenToClient( LPPOINT lpPoint ) const							{ return ::ScreenToClient(m_hWnd, lpPoint);				}
 
-
-	BOOL		SetWindowPos( HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags ) const {
-		return ::SetWindowPos(m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
-	}
-
-	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint=TRUE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
-
 	BOOL		Invalidate( BOOL bErace = TRUE ) const								{ return ::InvalidateRect(m_hWnd, NULL, bErace);		}
 	BOOL		InvalidateRect( const RECT* lpRect, BOOL bErase=TRUE ) const		{ return ::InvalidateRect(m_hWnd, lpRect, bErase);		}
 
 	BOOL		SetWindowText( LPCTSTR lpString ) const								{ return ::SetWindowText(m_hWnd, lpString);				}
 	int			GetWindowText( LPTSTR lpString, int nMaxCount ) const				{ return ::GetWindowText(m_hWnd, lpString, nMaxCount);	}
+	int			GetWindowTextLength( void ) const									{ return ::GetWindowTextLength(m_hWnd);					}
+
+	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint=TRUE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
+
+	BOOL		GetWindowPos( HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags ) const {
+		return ::SetWindowPos(m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+	}
+
+	BOOL		SetWindowPos( HWND hWndInsertAfter, int x, int y, int cx, int cy, UINT uFlags ) const {
+		return ::SetWindowPos(m_hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+	}
+
+	LONG		GetWindowLong( int nIndex ) const {
+		return ::GetWindowLong(m_hWnd, nIndex);
+	}
+
+	LONG		SetWindowLong( int nIndex, LONG dwNewLong ) const {
+		return ::SetWindowLong(m_hWnd, nIndex, dwNewLong);
+	}
+
+	BOOL		ModifyStyle( DWORD dwRemove, DWORD dwAdd, UINT nFlags = 0 ) const {
+		DWORD	dwStyle	= GetWindowLong(GWL_STYLE);
+		dwStyle		&= ~dwRemove;
+		dwStyle		|= dwAdd;
+		if( SetWindowLong(GWL_STYLE, dwStyle) == 0 )
+			return FALSE;
+		if(nFlags)
+			return SetWindowPos( HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED) );
+		return TRUE;
+	}
+
+	BOOL		ModifyStyleEx( DWORD dwRemove, DWORD dwAdd, UINT nFlags = 0 ) const {
+		DWORD	dwExStyle	= GetWindowLong(GWL_EXSTYLE);
+		dwExStyle	&= ~dwRemove;
+		dwExStyle	|= dwAdd;
+		if( SetWindowLong(GWL_EXSTYLE, dwExStyle) == 0 )
+			return FALSE;
+		if(nFlags)
+			return SetWindowPos( HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED) );
+		return TRUE;
+	}
+
+	bool		EnableLayeredWindow( void ){
+		LONG	lExStyle	= (GetWindowLong( GWL_EXSTYLE ) | WS_EX_LAYERED);
+		return (SetWindowLong( GWL_EXSTYLE, lExStyle ) & WS_EX_LAYERED) ? true : false;
+	}
+
+	void		DisableLayerdWindow( void ){
+		LONG	lExStyle	= (GetWindowLong( GWL_EXSTYLE ) & ~WS_EX_LAYERED);
+		SetWindowLong( GWL_EXSTYLE, lExStyle );
+	}
+
+	BOOL		SetLayeredWindowAttributes( COLORREF crKey, BYTE bAlpha, DWORD dwFlags ){
+		return ::SetLayeredWindowAttributes(m_hWnd, crKey, bAlpha, dwFlags);
+	}
 
 public:
-	virtual BOOL	OnCreate			( LPCREATESTRUCT lpCrreateStruct ){ return TRUE; }
+	virtual BOOL	OnCreate			( LPCREATESTRUCT lpCreateStruct ){ return TRUE; }
 	virtual void	OnDestroy			( void )	{	}
 
 	virtual void	OnCommand			( UINT uID, HWND hWndCtrl, UINT nCodeNotify )	{	}
@@ -124,6 +172,9 @@ public:
 	// scroll message.
 	virtual void	OnHScroll			( HWND hWndCtl, UINT code, int pos )	{	}
 	virtual	void	OnVScroll			( HWND hWndCtl, UINT code, int pos )	{	}
+	// font.
+	virtual void	OnSetFont			( HFONT hFont, BOOL fRedraw )			{	}
+	virtual HFONT	OnGetFont			( void )								{ return NULL;	}
 
 private:
 	BOOL			Cls_OnCreate		( HWND hWnd, LPCREATESTRUCT lpCreateStruct )			{ return OnCreate( lpCreateStruct );			}
@@ -175,6 +226,9 @@ private:
 	// scroll message.
 	void			Cls_OnHScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )						{ OnHScroll(hWndCtl, code, pos);				}
 	void			Cls_OnVScroll		( HWND hWnd, HWND hWndCtl, UINT code, int pos )						{ OnVScroll(hWndCtl, code, pos);				}
+	// font.
+	void			Cls_SetFont			( HWND hWnd, HFONT hFont, BOOL fRedraw )							{ OnSetFont(hFont, fRedraw);					}
+	HFONT			Cls_GetFont			( HWND hWnd )														{ return OnGetFont();							}
 
 public:
 	virtual LRESULT		WindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam ){
@@ -221,6 +275,9 @@ public:
 			// scroll message.
 			HANDLE_MSG(m_hWnd,	WM_HSCROLL			, Cls_OnHScroll			);
 			HANDLE_MSG(m_hWnd,	WM_VSCROLL			, Cls_OnVScroll			);
+			// font.
+			HANDLE_MSG(m_hWnd,	WM_SETFONT			, Cls_SetFont			);
+			HANDLE_MSG(m_hWnd,	WM_GETFONT			, Cls_GetFont			);
 		default:
 			break;
 		}
@@ -301,13 +358,13 @@ private:
 			LPCREATESTRUCT pCreateStruct = (LPCREATESTRUCT)lParam;
 			pThis	= (CLASS*)pCreateStruct->lpCreateParams;
 			
-			SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)pThis );
+			::SetWindowLongPtr( hWnd, GWLP_USERDATA, (LONG_PTR)pThis );
 			
 			pThis->m_hWnd	= hWnd;
 		}
 		else
 		{
-			pThis	= (CLASS*)GetWindowLongPtr( hWnd, GWLP_USERDATA );
+			pThis	= (CLASS*)::GetWindowLongPtr( hWnd, GWLP_USERDATA );
 		}
 		
 		if( pThis ){
