@@ -38,6 +38,7 @@ public:
 		mapHandler[ dwID ]	= NULL;
 	}
 
+public:
 	LRESULT		Dispach( UINT uMsg, WPARAM wParam, LPARAM lParam ){
 		HANDLER	lpHandler = Find( uMsg );
 		if( lpHandler ){
@@ -52,16 +53,42 @@ public:
  *
  *
  */
-template<class CLASS>
-class TCommandHandler	: public TMessageHandler<CLASS, void (CLASS::*)(void)> {
+template<class CLASS, typename HANDLER = void (CLASS::*)(void), typename MAP_HANDLER = std::map<DWORD, HANDLER> >
+class TCommandHandler {
 	NON_COPYABLE(TCommandHandler);
 private:
-	LRESULT		Dispach( UINT uMsg, WPARAM wParam, LPARAM lParam ){
-		return 0;
+	CLASS*			pTarget;
+	MAP_HANDLER		mapHandler;
+
+protected:
+	HANDLER		Find( DWORD dwID ){
+		MAP_HANDLER::iterator it = mapHandler.find( dwID );
+		if( it != mapHandler.end() ){
+			return it->second;
+		}
+		return (HANDLER)NULL;
 	}
+
 public:
-	void	Dispach( WPARAM wParam, LPARAM lParam ){
-		HANDLER	lpHandler = Find( wParam & 0xFFFF );
+	void		Initialize( CLASS* pClass ){
+		pTarget	= pClass;
+	}
+
+	void		Register( DWORD dwID, HANDLER lpHandler ){
+		mapHandler[ dwID ]	= lpHandler;
+	}
+
+	void		Register( DWORD dwID, DWORD dwNotify, HANDLER lpHandler ){
+		Register( MAKELONG(dwID,dwNotify), lpHandler );
+	}
+
+	void		Unregister( DWORD dwID ){
+		mapHandler[ dwID ]	= NULL;
+	}
+
+public:
+	void	Dispach( UINT uID, UINT nCodeNotify ){
+		HANDLER	lpHandler = Find( MAKELONG(uID, nCodeNotify) );
 		if( lpHandler ){
 			(pTarget->*lpHandler)();
 		}
@@ -107,6 +134,7 @@ public:
 		mapCtrlID[ dwID ][ dwCode ]	= NULL;
 	}
 
+public:
 	void	Dispach( WPARAM wParam, LPARAM lParam ){
 		LPNMHDR lpNmhdr = (LPNMHDR)lParam;
 		if( !lpNmhdr )
