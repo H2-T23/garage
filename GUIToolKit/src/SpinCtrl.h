@@ -23,12 +23,24 @@ public:
 		Step	= step;
 	}
 
-	int		GetRange( void ){
-		return int(Max-Min/Step);
+	int		SetPos( TYPE pos ){
+		return Pos2Index(pos);
 	}
 
-	int		GetPos( TYPE pos ){
-		return int((pos - GetRange()) / Step);
+	int		GetCount( void ){
+		return int((Max - Min)/Step);
+	}
+
+	TYPE	GetPos( int idx ){
+		return Index2Pos(idx);
+	}
+
+	int		Pos2Index( TYPE pos ) const {
+		return int((pos - Min) / Step);
+	}
+
+	TYPE	Index2Pos( int idx ) const {
+		return TYPE((idx * Step) + Min);
 	}
 };
 
@@ -61,18 +73,26 @@ public:
 
 	void	SetRange( TYPE min, TYPE max, TYPE step ){
 		m_range.SetRange(min, max, step);
-		m_updown.SetRange( 0, m_range.GetRange() );
+		int	nCount = m_range.GetCount();
+		m_updown.SetRange( 0, nCount );
+		DBG::TRACE(_T("Range(0, %d)"), nCount);
 	}
 
 	void	SetPos( TYPE pos ){
-		m_updown.SetPos( m_range.GetPos( pos ) );
+		int	idx = m_range.Pos2Index(pos);
+		m_updown.SetPos( idx );
+		TString	str;
+		str.Format( _T("%1.2f"), pos );
+		m_edt.SetWindowText( str );
 	}
 
-	void	OnVScroll			( HWND hWndCtl, UINT code, int pos ){
-		if( SB_THUMBPOSITION == code ){
-			TString	str;
-			str.Format( _T("%1.1f"), double(pos) );
-			m_edt.SetWindowText( str );
+	TYPE	GetPos( void ) const {
+		return m_range.Index2Pos( m_updown.GetPos() );
+	}
+
+	void	OnVScroll			( HWND hWndCtl, UINT code, int idx ){
+		if( m_updown.m_hWnd == hWndCtl && SB_THUMBPOSITION == code ){
+			SetPos( m_range.Index2Pos(idx) );
 		}
 	}
 };
