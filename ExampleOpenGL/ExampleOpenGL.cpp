@@ -81,25 +81,26 @@ private:
 		m_LookAt.Set( 0, 0, 0 );
 
 		vecVertex.resize( 8 );
-		vecVertex[ 0 ].Set(  0.5,  0.5,  0.5 );
-		vecVertex[ 1 ].Set(  0.5,  0.5,  0.5 ); 
-		vecVertex[ 2 ].Set( -0.5, -0.5,  0.5 ); 
-		vecVertex[ 3 ].Set( -0.5,  0.5,  0.5 ); 
-		vecVertex[ 4 ].Set(  0.5,  0.5, -0.5 ); 
-		vecVertex[ 5 ].Set(  0.5, -0.5, -0.5 ); 
-		vecVertex[ 6 ].Set( -0.5,  0.5, -0.5 ); 
-		vecVertex[ 7 ].Set( -0.5,  0.5, -0.5 ); 
+		vecVertex[ 0 ].Set( -0.5, -0.5,  0.5 );
+		vecVertex[ 1 ].Set( -0.5,  0.5,  0.5 ); 
+		vecVertex[ 2 ].Set(  0.5,  0.5,  0.5 ); 
+		vecVertex[ 3 ].Set(  0.5, -0.5,  0.5 ); 
+		vecVertex[ 4 ].Set( -0.5, -0.5, -0.5 ); 
+		vecVertex[ 5 ].Set( -0.5,  0.5, -0.5 ); 
+		vecVertex[ 6 ].Set(  0.5,  0.5, -0.5 ); 
+		vecVertex[ 7 ].Set(  0.5, -0.5, -0.5 ); 
 
 		vecPolygon.resize( 6 );
-		vecPolygon[ 0 ].Edge( vecVertex[ 0 ], vecVertex[ 1 ], vecVertex[ 2 ], vecVertex[ 3 ] );
-		vecPolygon[ 1 ].Edge( vecVertex[ 4 ], vecVertex[ 5 ], vecVertex[ 6 ], vecVertex[ 7 ] );
-		vecPolygon[ 2 ].Edge( vecVertex[ 0 ], vecVertex[ 4 ], vecVertex[ 5 ], vecVertex[ 1 ] );
-		vecPolygon[ 3 ].Edge( vecVertex[ 3 ], vecVertex[ 2 ], vecVertex[ 6 ], vecVertex[ 7 ] );
-		vecPolygon[ 4 ].Edge( vecVertex[ 0 ], vecVertex[ 3 ], vecVertex[ 7 ], vecVertex[ 4 ] );
-		vecPolygon[ 5 ].Edge( vecVertex[ 1 ], vecVertex[ 2 ], vecVertex[ 6 ], vecVertex[ 5 ] );
+		vecPolygon[ 0 ].Edge( vecVertex[ 0 ], vecVertex[ 3 ], vecVertex[ 2 ], vecVertex[ 1 ] );
+		vecPolygon[ 1 ].Edge( vecVertex[ 2 ], vecVertex[ 3 ], vecVertex[ 7 ], vecVertex[ 6 ] );
+		vecPolygon[ 2 ].Edge( vecVertex[ 3 ], vecVertex[ 0 ], vecVertex[ 4 ], vecVertex[ 7 ] );
+		vecPolygon[ 3 ].Edge( vecVertex[ 1 ], vecVertex[ 2 ], vecVertex[ 6 ], vecVertex[ 5 ] );
+		vecPolygon[ 4 ].Edge( vecVertex[ 4 ], vecVertex[ 5 ], vecVertex[ 6 ], vecVertex[ 7 ] );
+		vecPolygon[ 5 ].Edge( vecVertex[ 5 ], vecVertex[ 4 ], vecVertex[ 0 ], vecVertex[ 1 ] );
 	}
 
 public:
+	bool					m_bDrawAxis;
 	Vertex					m_Camera;
 	Vertex					m_LookAt;
 	std::vector<Vertex>		vecVertex;
@@ -113,6 +114,7 @@ public:
 		m_LookAt.Set( x, y, z );
 	}
 };
+
 /**********************************************************************************
  *
  *
@@ -124,6 +126,7 @@ protected:
 
 	void	DrawAxis( void ){
 		glColor3d( 1, 1, 1 );
+		glLineWidth( 5 );
 		glBegin( GL_LINES );
 		glVertex3d(-1,  0,  0);
 		glVertex3d(+1,  0,  0);
@@ -136,8 +139,9 @@ protected:
 
 	void	DrawCube( void ){
 		glColor3d( 1, 1, 1 );
+		glLineWidth( 1 );
 		glBegin( GL_LINES );
-		for( int i=0; i<1; i++ ){
+		for( int i=0; i<6; i++ ){
 			for( int j=0; j<4; j++ )
 			{
 				glVertex3d( Model::Instance().vecPolygon[ i ].edge [ j ].from->x
@@ -156,7 +160,6 @@ protected:
 
 public:
 	void	Init( void ){
-	//	m_Camera.Set( 0.5, 1.5, 2.5 );
 		m_Camera	= Model::Instance().m_Camera;
 	}
 
@@ -167,12 +170,10 @@ public:
 		glClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		DrawAxis();
+		if( Model::Instance().m_bDrawAxis )
+			DrawAxis();
 
 		DrawCube();
-
-	//	glColor3d( 1, 0, 1 );
-	//	glRectd( -0.5, -0.5, 0.5, 0.5 );
 	}
 
 	void	Resize( int nWidth, int nHeight ){
@@ -185,7 +186,7 @@ public:
 
 		glMatrixMode( GL_MODELVIEW );
 		glLoadIdentity();
-		gluLookAt( m_Camera.x, m_Camera.y, m_Camera.y, 0, 0, 0, 0, 1, 0 );
+		gluLookAt( m_Camera.x, m_Camera.y, m_Camera.z, 0, 0, 0, 0, 1, 0 );
 	}
 
 	void	Notify( void ){
@@ -207,18 +208,24 @@ class CInputPanel : public CPanel, public IObservable {
 public:
 	enum {
 		IDC_UPDATE_BUTTON		= 1001	,
+		IDC_CHECK_AXIS					,
 		IDC_SPIN_EDIT					,
 		IDC_SPIN_UPDOWN					,
 	};
 
 protected:
-	CButton					m_btnUpdate;
-	TSpinCtrl<double>		m_spinX, m_spinY, m_spinZ;
+	CButton						m_btnUpdate;
+	CCheckBox					m_chkAxis;
+	TSpinCtrl<double>			m_spinX, m_spinY, m_spinZ;
 
 	TCommandHandler<CInputPanel>	cmd;
 
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		if( !m_btnUpdate.Create(this, 10, 10, 100, 30, IDC_UPDATE_BUTTON, _T("Update")) ){
+			return FALSE;
+		}
+
+		if( !m_chkAxis.Create(this, 110, 10, 100, 30, IDC_CHECK_AXIS, _T("AXIS")) ){
 			return FALSE;
 		}
 
@@ -238,13 +245,14 @@ protected:
 		m_spinX.SetPos( 0.5 );
 
 		m_spinY.SetRange( 0.0, 10.0, 0.05 );
-		m_spinY.SetPos( 0.5 );
+		m_spinY.SetPos( 1.5 );
 
 		m_spinZ.SetRange( 0.0, 10.0, 0.05 );
-		m_spinZ.SetPos( 0.5 );
+		m_spinZ.SetPos( 2.5 );
 
 		cmd.Initialize( this );
 		cmd.Register( IDC_UPDATE_BUTTON, &CInputPanel::OnUpdateBtnClick );
+		cmd.Register( IDC_CHECK_AXIS, &CInputPanel::OnAxisCheck );
 
 		return TRUE;
 	}
@@ -263,6 +271,11 @@ public:
 		Model::Instance().SetCamera(	m_spinX.GetPos()
 									,	m_spinY.GetPos()
 									,	m_spinZ.GetPos()	);
+		Model::Instance().NotifyAll();
+	}
+
+	void	OnAxisCheck( void ){
+		Model::Instance().m_bDrawAxis	= m_chkAxis.GetCheck() == 0 ? false : true;
 		Model::Instance().NotifyAll();
 	}
 
