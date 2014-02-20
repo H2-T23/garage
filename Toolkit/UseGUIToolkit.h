@@ -1,0 +1,12 @@
+#pragma once
+#include "DBG.h"
+#include "Wnd.h"
+#include "Handler.h"
+#include "Form.h"
+#include "Panel.h"
+#include "Observar.h"
+#include "ComponentWnd.h"
+#include "SpinCtrl.h"
+#include "GridPanel.h"
+#include "Splitter.h"
+#include "Observar.h"
