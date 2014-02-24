@@ -3,10 +3,11 @@
 
 #include "stdafx.h"
 #include <math.h>
+
 #include "Example2DGraphics.h"
 
-#include "UseGUIToolkit.h"
 
+#include "UseToolkit.h"
 
 
 #define PI						(3.141592653589793)
@@ -187,6 +188,34 @@ public:
 	}
 
 public:
+	static void			MatrixAddition( const int nElements, double* pdAns, double* pdA, double* pdB ){
+		for( int i=0; i<nElements; i++ ){
+			for( int j=0; j<nElements; j++ ){
+				int	nIdx	= ((i * nElements) + j);
+				pdAns[ nIdx ]	= (pdA[ nIdx ] + pdB[ nIdx ]);
+			}
+		}
+	}
+	static void			MatrixSubtraction( const int nElements, double* pdAns, double* pdA, double* pdB ){
+		for( int i=0; i<nElements; i++ ){
+			for( int j=0; j<nElements; j++ ){
+				int	nIdx	= ((i * nElements) + j);
+				pdAns[ nIdx ]	= (pdA[ nIdx ] - pdB[ nIdx ]);
+			}
+		}
+	}
+	static void			MatrixCross( const int nElements, double* pdAns, double* pdA, double* pdB ){
+		for( int i=0; i<nElements; i++ ){
+			for( int j=0; j<nElements; j++ ){
+				double sum	= 0;
+				for( int k=0; k<nElements; k++ ){
+					sum	+=	(	pdA[ ((i * nElements) + k) ] * pdB[ ((k * nElements) + j) ]	);
+				}
+
+				pdAns[ ((i * nElements) + j) ]	= sum;
+			}
+		}
+	}
 	static Mat3x3		Multi( const Mat3x3& matA, const Mat3x3& matB ){
 		Mat3x3	matAns;
 		for( int i=0; i<3; i++ ){
@@ -329,15 +358,20 @@ protected:
 		matRot.SetRotation( nDegree );
 
 		mat.Identity();
-		mat.Multi( matViewportInverse	);
+	//	mat.Multi( matViewportInverse	);
 		mat.Multi( matRot				);
 	//	mat.Multi( matInverseX			);
-		mat.Multi( matViewport			);
+	//	mat.Multi( matViewport			);
+
+		DBG::TRACE( _T("[BEFORE]\n%s"), (LPCTSTR)mat.ToString() );
+		Mat3x3::MatrixAddition( 3, &mat.mat[0][0], &mat.mat[0][0], &matViewport.mat[0][0] );
+	//	mat.SetTranlsation( ptCenter.x, ptCenter.y );
+		DBG::TRACE( _T("[AFTER]\n%s"), (LPCTSTR)mat.ToString() );
 
 		for( int i=0; i<3; i++ ){
 			Vec3x3 v( mat.Multi( vertexs[ i ] ) );
 
-			v = matViewport.Multi( v );
+		//	v = matViewport.Multi( v );
 
 			pt[ i ].x	= v.GetPoint().x;
 			pt[ i ].y	= v.GetPoint().y;
