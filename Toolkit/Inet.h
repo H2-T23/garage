@@ -167,6 +167,8 @@ namespace INET {
 
 		TString		IPAddress( void ){
 			TString str;
+			str.empty();
+
 			if( !IsValid() )
 				return str;
 

@@ -1,5 +1,4 @@
 #pragma once
-
 #pragma comment(lib,"opengl32.lib")
 #pragma comment(lib,"glu32.lib")
 
@@ -20,7 +19,6 @@ public:
 
 	COpenGL( void ) : m_hRC(NULL) {
 	}
-
 	virtual ~COpenGL( void ){
 		Cleanup();
 	}
@@ -100,9 +98,9 @@ protected:
 	}
 
 	void	OnPaint( HDC hDC ){
-			this->Display();
-			glFinish();
-			SwapBuffers( hDC );
+		this->Display();
+		glFinish();
+		SwapBuffers( hDC );
 	}
 
 	void	OnSize( UINT state, int cx, int cy ){

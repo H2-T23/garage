@@ -39,7 +39,7 @@ WNDCLS_PAGER		WC_PAGESCROLLER		_T("SysPager")
  */
 class CComponentWnd : public CWnd {
 protected:
-	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));								}
+	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));	}
 	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CLIPSIBLINGS);	}
 
 public:
@@ -221,8 +221,8 @@ protected:
  */
 class CUpDown	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(UPDOWN_CLASS);	}
-	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | UDS_ALIGNRIGHT | UDS_SETBUDDYINT );	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(UPDOWN_CLASS);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | UDS_ALIGNRIGHT | UDS_SETBUDDYINT );	}
 
 public:
 	void	SetBuddy( CWnd* pBuddyWnd ){
@@ -238,7 +238,7 @@ public:
 	}
 
 	int		GetPos( void ) const {
-		return LOWORD((DWORD)SendMessage(UDM_GETPOS, 0, 0));
+		return LOWORD((DWORD)SendMessage( UDM_GETPOS, 0, 0 ));
 	}
 };
 
@@ -249,8 +249,8 @@ public:
  */
 class CTabCtrl	: public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const { return(WC_TABCONTROL);	}
-	virtual DWORD			WindowStyle( void ) const { return(CComponentWnd::WindowStyle() | TCS_TOOLTIPS);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_TABCONTROL);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | TCS_TOOLTIPS);	}
 
 public:
 	int		InsertItem( int nItem, TCITEM& tcItem ){
@@ -363,7 +363,6 @@ public:
 	}
 
 	int		InsertItem( int nItem, int nSubItem, LPTSTR lpszText ){
-
 		LVITEM		item = {0};
 		item.mask		= LVIF_TEXT;
 		item.iItem		= nItem;
@@ -410,7 +409,7 @@ public:
 	int		SetSelectionMark( int nItem ) const {
 		return ListView_SetSelectionMark(m_hWnd, nItem);
 	}
-	
+
 
 	DWORD	GetExtendedListViewStyle( void ) const {
 		return (DWORD)ListView_GetExtendedListViewStyle(m_hWnd);
@@ -661,7 +660,6 @@ protected:
 	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT | LVS_OWNERDATA);	}
 };
 
-
 /**********************************************************************************
  *
  *
@@ -834,16 +832,15 @@ public:
 	}
 };
 
-
 /**********************************************************************************
  *
  *
  *
  */
-class CTreeView	: public CComponentWnd {
+class CTreeView : public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{ return(WC_TREEVIEW);	}
-	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_CHECKBOXES);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT);	}
 
 public:
 	HTREEITEM		InsertRoot( LPTSTR lpszText ){
@@ -913,7 +910,7 @@ public:
  *
  *
  */
- /**********************************************************************************
+/**********************************************************************************
  *
  *
  *

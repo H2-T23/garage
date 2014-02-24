@@ -18,9 +18,9 @@ protected:
 		MINIMUM_SIZE		= 100	,			
 	};
 
-	HCURSOR			m_cursorSize;
-	BOOL			m_bSplitterMoving;
-	DWORD			m_dwSplitterPos;
+	HCURSOR					m_cursorSize;
+	BOOL					m_bSplitterMoving;
+	DWORD					m_dwSplitterPos;
 
 	CWnd*					m_pParentWnd;
 	std::vector<CWnd*>		m_vecChildWnd;
@@ -76,11 +76,13 @@ public:
 	virtual void	MoveSplitter( int x, int y )	= 0;
 	virtual void	AdjustWindow( int cx, int cy )	= 0;
 };
+
 /**********************************************************************************
  *
  *
  *
  */
+
 class CVerticalSplitter		: public CSplitter {
 public:
 	CVerticalSplitter( void ) : CSplitter() {
@@ -120,6 +122,7 @@ public:
 										, (cx - SplitterPos() - SPLITBAR_SIZE-1), cy );
 	}
 };
+
 /**********************************************************************************
  *
  *
@@ -145,13 +148,13 @@ public:
 			return;
 
 		SplitterPos( y );
-		m_pParentWnd->SendMessage( WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height())  );
+		m_pParentWnd->SendMessage( WM_SIZE, 0, MAKELPARAM(rc.Width(), rc.Height()) );
 	}
 
 	void	AdjustWindow( int cx, int cy ){
 		if( MINIMUM_SIZE >= cy )
 			return;
-		
+
 		if( SplitterPos() < MINIMUM_SIZE )
 			SplitterPos( MINIMUM_SIZE );
 		else

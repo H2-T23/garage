@@ -44,7 +44,7 @@ public:
 	}
 
 	LPCTSTR	Format( void ){
-		const type_info& info = typeid(Min);
+		const type_info& info = typeid( Min );
 		if( info == typeid(int) ){
 			return _T("%d");
 		}

@@ -165,7 +165,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Dbg.h"
+				RelativePath=".\DBG.h"
 				>
 			</File>
 			<File
@@ -197,10 +197,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\NotifyListener.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Observar.h"
 				>
 			</File>
@@ -210,10 +206,6 @@
 			</File>
 			<File
 				RelativePath=".\Panel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Rect.h"
 				>
 			</File>
 			<File
@@ -230,6 +222,10 @@
 			</File>
 			<File
 				RelativePath=".\Thread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ThreeDMath.h"
 				>
 			</File>
 			<File
