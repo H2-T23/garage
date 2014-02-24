@@ -298,6 +298,65 @@ public:
  *
  *
  */
+class CListBox : public CComponentWnd {
+protected:
+	virtual LPCTSTR		ClassName( void ) const		{	return(WC_LISTBOX);	}
+	virtual DWORD		WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LBS_NOTIFY | LBS_NOINTEGRALHEIGHT);	}
+
+public:
+	void	Enable( BOOL bEnable ) const {
+		ListBox_Enable(m_hWnd, bEnable);
+	}
+
+	int		GetCount( void ) const {
+		return ListBox_GetCount(m_hWnd);
+	}
+
+	BOOL	ResetContent( void ) const {
+		return ListBox_ResetContent(m_hWnd);
+	}
+
+	int		AddString( LPCTSTR lpszText ) const {
+		return ListBox_AddString(m_hWnd, lpszText);
+	}
+
+	int		InsertString( int idx, LPCTSTR lpszText ) const {
+		return ListBox_InsertString(m_hWnd, idx, lpszText);
+	}
+
+	int		AddItemData( DWORD* lpData ) const {
+		return ListBox_AddItemData(m_hWnd, lpData);
+	}
+
+	int		InsertItemData( int idx, DWORD* lpData ) const {
+		return ListBox_InsertItemData(m_hWnd, idx, lpData);
+	}
+
+	int		DeleteString( int idx ) const {
+		return ListBox_DeleteString(m_hWnd, idx);
+	}
+
+	int		GetTextLen( int idx ) const {
+		return ListBox_GetTextLen(m_hWnd, idx);
+	}
+
+	int		GetText( int idx, LPTSTR lpszBuffer ) const {
+		return ListBox_GetText(m_hWnd, idx, lpszBuffer);
+	}
+
+	LRESULT	GetItemData( int idx ) const {
+		return ListBox_GetItemData(m_hWnd, idx);
+	}
+
+	int		SetItemData( int idx, DWORD* lpData ) const {
+		return ListBox_SetItemData(m_hWnd, idx, lpData);
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CHeaderCtrl : public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{	return(WC_HEADER);	}
