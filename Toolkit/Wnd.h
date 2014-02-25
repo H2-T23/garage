@@ -152,6 +152,10 @@ public:
 		return TRUE;
 	}
 
+	BOOL		Enable( BOOL bEnable ) const {
+		return ::EnableWindow(m_hWnd, bEnable);
+	}
+
 	bool		EnableLayeredWindow( void ){
 		LONG	lExStyle	= (GetWindowLong( GWL_EXSTYLE ) | WS_EX_LAYERED);
 		return (SetWindowLong( GWL_EXSTYLE, lExStyle ) & WS_EX_LAYERED) ? true : false;

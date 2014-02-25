@@ -351,6 +351,18 @@ public:
 	int		SetItemData( int idx, DWORD* lpData ) const {
 		return ListBox_SetItemData(m_hWnd, idx, lpData);
 	}
+
+	int		SetSel( BOOL bSelect, int idx ) const {
+		return ListBox_SetSel(m_hWnd, bSelect, idx);
+	}
+
+	int		GetCurSel( void ) const {
+		return ListBox_GetCurSel(m_hWnd);
+	}
+
+	int		SetCurSel( int idx ) const {
+		return ListBox_SetCurSel(m_hWnd, idx);
+	}
 };
 /**********************************************************************************
  *

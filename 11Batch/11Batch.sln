@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11Batch", "11Batch\11Batch.vcproj", "{F072FB05-F615-45F6-850A-1C30222A1FF2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F072FB05-F615-45F6-850A-1C30222A1FF2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F072FB05-F615-45F6-850A-1C30222A1FF2}.Debug|Win32.Build.0 = Debug|Win32
+		{F072FB05-F615-45F6-850A-1C30222A1FF2}.Release|Win32.ActiveCfg = Release|Win32
+		{F072FB05-F615-45F6-850A-1C30222A1FF2}.Release|Win32.Build.0 = Release|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.Build.0 = Debug|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Release|Win32.ActiveCfg = Release|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
