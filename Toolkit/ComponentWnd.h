@@ -109,6 +109,9 @@ protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(BS_AUTOCHECKBOX | CButton::WindowStyle());	}
 
 public:
+	int		GetState( void ) const			{ return Button_GetState(m_hWnd);	}
+	void	SetState( int nState ) const	{ Button_SetState(m_hWnd, nState);	}
+
 	int		GetCheck( void ) const			{ return Button_GetCheck(m_hWnd);	}
 	void	SetCheck( int nCheck ) const	{ Button_SetCheck(m_hWnd, nCheck);	}
 };
@@ -125,6 +128,9 @@ protected:
 public:
 	int		GetState( void ) const			{ return Button_GetState(m_hWnd);	}
 	void	SetState( int nState ) const	{ Button_SetState(m_hWnd, nState);	}
+
+	int		GetCheck( void ) const			{ return Button_GetCheck(m_hWnd);	}
+	void	SetCheck( int nCheck ) const	{ Button_SetCheck(m_hWnd, nCheck);	}
 };
 
 /**********************************************************************************

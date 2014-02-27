@@ -8,7 +8,11 @@
 
 #include "Inet.h"
 
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CRequest {
 public:
 	SOCKET			sock;
@@ -20,6 +24,9 @@ public:
 	DWORD			dwRecv;
 	DWORD			dwSend;
 
+	/**********************************************************************************
+	 *
+	 */
 	CRequest( void )
 	 : sock(INVALID_SOCKET)
 	 , lpSockAddr(NULL)
@@ -31,6 +38,9 @@ public:
 	 , dwSend(0)
 	{}
 
+	/**********************************************************************************
+	 *
+	 */
 	CRequest( SOCKET sock_, LPSOCKADDR lpSockAddr_, int nAddrSize_ )
 	 : sock(INVALID_SOCKET)
 	 , lpSockAddr(NULL)
@@ -44,6 +54,9 @@ public:
 		Initialize( sock_, lpSockAddr_, nAddrSize_ );
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	BOOL	Initialize( SOCKET sock_, LPSOCKADDR lpSockAddr_, int nAddrSize_ ){
 		lpSockAddr	= (LPSOCKADDR)malloc( nAddrSize_ );
 		if( lpSockAddr == NULL ){
@@ -55,14 +68,21 @@ public:
 	}
 };
 
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CRequestManager {
 protected:
 	std::list<CRequest*>	m_List;
 
 public:
-	LPREQUEST	Add( SOCKET sock, LPSOCKADDR lpSockAddr, int nAddrLen ){
-		LPREQUEST	lpReq = (LPREQUEST)malloc( sizeof(REQUEST) );
+	/**********************************************************************************
+	 *
+	 */
+	CRequest*	Add( SOCKET sock, LPSOCKADDR lpSockAddr, int nAddrLen ){
+		CRequest*	lpReq = new CRequest;
 		if( lpReq == NULL ){
 			return(NULL);
 		}
@@ -74,18 +94,23 @@ public:
 		}
 
 		lpReq->sock			= sock;
-		lpReq->nAddrLen		= nAddrLen;
+		lpReq->nAddrSize		= nAddrLen;
 		
 		m_List.push_back( lpReq );
 	}
 
-	LPREQUEST	Get( SOCKET sock );
-	LPREQUEST	GetFirst( void );
-	LPREQUEST	GetNext( LPREQUEST lpReq );
-	void		Remove( LPREQUEST lpReq );
+	CRequest*	Get( SOCKET sock );
+	CRequest*	GetFirst( void );
+	CRequest*	GetNext( CRequest* lpReq );
+	void		Remove( CRequest* lpReq );
 	void		RemoveAll( void );
 };
 
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CHttpServer {
 protected:
 	HWND			m_hWnd;
@@ -98,8 +123,14 @@ public:
 	struct Argment {
 		USHORT		Port;
 		LPCTSTR		lpRootDir;
+		HWND		hWnd;
+		UINT		uMsgAsy;
+		UINT		uMsgApp;
 	};
 
+	/**********************************************************************************
+	 *
+	 */
 	BOOL	Start( Argment& arg ){
 		SOCKADDR_IN		saServer;
 		LPSERVENT		lpServEnt;
@@ -151,9 +182,15 @@ public:
 		return TRUE;
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	Stop( void ){
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	OnAsycMsg( WPARAM wParam, LPARAM lParam ){
 		int	nErrorCode	= WSAGETSELECTERROR(lParam);
 
@@ -173,9 +210,10 @@ public:
 		}
 	}
 
-
+	/**********************************************************************************
+	 *
+	 */
 	void	OnAccept( SOCKET sock, int nErrorCode ){
-
 		SOCKADDR_IN		SockAddr;
 	
 		int	nLen	= sizeof(SOCKADDR_IN);
@@ -194,7 +232,7 @@ public:
 			return;
 		}
 
-		LPREQUEST lpReq = AddRequest( peerSocket, (LPSOCKADDR)&SockAddr, nLen );
+		CRequest* lpReq = AddRequest( peerSocket, (LPSOCKADDR)&SockAddr, nLen );
 		if( lpReq == NULL ){
 			closesocket( peerSocket );
 		}
@@ -202,12 +240,15 @@ public:
 		LogEvent( _T("Connection accepted on socket(%d) from: %s"), peerSocket, inet_ntoa(SockAddr.sin_addr) );
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	OnRead( SOCKET sock, int nErrorCode ){
 		static BYTE	buf[ 2048 ];
 
 		memset(buf, 0, sizeof(buf);
 
-		LPREQUEST lpReq = GetRequest( sock );
+		CRequest* lpReq = GetRequest( sock );
 		if( lpReq == NULL ){
 			int	nRet	= 0;
 			while( (nRet = recv(sock, buf, sizeof(buf)-1, 0)) != SOCKET_ERROR );
@@ -231,9 +272,12 @@ public:
 		ParseRequest( lpReq, buf );
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	OnWirte( SOCKET sock, int nErrorCode ){
 
-		LPREQUEST lpReq	= GetRequest( sock );
+		CRequest* lpReq	= GetRequest( sock );
 		if( lpReq == NULL ){
 			BYTE buf[ 1024 ];
 			int	nRet = 0;
@@ -249,8 +293,11 @@ public:
 		SendFileContents( lpReq );
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	OnClose( SOCKET sock, int nErrorCode ){
-		LPREQUEST lpReq = GetRequest( sock );
+		CRequest* lpReq = GetRequest( sock );
 		if( lpReq == NULL ){
 			return;
 		}
@@ -258,13 +305,19 @@ public:
 		CloseConnection( lpReq );
 	}
 
-	void	ParseRequest( LPREQUEST lpReq, LPBYTE lpBuf ){
+	/**********************************************************************************
+	 *
+	 */
+	void	ParseRequest( CRequest* lpReq, LPBYTE lpBuf ){
 		char	szFileName[ _MAX_PATH ];
 		char	szSeps[]	= "\n";
 		char*	cpToken;
 	}
 
-	void	CloseConnection( LPREQUEST lpReq ){
+	/**********************************************************************************
+	 *
+	 */
+	void	CloseConnection( CRequest* lpReq ){
 		HTTPSTATS	stats;
 
 		LogEvent("Closing socket: %d", lpReq->sock);
@@ -282,7 +335,10 @@ public:
 		DelRequest( lpReq );
 	}
 
-	void	SendFile( LPREQUEST lpReq, LPCSTR lpFileName ){
+	/**********************************************************************************
+	 *
+	 */
+	void	SendFile( CRequest* lpReq, LPCSTR lpFileName ){
 		CFile	file;
 		lpReq->hFile	= file.Open( lpFileName, OF_READ | OF_SHARE_COMPAT );
 		if( lpReq->hFile == HFILE_ERROR ){
@@ -297,13 +353,35 @@ public:
 		SendFileContents( lpReq );
 	}
 
-	void	SendError( LPREQUEST lpReq, UINT uError ){
+	/**********************************************************************************
+	 *
+	 */
+	void	SendError( CRequest* lpReq, UINT uError ){
+		static char		szMsg[ 512 ];
+		static char*	lpszStartMsgs[]	= {
+			"200 OK","201 Created","202 Accepted","204 No Content",
+		};
 
+		if( (uError < 0) || (uError > _countof(lpszStartMsgs) ){
+			return;
+		}
 
+		wsprintf( szMsg, "<body><h1>%s</h1></body>", lpszStartMsgs[ uError ] );
+
+		int	nRet	= send( lpReq->Sock, szMsg, strlen(szMsg), 0 );
+		if( nRet == SOCKET_ERROR ){
+			if( WSAGetLastError() != WSAEWOULDBLOCK ){
+				LogWinSockError( ghwnd, "send()@SendError()", WSAGetLastError() );
+				nRet = 0;
+			}
+		}
+		lpReq->dwSend	+= nRet;
 	}
 
-	void	SendFileContents( LPREQUEST lpReq ){
-
+	/**********************************************************************************
+	 *
+	 */
+	void	SendFileContents( CRequest* lpReq ){
 		if( lpReq->dwFilePtr > 0 ){
 			::_llseek( lpReq->hFile, lpReq->dwFilePtr, FILE_BEGIN );
 		}
@@ -344,9 +422,67 @@ public:
 			lpReq->dwFilePtr += nBytesSent;
 		}
 	}
+
+	/**********************************************************************************
+	 *
+	 */
+	void	LogEvent( HWND hWnd, LPCTSTR lpFormat, ... ){
+		TCAHR	szBuf[ 256 ];
+
+		va_list	args;
+		va_start(args, lpFormat);
+		_vstprintf(szBuf, lpFormat, args);
+		va_end(args);
+
+		SendMessage(ghwnd, guMsgApp, HTTP_EVENT_MSG, (LPARAM)szBuf);
+	}
+
+	/**********************************************************************************
+	 *
+	 */
+	void	LogWinSockError( HWND hWnd, LPCTSTR lpText, int nErrorCode ){
+		TCHAR	szBuf[ 256 ]	= {'\0'};
+
+		LoadString( GetWindowInstance(hWnd), nErrorCode, szBuf, sizeof(szBuf) );
+		LogEvent( hWnd, _T("%s : %s"), lpText, szBuf );
+	}
+
+	/**********************************************************************************
+	 *
+	 */
+	int		GetLocalAddress( LPTSTR lpStr, LPDWORD lpdwStrLen ){
+		struct in_addr*	lpInAddr	= NULL;
+
+		int	nRet	= gethostname(lpStr, *lpdwStrLen);
+		if( nRet == SOCKET_ERRO ){
+			return(SOCKET_ERROR);
+		}
+
+		LPHOSTENT	lpHostEnt	= gethostbyname( lpStr );
+		if( lpHostEnt == NULL ){
+			return(SOCKET_ERROR);
+		}
+
+		lpInAddr	= ((LPIN_ADDR)lpHostEnt->h_addr);
+		int	nLen	= strlen( inet_ntoa( *lpInAddr ) );
+		if( (DWORD)nLen > *lpdwStrLen ){
+			*lpdwStrLen	= nLen;
+			WSASetLastError( WSAEINVAL );
+			return(SOCKET_ERROR);
+		}
+
+		*lpdwStrLen	= nLen;
+		strcpy( lpStr, inet_ntoa(*lpInAddr) );
+
+		return 0;
+	}
 };
 
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CMainForm : public CForm {
 public:
 	enum {
@@ -355,6 +491,9 @@ public:
 protected:
 	CListBox	m_lbxEvent;
 
+	/**********************************************************************************
+	 *
+	 */
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		if( !m_lbxEvent.Create(this, 0, 300, 300, 300, IDC_LBX_EVENT) ){
 			return FALSE;
@@ -364,12 +503,19 @@ protected:
 		return TRUE;
 	}
 
+	/**********************************************************************************
+	 *
+	 */
 	void	OnSize( UINT uState, int cx, int cy ){
 		m_lbxEvent.MoveWindow( 0, 300, cx, cy );
 	}
 };
 
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
