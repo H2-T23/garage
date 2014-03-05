@@ -40,7 +40,7 @@ WNDCLS_PAGER		WC_PAGESCROLLER		_T("SysPager")
 class CComponentWnd : public CWnd {
 protected:
 	virtual LPCTSTR		ClassName( void ) const		{	return(_T(""));	}
-	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CLIPSIBLINGS);	}
+	virtual DWORD		WindowStyle( void ) const	{	return(WS_CHILD | WS_VISIBLE | WS_BORDER |/* WS_CLIPSIBLINGS |*/ WS_TABSTOP);	}
 
 public:
 	BOOL	Create( HWND hwndParent, int x, int y, int w, int h, INT nID, LPCTSTR lpszText = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0 ){
@@ -140,7 +140,7 @@ public:
  */
 class CGroupBox	: public CButton {
 protected:
-	virtual DWORD			WindowStyle( void ) const	{ return(BS_GROUPBOX | CButton::WindowStyle() | WS_CLIPSIBLINGS);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(BS_GROUPBOX | CButton::WindowStyle());	}
 };
 
 /**********************************************************************************
@@ -213,6 +213,66 @@ protected:
 class CNumberEdit	: public CEdit {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | ES_NUMBER);	}
+
+	virtual LPCTSTR			FormatI( void ) const { return _T("%d");	}
+	virtual LPCTSTR			FormatF( void ) const { return _T("%0.2f");	}
+	virtual LPCTSTR			FormatD( void ) const { return _T("%0.3f"); }
+
+public:
+	enum {
+		TYPE_INT		= 0	,
+		TYPE_FLOAT			,
+		TYPE_DOUBLE			,
+	};
+
+	template<typename TYPE>
+	inline int	IsType( TYPE value ) const {
+		const type_info& info = typeid( value );
+		if( info == typeid(float) ){
+			return TYPE_FLOAT;
+		}else if( info == typeid(double) ){
+			return TYPE_DOUBLE;
+		}
+		return TYPE_INT;
+	}
+
+	template<typename TYPE>
+	LPCTSTR	Format( TYPE value ){
+		switch( IsType(value) ){
+		case TYPE_FLOAT:
+			return FormatF();
+		case TYPE_DOUBLE:
+			return FormatD();
+		}
+		return FormatI();
+	}
+
+	template<typename TYPE>
+	void		Set( TYPE value ){
+		TString	str;
+		str.Format( Format(value), value );
+		SetText( str );
+	}
+
+	template<typename TYPE>
+	void		Get( TYPE& value ){
+		TCHAR	szBuf[ 32 ];
+		GetText( szBuf, _countof(szBuf) );
+
+		switch( IsType(value) ){
+		case TYPE_FLOAT:
+			value	= (float)_tstof(szBuf);
+			break;
+
+		case TYPE_DOUBLE:
+			value	= (double)_tstof(szBuf);
+			break;
+
+		default:
+			value	= (int)_tstoi(szBuf);
+			break;
+		}
+	}
 };
 
 class CPasswordEdit	: public CEdit {

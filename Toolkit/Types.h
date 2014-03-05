@@ -128,6 +128,13 @@ public:
 		Height( h );
 	}
 
+	void	Set( POINT& pt, SIZE& sz ){
+		X( pt.x );
+		Y( pt.y );
+		Width( sz.cx );
+		Height( sz.cy );
+	}
+
 	int		X( int x ){
 		left = x;
 		return X();

@@ -346,6 +346,18 @@ public:
 		OnWndMsg(uMsg, wParam, lParam);
 		return DefWindowProc(m_hWnd, uMsg, wParam, lParam);
 	}
+
+private:
+	static BOOL CALLBACK _SetFontChild( HWND hWnd, LPARAM lParam ){
+		CWnd	wndChild( hWnd );
+		wndChild.SetFont( (HFONT)lParam );
+		return TRUE;
+	}
+public:
+	void		SetFontChild( void ){
+		SetFont();
+		::EnumChildWindows( m_hWnd, &CWnd::_SetFontChild, NULL );
+	}
 };
 
 /****************************************************************************************
