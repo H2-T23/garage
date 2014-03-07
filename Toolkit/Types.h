@@ -74,6 +74,13 @@ CPoint		operator-( CPoint const& ptA, CPoint const& ptB ) {
 	return pt;
 }
 
+CPoint		operator+( CPoint const& ptA, CPoint const& ptB ) {
+	CPoint	pt;
+	pt.x	= (ptA.x + ptB.x);
+	pt.y	= (ptA.y + ptB.y);
+	return pt;
+}
+
 /****************************************************************************************
  *
  *
