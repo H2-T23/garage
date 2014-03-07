@@ -354,7 +354,7 @@ private:
 		return TRUE;
 	}
 public:
-	void		SetFontChild( void ){
+	void		SetFontChildren( void ){
 		SetFont();
 		::EnumChildWindows( m_hWnd, &CWnd::_SetFontChild, NULL );
 	}
