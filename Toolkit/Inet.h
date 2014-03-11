@@ -49,7 +49,7 @@ namespace INET {
 				return FALSE;
 			}
 
-			m_handle = socket( nAf, nType, nProtocol );
+			m_hHandle = socket( nAf, nType, nProtocol );
 
 			return(IsValid() ? TRUE : FALSE);
 		}
@@ -63,19 +63,27 @@ namespace INET {
 
 	public:
 		int		Bind( const sockaddr* pName, int nNameLen ){
-			return ::bind(m_handle, pName, nNameLen);
+			return ::bind(m_hHandle, pName, nNameLen);
 		}
 
 		int		Listen( int nBackLog ){
-			return ::listen(m_handle, nBackLog);
+			return ::listen(m_hHandle, nBackLog);
 		}
 
 		SOCKET	Accept( sockaddr* pAddr, int& nAddrLen ){
-			return ::accept(m_handle, pAddr, &nAddrLen);
+			return ::accept(m_hHandle, pAddr, &nAddrLen);
 		}
 
 		int		Ioctl( long lCmd, ULONG& argp ){
-			return ::ioctlsocket(m_handle, lCmd, &argp);
+			return ::ioctlsocket(m_hHandle, lCmd, &argp);
+		}
+
+		int		Connect( const sockaddr* lpName, int nNameLen ){
+			return connect(m_hHandle, lpName, nNameLen);
+		}
+
+		int		Recv( LPVOID lpData, int nDataSize, int nFlags = 0 ){
+			return recv(m_hHandle, (char*)lpData, nDataSize, nFlags );
 		}
 	};
 

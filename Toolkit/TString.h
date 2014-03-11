@@ -36,6 +36,18 @@ public:
 		append( lpszText );
 	}
 
+	bool					IsEmpty( void ) const {
+		return empty();
+	}
+
+	void					Empty( void ){
+		erase();
+	}
+
+	int						Length( void ) const {
+		return length();
+	}
+
 	basic_stringex<TYPE>	Append( const TYPE* lpszText ){
 		append( lpszText );
 		return(*this);

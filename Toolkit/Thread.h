@@ -1,8 +1,7 @@
 #pragma once
-
+#include <process.h>
 
 namespace MT {
-
 	/**********************************************************************************
 	 *
 	 *
@@ -13,10 +12,16 @@ namespace MT {
 		HANDLE		m_hObject;
 
 	public:
-		explicit CSycnObject( LPCTSTR lpstrName );
-		virtual ~CSyncObject( void );
+		explicit CSyncObject( LPCTSTR lpstrName ) : m_hObject(NULL) {
+		}
+		virtual ~CSyncObject( void ){
+			if( m_hObject )
+				::CloseHandle( m_hObject );
+		}
 
-		virtual BOOL	Lock( DWORD dwTimeout = INFINITE );
+		virtual BOOL	Lock( DWORD dwTimeout = INFINITE ){
+			::WaitForSingleObject(m_hObject, dwTimeout);
+		}
 		virtual BOOL	Unlock() = 0;
 		virtual BOOL	Unlock( LONG, LPLONG ){
 			return TRUE;
@@ -27,7 +32,6 @@ namespace MT {
 			return m_hObject;
 		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -35,14 +39,20 @@ namespace MT {
 	 */
 	class CSemaphore : public CSyncObject {
 	public:
-		CSemaphore( LONG lInitialCount = 1, LONG lMaxCount = 1, LPCTSTR lpstrName= NULL, LPSECURITY_ATTRIBUTES lpsaAttribute = NULL );
-		virtual ~CSemaphore( void );
+		CSemaphore( LONG lInitialCount = 1, LONG lMaxCount = 1, LPCTSTR lpstrName= NULL, LPSECURITY_ATTRIBUTES lpsaAttribute = NULL ) : CSyncObject(NULL) {
+			m_hObject	= ::CreateSemaphore(lpsaAttribute, lInitialCount, lMaxCount, lpstrName);
+		}
+		virtual ~CSemaphore( void ){
+		}
 
 	public:
-		BOOL	Unlock( void );
-		BOOL	Unlock( LONG lCount, LPLONG, lprevCount = NULL );
+		BOOL	Unlock( void ){
+			return Unlock( 1 );
+		}
+		BOOL	Unlock( LONG lCount, LPLONG lprevCount = NULL ){
+			return ::ReleaseSemaphore(m_hObject, lCount, lprevCount);
+		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -50,13 +60,17 @@ namespace MT {
 	 */
 	class CMutex : public CSyncObject {
 	public:
-		CMutex( BOOL bInitiallyOwn = FALSE, LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTE lpszAttribute = NULL );
-		virtual ~CMutex( void );
+		CMutex( BOOL bInitiallyOwn = FALSE, LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpszAttribute = NULL ) : CSyncObject(NULL) {
+			m_hObject	= ::CreateMutex(lpszAttribute, bInitiallyOwn, lpszName);
+		}
+		virtual ~CMutex( void ){
+		}
 
 	public:
-		BOOL	Unlock( void );
+		BOOL	Unlock( void ){
+			return ::ReleaseMutex( m_hObject );
+		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -64,16 +78,26 @@ namespace MT {
 	 */
 	class CEvent : public CSyncObject {
 	public:
-		CEvent( BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE, LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpszAttribute = NULL );
-		virtual ~CEvent( void );
+		CEvent( BOOL bInitiallyOwn = FALSE, BOOL bManualReset = FALSE, LPCTSTR lpszName = NULL, LPSECURITY_ATTRIBUTES lpszAttribute = NULL ) : CSyncObject(NULL) {
+			m_hObject	= ::CreateEvent(lpszAttribute, bManualReset, bInitiallyOwn, lpszName);
+		}
+		virtual ~CEvent( void ){
+		}
 
 	public:
-		BOOL	SetEvent( void );
-		BOOL	PulseEvent( void );
-		BOOL	ResetEvent( void );
-		BOOL	Unlock( void );
+		BOOL	SetEvent( void ){
+			return ::SetEvent( m_hObject );
+		}
+		BOOL	PulseEvent( void ){
+			return ::PulseEvent( m_hObject );
+		}
+		BOOL	ResetEvent( void ){
+			return ::ResetEvent( m_hObject );
+		}
+		BOOL	Unlock( void ){
+			return SetEvent();
+		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -83,21 +107,49 @@ namespace MT {
 	private:
 		CRITICAL_SECTION			m_sect;
 
-		BOOL		Init( void );
+		BOOL		Init( void ){
+			__try
+			{
+				::InitializeCriticalSection( &m_sect );
+			}
+			__except(STATUS_NO_MEMORY == GetExceptionCode())
+			{
+				return FALSE;
+			}
+			return TRUE;
+		}
 
 	public:
-		CCriticalSection( void );
-		virtual ~CCriticalSection( void );
+		CCriticalSection( void ) : CSyncObject(NULL) {
+			Init();				
+		}
+		virtual ~CCriticalSection( void ){
+			::DeleteCriticalSection( &m_sect );
+		}
 
 	public:
-		BOOL	Lock( void );
-		BOOL	Lock( DWORD dwTimeout );
-		BOOL	Unlock( void );
+		BOOL	Lock( void ){
+			__try
+			{
+				::EnterCriticalSection( &m_sect );
+			}
+			__except(STATUS_NO_MEMORY == GetExceptionCode())
+			{
+				return FALSE;
+			}
+			return TRUE;
+		}
+		BOOL	Lock( DWORD dwTimeout ){
+			return Lock();
+		}
+		BOOL	Unlock( void ){
+			::LeaveCriticalSection( &m_sect );
+			return TRUE;
+		}
 
 	public:
-		operator CRITICAL_SECTION* () const { return &m_sect; }		
+		operator const CRITICAL_SECTION*() const { return (const CRITICAL_SECTION*)&m_sect; }		
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -110,13 +162,31 @@ namespace MT {
 		BOOL			m_bAcquired;
 
 	public:
-		explicit CSingleLock( CSyncObject* pObject, BOOL bIntialLock = FALSE );
-		~CSingleLock( void );
+		explicit CSingleLock( CSyncObject* pObject, BOOL bIntialLock = FALSE ) : m_pObject(pObject) {
+		}
+		~CSingleLock( void ){
+			Unlock();
+		}
 
-		BOOL	Lock( DWORD dwTimeout = INFINTE );
-		BOOL	Unlock( void );
-		BOOL	Unlock( LONG lCount, LPLONG lPrevCount = NULL );
-		BOOL	IsLocked( void );
+		BOOL	Lock( DWORD dwTimeout = INFINITE ){
+			m_bAcquired	= TRUE;
+			if( m_pObject )
+				m_bAcquired	= m_pObject->Lock( dwTimeout );
+			return(m_bAcquired);
+		}
+		BOOL	Unlock( void ){
+			if(m_bAcquired)
+				return(m_bAcquired = m_pObject->Unlock());
+			return(m_bAcquired);
+		}
+		BOOL	Unlock( LONG lCount, LPLONG lPrevCount = NULL ){
+			if(m_bAcquired)
+				return(m_bAcquired = m_pObject->Unlock(lCount, lPrevCount));
+			return(m_bAcquired);
+		}
+		BOOL	IsLocked( void ){
+			return(m_bAcquired);
+		}
 	};
 
 	/**********************************************************************************
@@ -126,22 +196,28 @@ namespace MT {
 	 */
 	class CMultiLock {
 	protected:
-		HANDLE			m_hPreallocated[ 8 ];
-		BOOL			m_bPreallocated[ 8 ];
+		HANDLE					m_hPreallocated[ 8 ];
+		BOOL					m_bPreallocated[ 8 ];
 
-		CSycnObject*const*	m_ppObjectArray;
-		HANDLE*				m_pHandleArray;
-		HANDLE*				m_bLockedArray;
-		DWORD				m_dwCount;
+		CSyncObject* const *	m_ppObjectArray;
+		HANDLE*					m_pHandleArray;
+		HANDLE*					m_bLockedArray;
+		DWORD					m_dwCount;
 
 	public:
-		CMultiLock( CSycnObject* ppObjects[], DWORD dwCount, BOOL bInitialLock = FALSE );
-		~CMultiLock( void );
+		CMultiLock( CSyncObject* ppObjects[], DWORD dwCount, BOOL bInitialLock = FALSE ){
+		}
+		~CMultiLock( void ){
+		}
 
-		BOOL	Lock( DWORD dwTimeout = INFINITE, BOOL bWaitForAll = TRUE, DWORD dwWakeMask = 0 );
-		BOOL	Unlock( void );
-		BOOL	Unlock( LONG lCount, LPLONG lPrevCount = NULL );
-		BOOL	IsLocked( DWORD dwItem );
+		BOOL	Lock( DWORD dwTimeout = INFINITE, BOOL bWaitForAll = TRUE, DWORD dwWakeMask = 0 ){
+		}
+		BOOL	Unlock( void ){
+		}
+		BOOL	Unlock( LONG lCount, LPLONG lPrevCount = NULL ){
+		}
+		BOOL	IsLocked( DWORD dwItem ){
+		}
 	};
 
 	namespace SDK 
@@ -151,6 +227,14 @@ namespace MT {
 		 *
 		 *
 		 */
+		class NonCopyable {
+		private:
+			NonCopyable(const NonCopyable&);
+			NonCopyable&	operator=(const NonCopyable&);
+		protected:
+			NonCopyable(){}
+			~NonCopyable(){}
+		};
 		class CReadWriteLock : private NonCopyable {
 		private:
 			int						m_nReaderCount;
@@ -259,7 +343,7 @@ namespace TM {
 	 */
 	class IThread : public ThreadContext {
 	private:
-		static int		EntryPoint( LPVOID lpParam ){
+		static unsigned __stdcall	EntryPoint( void* lpParam ){
 			IThread* pThread = (IThread*)lpParam;
 			if( pThread ){
 				return pThread->run( lpParam );
@@ -268,11 +352,19 @@ namespace TM {
 		}
 
 	protected:
-		virtual int		run( LPVOID lpParam )		= 0;
+		virtual unsigned		run( LPVOID lpParam )		= 0;
 
 	public:
-		BOOL		Start( LPVOID lpParam ){
-			return FALSE;
+		HANDLE			m_hThread;
+		UINT			m_uThreadID;
+
+	public:
+		IThread( void ) : m_hThread(NULL), m_uThreadID(0) {
+		}
+
+		HANDLE		Start( void ){
+			m_hThread	= (HANDLE)::_beginthreadex( NULL, 0, &IThread::EntryPoint, this, 0, &m_uThreadID );
+			return m_hThread;
 		}
 
 		BOOL		Terminate( void ){
@@ -285,6 +377,21 @@ namespace TM {
 
 		BOOL		Resume( void ){
 			return FALSE;
+		}
+
+		DWORD		Join( DWORD dwTimeout = INFINITE ){
+			return ::WaitForSingleObject(m_hThread, dwTimeout);
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class IUIThread : public IThread {
+	public:
+		void	Quit( void ){
+			::PostThreadMessage((DWORD)m_uThreadID, WM_QUIT, 0, 0);
 		}
 	};
 }
