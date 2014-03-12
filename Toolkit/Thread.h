@@ -321,7 +321,7 @@ namespace MT {
 	}
 }
 
-namespace TM {
+namespace MT {
 
 	/**********************************************************************************
 	 *
@@ -362,24 +362,30 @@ namespace TM {
 		IThread( void ) : m_hThread(NULL), m_uThreadID(0) {
 		}
 
-		HANDLE		Start( void ){
+		HANDLE			Start( void ){
 			m_hThread	= (HANDLE)::_beginthreadex( NULL, 0, &IThread::EntryPoint, this, 0, &m_uThreadID );
 			return m_hThread;
 		}
 
-		BOOL		Terminate( void ){
+		virtual void	Close( void ){
+			Terminate();
+		}
+
+		void			Terminate( void ){
+			if( m_hThread )
+				::CloseHandle( m_hThread );
+			m_hThread	= NULL;
+		}
+
+		BOOL			Suspend( void ){
 			return FALSE;
 		}
 
-		BOOL		Suspend( void ){
+		BOOL			Resume( void ){
 			return FALSE;
 		}
 
-		BOOL		Resume( void ){
-			return FALSE;
-		}
-
-		DWORD		Join( DWORD dwTimeout = INFINITE ){
+		DWORD			Join( DWORD dwTimeout = INFINITE ){
 			return ::WaitForSingleObject(m_hThread, dwTimeout);
 		}
 	};

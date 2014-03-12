@@ -123,11 +123,11 @@ public:
 	BOOL		A2W( const basic_stringex<CHAR>& strSrc, basic_stringex<WCHAR>& strDst ){
 		BOOL	bResult = FALSE;
 
-		int nBufSize = ::MultiByteToWideChar(CP_THREAD_ACP, MB_COMPOSITE, strSrc.c_str(), strSrc.length(), NULL, 0 );
+		int nBufSize = ::MultiByteToWideChar(CP_THREAD_ACP, MB_COMPOSITE, strSrc.c_str(), strSrc.Length(), NULL, 0 );
 		if( nBufSize > 0 ){
-			WCHAR*	lpszBuf = new WCHAR[ nBuSize + 1 ];
+			WCHAR*	lpszBuf = new WCHAR[ nBufSize + 1 ];
 
-			if( ::MultiByteToWideChar(CP_THREAD_ACP, MB_COMPOSITE, strSrc.c_str(), strStr.length(), lpszBuf, nBufSize) ){
+			if( ::MultiByteToWideChar(CP_THREAD_ACP, MB_COMPOSITE, strSrc.c_str(), strSrc.Length(), lpszBuf, nBufSize) ){
 				bResult	= TRUE;
 				lpszBuf[ nBufSize ]	= _T('\0');
 				strDst	= lpszBuf;
@@ -150,12 +150,12 @@ public:
 	BOOL		W2A( const basic_stringex<WCHAR>& strSrc, basic_stringex<CHAR>& strDst ){
 		BOOL	bResult	= FALSE;
 
-		int	nBufSize = ::WideCharToMultiByte(CP_THREAD_ACP, 0, strSrc.c_str(), strSrc.length(), NULL, 0, NULL, NULL );
+		int	nBufSize = ::WideCharToMultiByte(CP_THREAD_ACP, 0, strSrc.c_str(), strSrc.Length(), NULL, 0, NULL, NULL );
 		if( nBufSize > 0 )
 		{
 			CHAR*	lpszBuf	= new CHAR[ nBufSize + 1 ];
 
-			if( ::WideCharToMultiByte(CP_THREAD_ACP, 0, strSrc.c_str(), strSrc.length(), lpszBuf, nBufSize, NULL, NULL) ){
+			if( ::WideCharToMultiByte(CP_THREAD_ACP, 0, strSrc.c_str(), strSrc.Length(), lpszBuf, nBufSize, NULL, NULL) ){
 				bResult	= TRUE;
 				lpszBuf[ nBufSize ]	= '\0';
 				strDst	= lpszBuf;

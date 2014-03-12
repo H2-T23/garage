@@ -28,7 +28,95 @@ namespace INET {
 			return ::WSACleanup();
 		}
 	}
+	/**********************************************************************************
+	 *	ADDRINFO
+	 *	    int                 ai_flags;       // AI_PASSIVE, AI_CANONNAME, AI_NUMERICHOST
+	 *	    int                 ai_family;      // PF_xxx
+	 *	    int                 ai_socktype;    // SOCK_xxx
+	 *	    int                 ai_protocol;    // 0 or IPPROTO_xxx for IPv4 and IPv6
+	 *	    size_t              ai_addrlen;     // Length of ai_addr
+	 *	    char *              ai_canonname;   // Canonical name for nodename
+	 *	    __field_bcount(ai_addrlen) struct sockaddr *   ai_addr;        // Binary address
+	 *	    struct addrinfo *   ai_next;        // Next structure in linked list
+	 */
+	class CAddressInfo : public ADDRINFO {
+	protected:
+		LPADDRINFO			m_lpAddrInfo;
 
+		inline bool	IsValid( void ) const {
+			return(m_lpAddrInfo!=NULL);
+		}
+
+		void	Free( void ){
+			if( IsValid() )
+				freeaddrinfo( m_lpAddrInfo );
+			m_lpAddrInfo	= NULL;
+		}
+
+	public:
+		CAddressInfo( void ) : m_lpAddrInfo(NULL) {
+			ZeroMemory(this, sizeof(ADDRINFO));
+		}
+
+		CAddressInfo( int family, int socktype, int protocol, int flags = 0 ) : m_lpAddrInfo(NULL) {
+			ZeroMemory(this, sizeof(ADDRINFO));
+			Set(family, socktype, protocol, flags);
+		}
+
+		~CAddressInfo( void ) {
+			Free();
+		}
+
+		void		Set( int family, int socktype, int protocol, int flags ){
+			ai_family		= family;
+			ai_socktype		= socktype;
+			ai_protocol		= protocol;
+			ai_flags		= flags;
+		}
+
+		void			Flags( int flags ) { ai_flags = flags; }
+		void			Family( int family ){ ai_family = family; }
+		void			SockType( int socktype ){ ai_socktype = socktype; }
+		void			Protocol( int protocol ){ ai_protocol = protocol; }
+
+		int				Flags( void ){ return(m_lpAddrInfo->ai_flags); }
+		int				Family( void ){ return(m_lpAddrInfo->ai_family); }
+		int				SockType( void ){ return(m_lpAddrInfo->ai_socktype); }
+		int				Protocol( void ){ return(m_lpAddrInfo->ai_protocol); }
+		LPSOCKADDR		SockAddr( void ){ return(m_lpAddrInfo->ai_addr); }
+		int				AddrLen( void ){ return(m_lpAddrInfo->ai_addrlen); }
+		LPADDRINFO		AddrInfo( void ){ return(m_lpAddrInfo); }
+
+	public:
+		BOOL	GetAddressInfo( LPCSTR lpszHostname, LPCSTR lpszPort = NULL ){
+			Free();
+			return(::getaddrinfo(lpszHostname, lpszPort, (LPADDRINFO)this, &m_lpAddrInfo) == 0 ? TRUE : FALSE);
+		}
+
+		BOOL	GetAddressInfo( LPCSTR lpszHostname, int nPort ){
+			AString		str;
+			str.Format("%d", nPort);
+
+			LPCSTR	lpPort	= (LPCSTR)str;
+			return GetAddressInfo(lpszHostname, lpPort);
+		}
+
+		int		ToString( TString& str ){
+			str.Empty();
+			if( !IsValid() )
+				return 0;
+
+			TCHAR	tmp[256];
+
+			str.resize( 256 );
+			LPTSTR lpResult		= (LPTSTR)str.data();
+			int		szCapacity	= str.capacity();
+			int		szMaxSize	= str.max_size();
+			DWORD	dwSize		= 0;
+			::WSAAddressToString( m_lpAddrInfo->ai_addr, (DWORD)m_lpAddrInfo->ai_addrlen, NULL, tmp, &dwSize );
+			return str.Length();
+		}
+	};
 	/**********************************************************************************
 	 *
 	 *
@@ -83,10 +171,21 @@ namespace INET {
 		}
 
 		int		Recv( LPVOID lpData, int nDataSize, int nFlags = 0 ){
-			return recv(m_hHandle, (char*)lpData, nDataSize, nFlags );
+			return ::recv(m_hHandle, (char*)lpData, nDataSize, nFlags );
+		}
+
+		int		Send( LPVOID lpData, int nDataSize, int nFlags = 0 ){
+			return ::send(m_hHandle, (char*)lpData, nDataSize, nFlags);
+		}
+
+		int		AsyncSelect( HWND hWnd, UINT uMsg, LONG lEvent ){
+			return ::WSAAsyncSelect(m_hHandle, hWnd, uMsg, lEvent);
+		}
+
+		int		Shutdown( int nHow ){
+			return ::shutdown(m_hHandle, nHow);
 		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -127,8 +226,6 @@ namespace INET {
 			return sock;
 		}
 	};
-
-
 	/**********************************************************************************
 	 *
 	 *
