@@ -10,282 +10,585 @@
 #include "Inet.h"
 #include "Thread.h"
 
-/**********************************************************************************
- *
- *
- *
- */
-/*
-ADDRINFO
-    int                 ai_flags;       // AI_PASSIVE, AI_CANONNAME, AI_NUMERICHOST
-    int                 ai_family;      // PF_xxx
-    int                 ai_socktype;    // SOCK_xxx
-    int                 ai_protocol;    // 0 or IPPROTO_xxx for IPv4 and IPv6
-    size_t              ai_addrlen;     // Length of ai_addr
-    char *              ai_canonname;   // Canonical name for nodename
-    __field_bcount(ai_addrlen) struct sockaddr *   ai_addr;        // Binary address
-    struct addrinfo *   ai_next;        // Next structure in linked list
- */
-class CAddressInfo : public ADDRINFO {
-protected:
-	LPADDRINFO			m_lpAddrInfo;
+#include "SimpleInet.h"
 
-	inline bool	IsAvailable( void ) const {
-		return(m_lpAddrInfo!=NULL);
+namespace SimpleIocp {
+
+	class CAcceptThread : public MT::IThread {
+	protected:
+		unsigned	run( LPVOID ){
+		}
+	};
+
+	class CIOCP {
+	};
+
+#define OP_READ     0
+#define OP_WRITE    1
+ 
+#define WORKER_THREADS_PER_PROCESSOR 2
+
+#define MAX_BUFFER_LEN 256
+#define WAIT_TIMEOUT_INTERVAL 100
+
+	HANDLE				g_hShutdownEvent	= NULL;
+	 
+	int					g_nThreads = 0;
+	 
+	HANDLE*					g_phWorkerThreads	= NULL;
+	HANDLE				g_hAcceptThread		= NULL;
+	 
+	WSAEVENT			g_hAcceptEvent;
+	 
+	
+	CRITICAL_SECTION	g_csClientList;
+	 
+	HANDLE				g_hIOCompletionPort	= NULL;
+
+	class CClientContext;
+	std::vector<CClientContext*>	g_ClientContext;
+
+	void	AddToClientList( CClientContext* pClientContext )
+	{
+		EnterCriticalSection( &g_csClientList );
+
+		g_ClientContext.push_back( pClientContext );
+
+		LeaveCriticalSection( &g_csClientList );
 	}
+ 
+	void	RemoveFromClientListAndFreeMemory( CClientContext* pClientContext )
+	{
+		EnterCriticalSection( &g_csClientList );
 
-	void	Free( void ){
-		if( IsAvailable() )
-			freeaddrinfo( m_lpAddrInfo );
-		m_lpAddrInfo	= NULL;
-	}
-
-public:
-	CAddressInfo( void ) : m_lpAddrInfo(NULL) {
-		ZeroMemory(this, sizeof(ADDRINFO));
-		Set(0, 0, 0, 0);
-	}
-
-	CAddressInfo( int family, int socktype, int protocol, int flags = 0 ) : m_lpAddrInfo(NULL) {
-		ZeroMemory(this, sizeof(ADDRINFO));
-		Set( family, socktype, protocol, flags );
-	}
-
-	~CAddressInfo( void ) {
-		Free();
-	}
-
-	void		Set( int family, int socktype, int protocol, int flags ){
-		ai_family		= family;
-		ai_socktype		= socktype;
-		ai_protocol		= protocol;
-		ai_flags		= flags;
-	}
-	void		Flags( int flags ) { ai_flags = flags; }
-	void		Family( int family ){ ai_family = family; }
-	void		SockType( int socktype ){ ai_socktype = socktype; }
-	void		Protocol( int protocol ){ ai_protocol = protocol; }
-
-	int			Flags( void ){ return(m_lpAddrInfo->ai_flags); }
-	int			Family( void ){ return(m_lpAddrInfo->ai_family); }
-	int			SockType( void ){ return(m_lpAddrInfo->ai_socktype); }
-	int			Protocol( void ){ return(m_lpAddrInfo->ai_protocol); }
-	sockaddr*	SockAddr( void ){ return(m_lpAddrInfo->ai_addr); }
-	int			AddrLen( void ){ return(m_lpAddrInfo->ai_addrlen); }
-
-public:
-	BOOL	GetAddressInfo( LPCSTR lpszHostname, LPCSTR lpszPort = NULL ){
-		Free();
-		return(getaddrinfo(lpszHostname, lpszPort, this, &m_lpAddrInfo) != 0 ? FALSE : TRUE);
-	}
-
-	BOOL	GetAddressInfo( LPCSTR lpszHostname, int nPort ){
-		AString		str;
-		str.Format("%d", nPort);
-
-		LPCSTR	lpPort	= (LPCSTR)str;
-		return GetAddressInfo(lpszHostname, lpPort);
-	}
-
-	int		ToString( TString& str ){
-		str.Empty();
-		if( !IsAvailable() )
-			return 0;
-
-		TCHAR	tmp[256];
-
-		str.resize( 256 );
-		LPTSTR lpResult		= (LPTSTR)str.data();
-		int		szCapacity	= str.capacity();
-		int		szMaxSize	= str.max_size();
-		DWORD	dwSize		= 0;
-		WSAAddressToString( m_lpAddrInfo->ai_addr, (DWORD)m_lpAddrInfo->ai_addrlen, NULL, tmp, &dwSize );
-		return str.Length();
-	}
-};
-/**********************************************************************************
- *
- *
- *
- */
-class CReceiverThread : public TM::IThread {
-protected:
-	INET::CSocket		m_sock;
-	WSAEVENT			m_hEventExit;
-
-	unsigned	run( LPVOID lpParam ){
-
-
-
-		const int	szBuff = 256;
-		BYTE	Buff[ szBuff ];
-		
-		m_hEventExit	= ::WSACreateEvent();
-
-		WSAEVENT	hEventInet	= ::WSACreateEvent();
-		::WSAEventSelect( m_sock.GetHandle(), hEventInet, (FD_READ | FD_CLOSE) );
-
-		WSAEVENT	hEvents[] = {m_hEventExit, hEventInet};
-
-		WSANETWORKEVENTS	events;
-		DWORD	dwResult	= 0;
-		while(1)
+		std::vector<CClientContext*>::iterator	IterClientContext	= g_ClientContext.begin();
+		for( ; IterClientContext != g_ClientContext.end(); IterClientContext++ )
 		{
-			dwResult = ::WSAWaitForMultipleEvents(2, hEvents, FALSE, WSA_INFINITE, FALSE);
-			if( dwResult == WSA_WAIT_FAILED )
-				break;
-
-			if( (dwResult - WSA_WAIT_EVENT_0) == 0 )
+			if( pClientContext == *IterClientContext )
 			{
-				::WSAEnumNetworkEvents( m_sock.GetHandle(), hEventInet, &events );
-				if( events.lNetworkEvents & FD_CLOSE )
+				g_ClientContext.erase( IterClientContext );
+				delete pClientContext;
+			break;
+			}
+		}
+
+		LeaveCriticalSection( &g_csClientList );
+	}
+
+	void	CleanClientList()
+	{
+		EnterCriticalSection( &g_csClientList );
+
+		std::vector<CClientContext*>::iterator	IterClientContext	= g_ClientContext.begin();
+		for( ; IterClientContext != g_ClientContext.end( ); IterClientContext++ )
+		{
+			delete	*IterClientContext;
+		}
+		g_ClientContext.clear();
+
+		LeaveCriticalSection( &g_csClientList );
+	}
+
+
+	class CClientContext {
+	private:
+		OVERLAPPED        *m_pol;
+		WSABUF            *m_pwbuf;
+
+		int               m_nTotalBytes;
+		int               m_nSentBytes;
+
+		SOCKET            m_Socket;  //accepted socket
+		int               m_nOpCode; //will be used by the worker thread to decide what operation to perform
+		char              m_szBuffer[MAX_BUFFER_LEN];
+
+	public:
+		void SetOpCode(int n)	{	m_nOpCode = n;	}
+		int GetOpCode()	{	return m_nOpCode;	}
+
+		void SetTotalBytes(int n)	{	m_nTotalBytes = n;	}
+		int GetTotalBytes()	{	return m_nTotalBytes;	}
+
+		void SetSentBytes(int n)	{	m_nSentBytes = n;	}
+		void IncrSentBytes(int n)	{	m_nSentBytes += n;	}
+		int GetSentBytes()	{	return m_nSentBytes;	}
+
+		void SetSocket(SOCKET s)	{	m_Socket = s;	}
+		SOCKET GetSocket()	{	return m_Socket;	}
+
+		void SetBuffer(char *szBuffer)	{	strcpy(m_szBuffer, szBuffer);	}
+		void GetBuffer(char *szBuffer)	{	strcpy(szBuffer, m_szBuffer);	}
+		void ZeroBuffer()	{	ZeroMemory(m_szBuffer, MAX_BUFFER_LEN);	}
+
+		void SetWSABUFLength(int nLength)	{	m_pwbuf->len = nLength;	}
+		int GetWSABUFLength()	{	return m_pwbuf->len;	}
+		WSABUF* GetWSABUFPtr()	{	return m_pwbuf;	}
+
+		OVERLAPPED* GetOVERLAPPEDPtr() {	return m_pol;	}
+
+		void ResetWSABUF()	{
+			ZeroBuffer();
+			m_pwbuf->buf = m_szBuffer;
+			m_pwbuf->len = MAX_BUFFER_LEN;
+		}
+
+		CClientContext()
+		{
+			m_pol = new OVERLAPPED;
+			m_pwbuf = new WSABUF;
+
+			ZeroMemory(m_pol, sizeof(OVERLAPPED));
+
+			m_Socket =  SOCKET_ERROR;
+
+			ZeroMemory(m_szBuffer, MAX_BUFFER_LEN);
+
+			m_pwbuf->buf = m_szBuffer;
+			m_pwbuf->len = MAX_BUFFER_LEN;
+
+			m_nOpCode = 0;
+			m_nTotalBytes = 0;
+			m_nSentBytes = 0;
+		}
+
+		~CClientContext()
+		{
+			while( !HasOverlappedIoCompleted(m_pol) ){
+				Sleep(0);
+			}
+			closesocket(m_Socket);
+
+			delete m_pol;
+			delete m_pwbuf;
+		}
+	};
+ 	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class CMTTrace {
+	protected:
+		CRITICAL_SECTION	m_cs;
+
+	public:
+		CMTTrace( void ){
+			::InitializeCriticalSection( &m_cs );
+		}
+		~CMTTrace( void ){
+			::DeleteCriticalSection( &m_cs );
+		}
+
+		void	Trace( char *szFormat, ... )
+		{
+			::EnterCriticalSection( &m_cs );
+
+			va_list	args;
+			va_start(args, szFormat);
+			vprintf(szFormat, args);
+			va_end(args);
+
+			::LeaveCriticalSection( &m_cs );
+		}
+	};
+ 	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	static CMTTrace		MTTrace;
+	#ifdef TRACE
+		#undef TRACE
+	#endif
+	#define	TRACE		MTTrace.Trace
+ 	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	bool	Initialize( void )
+	{
+		g_nThreads	= WORKER_THREADS_PER_PROCESSOR * GetNoOfProcessors();
+
+		printf("\nNumber of processors on host: %d", GetNoOfProcessors());
+		printf("\nThe following number of worker threads will be created: %d", g_nThreads);
+
+		g_phWorkerThreads	= new HANDLE[ g_nThreads ];
+
+		InitializeCriticalSection( &g_csClientList );
+
+		g_hShutdownEvent	= CreateEvent( NULL, TRUE, FALSE, NULL );
+
+		WSADATA	wsaData;
+
+		int nResult		= WSAStartup( MAKEWORD(2,2), &wsaData );
+		if( NO_ERROR != nResult  )
+		{
+			printf("\nError occurred while executing WSAStartup().");
+			return false; //error
+		}
+		else
+		{
+			printf("\nWSAStartup() successful.");
+		}
+
+		if( false == InitializeIOCP() )
+		{
+			printf("\nError occurred while initializing IOCP");
+			return false;
+		}
+		else
+		{
+			printf("\nIOCP initialization successful.");
+		}
+
+		return true;
+	}
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	void	DeInitialize( void )
+	{
+		DeleteCriticalSection( &g_csClientList );
+
+		CloseHandle( g_hIOCompletionPort );
+		CloseHandle( g_hShutdownEvent );
+
+		delete[] g_phWorkerThreads;
+
+		WSACleanup();
+	}
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	void	EntryPoint( int nPortNo )
+	{
+		if( false == Initialize() )
+		{
+			return 1;
+		}
+
+		SOCKET	ListenSocket	= WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0, WSA_FLAG_OVERLAPPED);
+		if( INVALID_SOCKET == ListenSocket ) 
+		{
+			printf("\nError occurred while opening socket: %d.", WSAGetLastError());
+			goto error;
+		}
+		else
+		{
+			printf("\nWSASocket() successful.");
+		}
+	
+		
+		struct sockaddr_in ServerAddress;
+
+		ZeroMemory((char *)&ServerAddress, sizeof(ServerAddress));
+
+		ServerAddress.sin_family		= AF_INET;
+		ServerAddress.sin_addr.s_addr	= INADDR_ANY;
+		ServerAddress.sin_port			= htons(nPortNo);
+
+		if( SOCKET_ERROR == bind(ListenSocket, (struct sockaddr *)&ServerAddress, sizeof(ServerAddress)) ) 
+		{
+			closesocket( ListenSocket );
+			printf("\nError occurred while binding.");
+			goto error;
+		}
+		else
+		{
+			printf("\nbind() successful.");
+		}
+
+		if( SOCKET_ERROR == listen(ListenSocket,SOMAXCONN) )
+		{
+			closesocket( ListenSocket );
+			printf("\nError occurred while listening.");
+			goto error;
+		}
+		else
+		{
+			printf("\nlisten() successful.");
+		}
+
+		g_hAcceptEvent	= WSACreateEvent();
+
+		if( WSA_INVALID_EVENT == g_hAcceptEvent )
+		{
+			printf("\nError occurred while WSACreateEvent().");
+			goto error;
+		}
+
+		if( SOCKET_ERROR == WSAEventSelect(ListenSocket, g_hAcceptEvent, FD_ACCEPT) )
+		{
+			printf("\nError occurred while WSAEventSelect().");
+			WSACloseEvent( g_hAcceptEvent );
+			goto error;
+		}
+
+		printf("\nTo exit this server, hit a key at any time on this console...");
+
+		DWORD nThreadID;
+		g_hAcceptThread		= CreateThread(0, 0, AcceptThread, (void *)ListenSocket, 0, &nThreadID);
+
+		while( !_kbhit() )
+		{
+			Sleep( 0 );
+		}
+
+		TRACE("\nServer is shutting down...");
+
+		CleanUp();
+
+		closesocket( ListenSocket );
+
+		DeInitialize();
+
+		return 0;
+	error:
+		closesocket( ListenSocket );
+		DeInitialize();
+		return 1;
+	}
+
+	bool InitializeIOCP()
+	{
+		g_hIOCompletionPort	= CreateIoCompletionPort( INVALID_HANDLE_VALUE, NULL, 0, 0 );
+
+		if( NULL == g_hIOCompletionPort )
+		{
+			printf("\nError occurred while creating IOCP: %d.", WSAGetLastError());
+			return false;
+		}
+
+		DWORD nThreadID;
+
+		for (int ii = 0; ii < g_nThreads; ii++)
+		{
+			g_phWorkerThreads[ii]	= CreateThread(0, 0, WorkerThread, (void *)(ii+1), 0, &nThreadID );
+		}
+
+		return true;
+	}
+
+	void CleanUp()
+	{
+		SetEvent( g_hShutdownEvent );
+
+		WaitForSingleObject( g_hAcceptThread, INFINITE );
+
+		for (int i = 0; i < g_nThreads; i++)
+		{
+			PostQueuedCompletionStatus( g_hIOCompletionPort, 0, (DWORD)NULL, NULL );
+		}
+
+		WaitForMultipleObjects( g_nThreads, g_phWorkerThreads, TRUE, INFINITE );
+
+		WSACloseEvent( g_hAcceptEvent );
+
+		CleanClientList();
+	}
+ 
+namespace ACCEPT {
+	bool	AssociateWithIOCP( CClientContext* pClientContext )
+	{
+		HANDLE hTemp	= CreateIoCompletionPort( (HANDLE)pClientContext->GetSocket(), g_hIOCompletionPort, (DWORD)pClientContext, 0 );
+
+		if( NULL == hTemp ){
+			TRACE("\nError occurred while executing CreateIoCompletionPort().");
+
+			RemoveFromClientListAndFreeMemory( pClientContext );
+			return false;
+		}
+		return true;
+	}
+
+	void	AcceptConnection( SOCKET ListenSocket )
+	{
+		sockaddr_in ClientAddress;
+		int nClientLength = sizeof(ClientAddress);
+
+		SOCKET Socket = accept(ListenSocket, (sockaddr*)&ClientAddress, &nClientLength);
+
+		if( INVALID_SOCKET == Socket )
+		{
+			TRACE("\nError occurred while accepting socket: %ld.", WSAGetLastError());
+		}
+		TRACE("\nClient connected from: %s", inet_ntoa(ClientAddress.sin_addr));
+
+		CClientContext   *pClientContext  = new CClientContext;
+
+		pClientContext->SetOpCode( OP_READ );
+		pClientContext->SetSocket( Socket );
+
+		AddToClientList( pClientContext );
+
+		if( true == AssociateWithIOCP(pClientContext) )
+		{
+			pClientContext->SetOpCode( OP_WRITE );
+
+			WSABUF*		p_wbuf	= pClientContext->GetWSABUFPtr();
+			OVERLAPPED*	p_ol	= pClientContext->GetOVERLAPPEDPtr();
+
+			DWORD dwFlags = 0;
+			DWORD dwBytes = 0;
+
+			int nBytesRecv = WSARecv( pClientContext->GetSocket(), p_wbuf, 1, &dwBytes, &dwFlags, p_ol, NULL );
+			if( (SOCKET_ERROR == nBytesRecv) && (WSA_IO_PENDING != WSAGetLastError()) )
+			{
+				TRACE("\nError in Initial Post.");
+			}
+		}
+	}
+
+	DWORD WINAPI AcceptThread( LPVOID lParam )
+	{
+		SOCKET ListenSocket	= (SOCKET)lParam;
+		WSANETWORKEVENTS	WSAEvents;
+
+		while( WAIT_OBJECT_0 != WaitForSingleObject(g_hShutdownEvent, 0) )
+		{
+			if (WSA_WAIT_TIMEOUT != WSAWaitForMultipleEvents(1, &g_hAcceptEvent, FALSE, WAIT_TIMEOUT_INTERVAL, FALSE))
+			{
+				WSAEnumNetworkEvents( ListenSocket, g_hAcceptEvent, &WSAEvents );
+
+				if( (WSAEvents.lNetworkEvents & FD_ACCEPT) && (0 == WSAEvents.iErrorCode[ FD_ACCEPT_BIT ]) )
 				{
-					break;
+					AcceptConnection( ListenSocket );
+				}
+			}
+		}
+		return 0;
+	}
+}
+ 
+	DWORD WINAPI	WorkerThread( LPVOID lpParam )
+	{    
+		int nThreadNo	= (int)lpParam;
+
+		void *lpContext = NULL;
+		OVERLAPPED       *pOverlapped = NULL;
+		CClientContext   *pClientContext = NULL;
+		DWORD            dwBytesTransfered = 0;
+		int nBytesRecv = 0;
+		int nBytesSent = 0;
+		DWORD             dwBytes = 0, dwFlags = 0;
+
+		while( WAIT_OBJECT_0 != WaitForSingleObject(g_hShutdownEvent, 0) )
+		{
+			BOOL bReturn	= GetQueuedCompletionStatus(g_hIOCompletionPort	,
+														&dwBytesTransfered	,
+														(LPDWORD)&lpContext	,
+														&pOverlapped		,
+														INFINITE			);
+			if( NULL == lpContext )
+			{
+				break;
+			}
+
+			pClientContext		= (CClientContext *)lpContext;
+
+			if( (FALSE == bReturn) || ((TRUE == bReturn) && (0 == dwBytesTransfered)) )
+			{
+				RemoveFromClientListAndFreeMemory( pClientContext );
+				continue;
+			}
+
+			WSABUF *		p_wbuf	= pClientContext->GetWSABUFPtr();
+			OVERLAPPED *	p_ol	= pClientContext->GetOVERLAPPEDPtr();
+
+			switch( pClientContext->GetOpCode() )
+			{
+			case OP_READ:
+				pClientContext->IncrSentBytes( dwBytesTransfered );
+
+				if( pClientContext->GetSentBytes() < pClientContext->GetTotalBytes() )
+				{
+					pClientContext->SetOpCode( OP_READ );
+
+					p_wbuf->buf += pClientContext->GetSentBytes();
+					p_wbuf->len = pClientContext->GetTotalBytes() - pClientContext->GetSentBytes();
+
+					dwFlags = 0;
+
+					nBytesSent	= WSASend( pClientContext->GetSocket(), p_wbuf, 1, &dwBytes, dwFlags, p_ol, NULL );
+
+					if( (SOCKET_ERROR == nBytesSent) && (WSA_IO_PENDING != WSAGetLastError()) )
+					{
+						RemoveFromClientListAndFreeMemory( pClientContext );
+					}
 				}
 				else
-				if( events.lNetworkEvents & FD_READ )
 				{
-					m_sock.Recv( Buff, szBuff);
+					pClientContext->SetOpCode( OP_WRITE );
+					pClientContext->ResetWSABUF();
+
+					dwFlags = 0;
+
+					nBytesRecv	= WSARecv( pClientContext->GetSocket(), p_wbuf, 1, &dwBytes, &dwFlags, p_ol, NULL );
+
+					if( (SOCKET_ERROR == nBytesRecv) && (WSA_IO_PENDING != WSAGetLastError()) )
+					{
+						TRACE("\nThread %d: Error occurred while executing WSARecv().", nThreadNo);
+
+						RemoveFromClientListAndFreeMemory( pClientContext );
+					}
 				}
-			}
-			else
-			if( (dwResult - WSA_WAIT_EVENT_0) == 1)
-			{
 				break;
-			}
 
-			::WSAResetEvent( hEventInet );
-		}
+			case OP_WRITE:
+				char	szBuffer[ MAX_BUFFER_LEN ];
 
-		::WSACloseEvent( hEventInet );
+				pClientContext->GetBuffer( szBuffer );
+
+				TRACE("\nThread %d: The following message was received: %s", nThreadNo, szBuffer);
+
+				pClientContext->SetOpCode( OP_READ );
+				pClientContext->SetTotalBytes( dwBytesTransfered );
+				pClientContext->SetSentBytes( 0 );
+
+				p_wbuf->len	= dwBytesTransfered;
+
+				dwFlags = 0;
+
+				nBytesSent	= WSASend( pClientContext->GetSocket(), p_wbuf, 1, &dwBytes, dwFlags, p_ol, NULL );
+
+				if( (SOCKET_ERROR == nBytesSent) && (WSA_IO_PENDING != WSAGetLastError()) )
+				{
+					TRACE("\nThread %d: Error occurred while executing WSASend().", nThreadNo);
+
+					RemoveFromClientListAndFreeMemory( pClientContext );
+				}
+
+				break;
+
+			default:
+				break;
+			} // switch
+		} // while
+
 		return 0;
 	}
+ 
+ 
 
-public:
-	CReceiverThread( void ) : m_hEventExit(NULL) {
-	}
-	virtual ~CReceiverThread( void ) {
-	}
+	int		GetNoOfProcessors()
+	{
+		static int nProcessors = 0;
 
-	void	Bind( SOCKET sock ){
-		m_sock.Attach( sock );
-	}
+		if( 0 == nProcessors ){
+			SYSTEM_INFO	si;
 
-	void	Exit( void ){
-		::WSASetEvent(m_hEventExit);
-	}
-};
-/**********************************************************************************
- *
- *
- *
- */
-class CClientForm : public CForm {
-public:
-	enum {
-		IDC_BUTTON1		= 1001	, 
-		IDC_EDIT1				,
-	};
-protected:
-	CButton					m_btn1;
-	CEdit					m_edt1;
-	INET::CListenSocket		m_sockListen;
-	CReceiverThread			m_ReceiverThread;
-
-	TCommandHandler<CClientForm>	cmd;
-
-	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
-		INET::WinInet::Startup();
-
-		m_btn1.Create(this, 10, 10, 100, 25, IDC_BUTTON1, _T("SEND"));
-		m_edt1.Create(this, 10, 30, 400, 25, IDC_EDIT1);
-
-		cmd.Initialize(this);
-		cmd.Register( IDC_BUTTON1, &CClientForm::OnSend );
-
-		CAddressInfo	addrInfo( AF_INET, SOCK_STREAM, IPPROTO_TCP );
-		addrInfo.GetAddressInfo( "localhost", "" );
-
-		TString	str;
-		addrInfo.ToString( str );
-		DBG::TRACE( (LPTSTR)str );
-
-		INET::CSocket	sock;
-		sock.Create( addrInfo.Family(), addrInfo.SockType(), addrInfo.Protocol() );
-
-		if( sock.Connect(addrInfo.SockAddr(), addrInfo.AddrLen()) == SOCKET_ERROR )
-		{
-			sock.Close();
-		//	return FALSE;
+			GetSystemInfo( &si );
+			nProcessors	= si.dwNumberOfProcessors;
 		}
 
-		m_ReceiverThread.Bind( sock.Detach() );
-		m_ReceiverThread.Start();
-
-		SetFontChildren();
-		return TRUE;
+		return nProcessors;
 	}
-
-	void	OnDestroy( void ){
-		INET::WinInet::Cleanup();
-	}
-
-	void	OnCommand(UINT uID, HWND hWndCtrl, UINT nCodeNotify ){
-		cmd.Dispach(uID, nCodeNotify);
-	}
-
-	void	OnSend( void ){
-
-	}
-};
-/**********************************************************************************
- *
- *
- *
- */
-class CClientThread : public TM::IUIThread {
-protected:
-	CClientForm		Form;
-
-	unsigned	run( LPVOID lpParam ){
-		if( Form.Create(_T("Client"), 0, 0, 100, 100, 600, 600) ){
-			Form.ShowWindow( SW_SHOW );
-			Form.UpdateWindow();
-			Form.MessageLoop();
-		}
-		return 0;
-	}
-};
-/**********************************************************************************
- *
- *
- *
- */
-class CServerForm : public CForm {
-};
-/**********************************************************************************
- *
- *
- *
- */
-class CServerThread : public TM::IUIThread {
-protected:
-	CServerForm		Form;
-
-	unsigned	run( LPVOID lpParam ){
-		if( Form.Create(_T("Server"), 0, 0, 700, 100, 600, 600) ){
-			Form.ShowWindow( SW_SHOW );
-			Form.UpdateWindow();
-			Form.MessageLoop();
-		}
-		return 0;
-	}
-};
-/**********************************************************************************
- *
- *
- *
- */
+}// end of SimpleIocp.
 /**********************************************************************************
  *
  *
@@ -299,19 +602,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	CServerThread	ServerThread;
-	ServerThread.Start();
-
-	CClientThread	ClientThread;
-	ClientThread.Start();
-
-	HANDLE	hThreads[] = {ServerThread.m_hThread, ClientThread.m_hThread};
-
-	::WaitForMultipleObjects( 2, hThreads, TRUE, (1000*5) );
-
-	ServerThread.Quit();
-	ClientThread.Quit();
-
-	::WaitForMultipleObjects( 2, hThreads, TRUE, INFINITE );
+	SimpleInet::EntryPoint();
 	return 0;
 }

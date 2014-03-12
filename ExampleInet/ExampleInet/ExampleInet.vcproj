@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SimpleInet.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
