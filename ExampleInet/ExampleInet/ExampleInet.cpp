@@ -10,8 +10,12 @@
 #include "Inet.h"
 #include "Thread.h"
 
-#include "SimpleInet.h"
+//#include "SimpleInet.h"
+#include "ToolHelpEx.h"
 
+
+
+#if 0
 namespace SimpleIocp {
 
 	class CAcceptThread : public MT::IThread {
@@ -35,7 +39,7 @@ namespace SimpleIocp {
 	 
 	int					g_nThreads = 0;
 	 
-	HANDLE*					g_phWorkerThreads	= NULL;
+	HANDLE*				g_phWorkerThreads	= NULL;
 	HANDLE				g_hAcceptThread		= NULL;
 	 
 	WSAEVENT			g_hAcceptEvent;
@@ -265,7 +269,7 @@ namespace SimpleIocp {
 	 *
 	 *
 	 */
-	void	EntryPoint( int nPortNo )
+	int		EntryPoint( int nPortNo )
 	{
 		if( false == Initialize() )
 		{
@@ -589,6 +593,7 @@ namespace ACCEPT {
 		return nProcessors;
 	}
 }// end of SimpleIocp.
+#endif
 /**********************************************************************************
  *
  *
@@ -602,6 +607,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-	SimpleInet::EntryPoint();
+//	SimpleInet::EntryPoint();
+
+	TOOLHELP::UseToolhelp();
 	return 0;
 }

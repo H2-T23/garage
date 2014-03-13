@@ -241,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ToolHelpEx.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TString.h"
 				>
 			</File>
