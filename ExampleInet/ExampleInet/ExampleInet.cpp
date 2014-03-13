@@ -11,7 +11,7 @@
 #include "Thread.h"
 
 //#include "SimpleInet.h"
-#include "ToolHelpEx.h"
+//#include "ToolHelpEx.h"
 
 
 
@@ -599,6 +599,34 @@ namespace ACCEPT {
  *
  *
  */
+ typedef struct {
+	int		nDataSize;
+	char*	pData;
+ } DATA;
+
+ class CData : public DATA {
+ public:
+	DATA&	operator=(const DATA& obj){
+		if(this!=&obj){
+			memcpy(this, &obj, sizeof(DATA));
+		}
+		return(DATA)(*this);
+	}
+
+ public:
+	TString		ToString( void ) const {
+		TString	str;
+		str.Format(_T("DataSize: %d\0"), nDataSize);
+		return str;
+	}
+ };
+
+ void	TraceData( DATA& obj ){
+	CData	data;
+	data = obj;
+	DBG::TRACE(data.ToString());
+ }
+
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -607,8 +635,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
-//	SimpleInet::EntryPoint();
+	DATA a = { 100, new char[ 100 ] };
 
-	TOOLHELP::UseToolhelp();
+	TraceData( a );
+
+//	SimpleInet::EntryPoint();
+//	TOOLHELP::UseToolhelp();
 	return 0;
 }

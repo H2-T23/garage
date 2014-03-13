@@ -12,55 +12,106 @@ namespace TOOLHELP {
 
 	class CSnapshotProcess {
 	public:
-		typedef PROCESSENTRY32			PROCESS;
-		typedef	MODULEENTRY32			MODULE;
-		typedef THREADENTRY32			THREAD;
 
-		class CProcessEntry : public PROCESS {
+		class CModuleEntry;
+		class CThreadEntry;
+		class CProcessEntry;
+
+		#if 0
+		typedef	CModuleEntry					MODULE;
+		typedef CThreadEntry					THREAD;
+		typedef CProcessEntry					PROCESS;
+		#else
+		typedef	MODULEENTRY32					MODULE;
+		typedef THREADENTRY32					THREAD;
+		typedef PROCESSENTRY32					PROCESS;
+		#endif
+
+		typedef	std::vector<MODULEENTRY32>		MODULE_LIST;
+		typedef std::vector<THREADENTRY32>		THREAD_LIST;
+		typedef std::map<DWORD, CProcessEntry>	PROCESS_LIST;
+
+		template<class CLASS, class BASECLASS>
+		class TEntry : public BASECLASS {
+		protected:
+			void	Copy(const BASECLASS& base){
+				if(this!=&base){
+					memcpy(this, &base, sizeof(BASECLASS));
+				}
+			}
 		public:
-			TString		ToString( void ){
+			TEntry(void){}
+			TEntry(const CLASS& obj){
+				Copy((BASECLASS)obj);
+			}
+			TEntry(const BASECLASS& base){
+				Copy(base);
+			}
+
+			CLASS&		operator=(const CLASS& obj){
+				Copy((BASECLASS)obj);
+				return(CLASS)(*this);
+			}
+			BASECLASS&	operator=(const BASECLASS& base){
+				Copy(base);
+				return (BASECLASS)(*this);
+			}
+
+			operator BASECLASS() { return(BASECLASS)(*this); }
+
+			virtual TString		ToString( void ) const	= 0;
+		};
+
+		class CModuleEntry	: public TEntry<CModuleEntry,MODULEENTRY32> {
+		public:
+			TString		ToString( void ) const {
+				TString str;
+				str.Format(_T("$s(%s)"), szModule, szExePath);
+				return str;
 			}
 		};
 
-		class CModuleEntry
+		class CThreadEntry	: public TEntry<CThreadEntry,THREADENTRY32> {
+		public:
+			TString		ToString( void ) const {
+				TString	str;
+				str.Format(_T("0x%08X"), th32ThreadID);
+				return str;
+			}
+		};
 
-		typedef	std::vector<MODULE>		MODULE_LIST;
-		typedef std::vector<THREAD>		THREAD_LIST;
-		typedef struct : public PROCESS {
-			MODULE_LIST			Modules;
-			THREAD_LIST			Threads;
-		} PROCESS_ENTRY ;
-		typedef std::vector<PROCESS>			PS_ENTRYS;
+		class CProcessEntry	: public TEntry<CProcessEntry,PROCESSENTRY32> {
+		public:
+			MODULE_LIST				Modules;
+			THREAD_LIST				Threads;
+
+			TString		ToString( void ) const {
+				TString	str;
+				str.Format(_T("0x%08X %d 0x%08X %d"), th32ProcessID,  cntThreads, th32ParentProcessID, pcPriClassBase);
+				return str;
+			}
+		};
+
+		typedef std::vector<PROCESSENTRY32>		PS_ENTRYS;
 		typedef	PS_ENTRYS::const_iterator		ITERATOR;
 
-		typedef std::map<DWORD, PROCESS_ENTRY>	PROCESS_LIST;
 
 		class CProcessEntrys {
 		public:
 			PROCESS_LIST		m_Entrys;
 
-			void	Entry( PROCESS& ps ){
-				m_Entrys.insert( make_pair<ps.th32ProcessID, ps> );
+			void	Append( PROCESSENTRY32& ps ){
+				m_Entrys.insert( std::make_pair(ps.th32ProcessID, ps) );
 			}
-
-			void	Entry( DWORD dwPID, MODULE& module ){
-				m_Entrys[ dwPID ].Modules.push_back( module );
-			}
-
-			void	Entry( DWORD dwPID, THREAD& thread ){
-				m_Entrys[ dwPID ].Threads.push_back( thread );
-			}
-
-			void	Append( MODULE& module ){
+			void	Append( MODULEENTRY32& module ){
 				m_Entrys[ module.th32ProcessID ].Modules.push_back( module );
 			}
-
-			void	Append( THREAD& thread ){
+			void	Append( THREADENTRY32& thread ){
 				m_Entrys[ thread.th32OwnerProcessID ].Threads.push_back( thread );
 			}
 		};
 
-		CProcessEntrys		m_ProcessEntry;
+		CProcessEntrys		m_ProcessEntrys;
 
 	protected:
 		PS_ENTRYS		m_PsEntrys;
@@ -98,6 +149,8 @@ namespace TOOLHELP {
 					DBG::TRACE(_T("   Parent process ID : 0x%08X")	, PsEntry.th32ParentProcessID);
 					DBG::TRACE(_T("   Priority byte     : %d")		, PsEntry.pcPriClassBase);
 
+				//	m_ProcessEntrys.Append( PsEntry );
+
 					PIDModules( PsEntry.th32ProcessID );
 					PIDThreads( PsEntry.th32ProcessID );
 
@@ -123,6 +176,8 @@ namespace TOOLHELP {
 			{
 				do{
 					DBG::TRACE(_T("[0x%08X:%s](%s)"), MdEntry.th32ModuleID, MdEntry.szModule, MdEntry.szExePath);
+					m_ProcessEntrys.Append( MdEntry );
+
 				}while( ::Module32Next( hMdSnap, &MdEntry ) );
 			}
 			::CloseHandle( hMdSnap );
@@ -145,6 +200,7 @@ namespace TOOLHELP {
 					if( dwProcessID == ThEntry.th32OwnerProcessID )
 					{
 						DBG::TRACE(_T("Thread ID: 0x%08X"), ThEntry.th32ThreadID);
+						m_ProcessEntrys.Append( ThEntry );
 					}
 				}while( ::Thread32Next( hThSnap, &ThEntry ) );
 			}
