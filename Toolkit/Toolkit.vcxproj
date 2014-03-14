@@ -70,29 +70,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Base64.h" />
-    <ClInclude Include="CommandListener1.h" />
-    <ClInclude Include="CommandListener2.h" />
     <ClInclude Include="ComponentWnd.h" />
     <ClInclude Include="Database.h" />
-    <ClInclude Include="DBG.h" />
+    <ClInclude Include="Dbg.h" />
     <ClInclude Include="DC.h" />
-    <ClInclude Include="DC.old.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="Generic.h" />
     <ClInclude Include="GridPanel.h" />
     <ClInclude Include="Handler.h" />
     <ClInclude Include="Inet.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="NotifyListener.h" />
     <ClInclude Include="Observar.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="Panel.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="SpinCtrl.h" />
     <ClInclude Include="Splitter.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="Thread.h" />
-    <ClInclude Include="ThreeDMath.h" />
-    <ClInclude Include="ToolHelpEx.h" />
     <ClInclude Include="TString.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UseGUIToolkit.h" />
