@@ -202,11 +202,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\EchoIOCP.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ExampleInet.h"
 				>
 			</File>
 			<File
 				RelativePath=".\SimpleInet.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleIOCP.h"
 				>
 			</File>
 			<File

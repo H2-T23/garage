@@ -147,9 +147,9 @@ namespace GENERIC {
 	template<class CLASS, typename TYPE, TYPE DEFAULT>
 	class THandle : public TNonCopyable<THandle<CLASS,TYPE,DEFAULT> > {
 	protected:
+	public:
 		TYPE		m_hHandle;
 
-	public:
 		typedef THandle<CLASS,TYPE,DEFAULT>	SUPER;
 
 		THandle( void ) : m_hHandle(DEFAULT) {
@@ -201,6 +201,7 @@ namespace GENERIC {
 		}
 
 		operator TYPE(){ return(m_hHandle); }
+		operator HANDLE() { return (HANDLE)m_hHandle; }
 	};
 
 	/**********************************************************************************

@@ -128,6 +128,10 @@ namespace INET {
 		CSocket( const CSocket& sock ) : SUPER(sock) {}
 		/*explicit*/ CSocket( SOCKET sock ) : SUPER(sock) {}
 
+		CSocket( int nAf, int nType, int nProtocol ) : SUPER() {
+			Create(nAf, nType, nProtocol);
+		}
+
 		inline bool	IsValid( void ) const {
 			return(GetHandle()!=INVALID_SOCKET);
 		}
@@ -184,6 +188,18 @@ namespace INET {
 
 		int		Shutdown( int nHow ){
 			return ::shutdown(m_hHandle, nHow);
+		}
+
+		int		SetOption( int nLevel, int nOptName, const char* pOptVal, int nOptLen ){
+			return ::setsockopt(m_hHandle, nLevel, nOptName, pOptVal, nOptLen);
+		}
+
+		int		WSARecv( LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesRecvd, LPDWORD lpFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine ){
+			return ::WSARecv( m_hHandle, lpBuffers, dwBufferCount, lpNumberOfBytesRecvd, lpFlags, lpOverlapped, lpCompletionRoutine );
+		}
+
+		int		WSASend( LPWSABUF lpBuffers, DWORD dwBufferCount, LPDWORD lpNumberOfBytesSent, DWORD dwFlags, LPWSAOVERLAPPED lpOverlapped, LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine ){
+			return ::WSASend( m_hHandle, lpBuffers, dwBufferCount, lpNumberOfBytesSent, dwFlags, lpOverlapped, lpCompletionRoutine );
 		}
 	};
 	/**********************************************************************************
