@@ -108,9 +108,19 @@ public:
 	BOOL		Invalidate( BOOL bErace = TRUE ) const								{ return ::InvalidateRect(m_hWnd, NULL, bErace);		}
 	BOOL		InvalidateRect( const RECT* lpRect, BOOL bErase=TRUE ) const		{ return ::InvalidateRect(m_hWnd, lpRect, bErase);		}
 
-	BOOL		SetWindowText( LPCTSTR lpString ) const								{ return ::SetWindowText(m_hWnd, lpString);				}
 	int			GetWindowText( LPTSTR lpString, int nMaxCount ) const				{ return ::GetWindowText(m_hWnd, lpString, nMaxCount);	}
+	int			GetWindowText( TString& str ) const	{
+		unsigned	nLen	= ::GetWindowTextLength(m_hWnd) + 1;
+		if( nLen > str.capacity() ){
+			str.resize( nLen );
+		}
+		return ::GetWindowText(m_hWnd, (LPTSTR)str, nLen);
+	}
 	int			GetWindowTextLength( void ) const									{ return ::GetWindowTextLength(m_hWnd);					}
+	BOOL		SetWindowText( LPCTSTR lpString ) const								{ return ::SetWindowText(m_hWnd, lpString);				}
+	BOOL		SetWindowText( const TString& str ) const {
+		return ::SetWindowText(m_hWnd, (LPCTSTR)str);
+	}
 
 	BOOL		MoveWindow(int x, int y, int nWidth, int nHeight, BOOL bRepaint=TRUE) const { return ::MoveWindow(m_hWnd, x, y, nWidth, nHeight, bRepaint);	}
 

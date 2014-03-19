@@ -1,14 +1,59 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <mswsock.h>
 #include "Inet.h"
+#include "Thread.h"
 
 namespace ECHO_IOCP {
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class CUniformRandom {
+	public:
+		void	Generate( int nSeed ){
+			srand( nSeed );
+		}
+
+		int		GetNext( void ) const {
+			return rand();
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class CXorShiftRandom {
+	protected:
+		ULONG		x, y, z, w;
+
+	public:
+		CXorShiftRandom( void ) : x(123456789), y(362436069), z(521288629), w(88675123) {
+		}
+
+		ULONG		GetNext( void ){
+			ULONG	u	= (x ^ (x << 11));
+			x = y;
+			y = z;
+			z = w;
+			w	= (w ^ (w >> 19)) ^ (u ^ (u >> 8));
+			return w;
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
 	enum {
 		SERVER_ADDRESS	= INADDR_LOOPBACK,
 		SERVICE_PORT	= 4000,
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -66,13 +111,16 @@ namespace ECHO_IOCP {
 			OP_READ				,
 			OP_WRITE			,
 
-			MAX_BUF			= 1024	,
+			MAX_BUF			= 64	,
 		};
 
-		INET::CSocket	sock;
-		OPERATION		operation;
-		DWORD			length;
-		char			buf[ MAX_BUF ];
+		INET::CSocket		sock;
+		OPERATION			operation;
+		DWORD				length;
+		char				buf[ MAX_BUF ];
+
+		std::vector<char>	m_packet;
+
 
 		CIocpState( void ) : operation(OP_NONE), length(0) {}
 		CIocpState( INET::CSocket& s ) : sock(s), operation(OP_NONE), length(0) {
@@ -123,7 +171,31 @@ namespace ECHO_IOCP {
 	 *
 	 *
 	 */
-	GUID					GuidAcceptEx	= WSAID_ACCEPTEX;
+	static 	GUID	GuidAcceptEx	= WSAID_ACCEPTEX;
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class WSAEx {
+	private:
+	public:
+		static LPFN_ACCEPTEX	AcceptEx;
+
+		static BOOL		Load( void ){
+			DWORD	dwBytes	= 0;
+			::WSAIoctl(NULL, SIO_GET_EXTENSION_FUNCTION_POINTER, 
+						&GuidAcceptEx, sizeof(GuidAcceptEx),
+						&AcceptEx, sizeof(AcceptEx),
+						&dwBytes, NULL, NULL);
+			return TRUE;
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
 	class CListener {
 	protected:
 		CListener( void );
@@ -154,7 +226,8 @@ namespace ECHO_IOCP {
 		}
 
 		INET::CSocket		Create( void ){
-			INET::CSocket	sock(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		//	INET::CSocket	sock(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			INET::CSocket	sock( ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED) );
 			return sock;
 		}
 
@@ -202,12 +275,12 @@ namespace ECHO_IOCP {
 	 *
 	 *
 	 */
-	class CIOCPControler {
-	public:
+	class CIOCPControler : public MT::IThread {
+	protected:
 		CIOCP*			m_pIOCP;
 		CListener*		m_pListener;
 
-
+	public:
 		CIOCPControler( void ) : m_pIOCP(NULL), m_pListener(NULL) {
 			INET::WinInet::Startup();
 		}
@@ -221,6 +294,7 @@ namespace ECHO_IOCP {
 			INET::WinInet::Cleanup();
 		}
 
+	protected:
 		void	init( void )
 		{
 			m_pIOCP	= new CIOCP();
@@ -233,8 +307,10 @@ namespace ECHO_IOCP {
 			m_pListener->Accept();
 		}
 
-		void	run( void )
+		virtual unsigned		run( LPVOID lpParam )
 		{
+			init();
+
 			DWORD			length;
 
 			WSAOVERLAPPED*	pOverlapped		= NULL;
@@ -242,7 +318,7 @@ namespace ECHO_IOCP {
 
 			while( 1 )
 			{
-				BOOL	resultOK	= m_pIOCP->GetQueuedCompletionStatus(&length, (PULONG_PTR)&pState, &pOverlapped, INFINITE);
+				BOOL	resultOK	= m_pIOCP->GetQueuedCompletionStatus( &length, (PULONG_PTR)&pState, &pOverlapped, INFINITE );
 				switch( pState->operation ){
 				case CIocpState::OP_ACCEPT:
 					if( resultOK )
@@ -271,7 +347,13 @@ namespace ECHO_IOCP {
 						{
 							DBG::TRACE(_T("* read operation completed, %d bytes read."), length);
 							pState->length	= length;
-							pState->Send( pOverlapped );
+							std::vector<char>	recvbuf( pState->buf, &pState->buf[ length - 1 ] );
+							pState->m_packet.insert( pState->m_packet.end(), recvbuf.begin(), recvbuf.end() );
+							int	sz	= pState->m_packet.size();
+							if( sz >= 256 )
+								pState->Send( pOverlapped );
+							else
+								pState->Recv( pOverlapped );
 						}
 						else
 						{
@@ -317,7 +399,115 @@ namespace ECHO_IOCP {
 					break;
 				}
 			}
+
+			return 0;
 		}
 	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	 class CEchoClient : public MT::IThread {
+	 protected:
+		 enum { BUFF_SIZE = 256 };
+		 char					m_Buffer[ BUFF_SIZE ];
+		 INET::CSocket			m_sock;
+
+		 CXorShiftRandom		m_random;
+
+		virtual unsigned		run( LPVOID lpParam ){
+			INET::WinInet::Startup();
+
+		//	m_random.Generate( ::GetTickCount() );
+
+			if( m_sock.Create(AF_INET, SOCK_STREAM, 0) ){
+				struct sockaddr_in	sin;
+				sin.sin_family		= AF_INET;
+				sin.sin_addr.s_addr	= htonl( SERVER_ADDRESS );
+				sin.sin_port		= htons( SERVICE_PORT );
+
+				if( m_sock.Connect( (struct sockaddr*)&sin, sizeof(sin) ) >= 0 ){
+					for( int i=0; i<1000; i++ ){
+					//	if( !sendBuffer( (m_random.GetNext() >> 16) ) )		break;
+						if( !sendBuffer( i ) )		break;
+						if( !recvBuffer() )		break;
+
+						Sleep( 100 );
+					}
+				}
+			}
+
+			INET::WinInet::Cleanup();
+			return 0;
+		}
+
+		void	ResetBuffer( void ){
+		//	for( int i=0; i<BUFF_SIZE/2; i++ ){
+		//		sprintf( &m_Buffer[ i ], "%02X", i );
+		//	}
+			memset( m_Buffer, int('F'), BUFF_SIZE );
+		}
+
+		bool	sendBuffer( int nCount ){
+			char*	pBuf		= m_Buffer;
+			int		pendingSize = BUFF_SIZE;
+
+		//	memset( pBuf, 0, BUFF_SIZE );
+			ResetBuffer();
+			sprintf(pBuf, "%12d ******", nCount);
+			m_Buffer[ strlen(pBuf) ]	= 'A';
+			m_Buffer[ BUFF_SIZE - 1 ]	= '\0';
+
+			while( pendingSize > 0 ){
+				int	nRet = m_sock.Send( pBuf, BUFF_SIZE );
+				if( nRet == 0 ){
+					continue;
+				}
+				else
+				if( nRet > 0 ){
+					pendingSize -= nRet;
+					pBuf		+= nRet;
+				}
+				else{
+					return false;
+				}
+			}
+
+			DBG::TRACE("Send:%s", m_Buffer);
+			return true;
+		}
+
+		bool	recvBuffer( void ){
+			char*	pBuf		= m_Buffer;
+			int		pendingSize = BUFF_SIZE;
+
+		//	memset( pBuf, 0, BUFF_SIZE );
+			ResetBuffer();
+
+			while( pendingSize > 0 ){
+				int	nRet = m_sock.Recv( pBuf, BUFF_SIZE );
+				if( nRet == 0 ){
+					continue;
+				}
+				else
+				if( nRet >  0 ){
+					pendingSize	-= nRet;
+					pBuf		+= nRet;
+				}
+				else{
+					return false;
+				}
+			}
+
+			DBG::TRACE("Recv:%s", m_Buffer);
+			return true;
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
 }//
 

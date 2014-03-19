@@ -1,27 +1,36 @@
 #pragma once
 
 #include "TString.h"
+#include "Thread.h"
 
 class DBG 
 {
 public:
 	class COutput {
 	public:
-		virtual void	Trace( LPCTSTR lpString ){
-			OutputDebugString( lpString );
+		virtual void	Trace( LPCWSTR lpString ){
+			::OutputDebugStringW( lpString );
+		}
+		virtual void	Trace( LPCSTR lpString ){
+			::OutputDebugStringA( lpString );
 		}
 	};
 
 	class CMsg : public COutput {
 	public:
-		virtual void	Trace( LPCTSTR lpString ){
-			MessageBox(NULL, lpString, _T("OK"), MB_OK);
+		virtual void	Trace( LPCWSTR lpString ){
+			MessageBoxW(NULL, lpString, L"OK", MB_OK);
+		}
+		virtual void	Trace( LPCSTR lpString ){
+			MessageBoxA(NULL, lpString, "OK", MB_OK);
 		}
 	};
 
 	class CLog : public COutput {
 	public:
-		virtual void	Trace( LPCTSTR lpString ){
+		virtual void	Trace( LPCWSTR lpString ){
+		}
+		virtual void	Trace( LPCSTR lpString ){
 		}
 	};
 
@@ -69,7 +78,11 @@ private:
 		SetDefault();
 	}
 
-	void		Trace( LPCTSTR lpString ){
+	void		Trace( LPCWSTR lpString ){
+		m_pOut->Trace( lpString );
+	}
+
+	void		Trace( LPCSTR lpString ){
 		m_pOut->Trace( lpString );
 	}
 
@@ -80,17 +93,46 @@ private:
 
 public:
 #ifndef TRACE
-	static void		TRACE( LPCTSTR fmt, ... ){
+	static MT::CCriticalSection	cs;
+
+	static void		TRACE( LPCWSTR fmt, ... ){
+		MT::CSingleLock	lock(&cs);
+		lock.Lock();
 		const int BufMax = 256;
-		TCHAR	szBuf[BufMax];
+		WCHAR	szBuf[ BufMax ];
+
 		va_list	args;
 		va_start(args, fmt);
-		int sz = _vsntprintf(szBuf, _countof(szBuf), fmt, args);
+		int sz = _vsnwprintf(szBuf, _countof(szBuf), fmt, args);
 		va_end(args);
-		TString	str( szBuf );
-		str.Append( _T("\n") );
-		if( sz > 0 )
-		Instance().Trace( str );
+
+		if( sz > 0 ){
+			TString	str(szBuf);
+			str.Append( L"\n" );
+			Instance().Trace( str );
+		}
+
+		lock.Unlock();
+	}
+
+	static void		TRACE( LPCSTR fmt, ... ){
+		MT::CSingleLock	lock(&cs);
+		lock.Lock();
+		const int	BufMax = 256;
+		CHAR	szBuf[ BufMax ];
+
+		va_list	args;
+		va_start(args, fmt);
+		int	sz	= _vsnprintf(szBuf, _countof(szBuf), fmt, args);
+		va_end(args);
+
+		if( sz > 0 ){
+			AString		str(szBuf);
+			str.Append( "\n" );
+			Instance().Trace( str );
+		}
+
+		lock.Unlock();
 	}
 #endif
 
@@ -113,3 +155,5 @@ public:
 #endif
 
 };
+
+MT::CCriticalSection	DBG::cs;

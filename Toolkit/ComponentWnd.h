@@ -88,7 +88,6 @@ class CLabel : public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{ return(WC_STATIC);	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -98,7 +97,6 @@ class CButton	: public CComponentWnd {
 protected:
 	virtual LPCTSTR			ClassName( void ) const		{ return(WC_BUTTON);	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -115,7 +113,6 @@ public:
 	int		GetCheck( void ) const			{ return Button_GetCheck(m_hWnd);	}
 	void	SetCheck( int nCheck ) const	{ Button_SetCheck(m_hWnd, nCheck);	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -132,7 +129,6 @@ public:
 	int		GetCheck( void ) const			{ return Button_GetCheck(m_hWnd);	}
 	void	SetCheck( int nCheck ) const	{ Button_SetCheck(m_hWnd, nCheck);	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -142,7 +138,6 @@ class CGroupBox	: public CButton {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(BS_GROUPBOX | CButton::WindowStyle());	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -154,8 +149,10 @@ protected:
 
 public:
 	int			GetText( LPTSTR lpch, int cchMax ) const			{ return GetWindowText(lpch, cchMax);	}
+	int			GetText( TString& str ) const						{ return GetWindowText(str);			}
 	int			GetTextLength( void ) const							{ return GetWindowTextLength();			}
 	BOOL		SetText( LPCTSTR lpsz ) const						{ return SetWindowText(lpsz);			}
+	BOOL		SetText( const TString& str ) const					{ return SetWindowText(str);			}
 
 	void		LimitText( int cchMax ) const						{ return Edit_LimitText(m_hWnd, cchMax);		}
 
@@ -204,12 +201,20 @@ public:
 		return ModifyStyle( dwStyle, 0, TRUE );
 	}
 };
-
+/**********************************************************************************
+ * 
+ *
+ *
+ */
 class CMultiEdit	: public CEdit {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL | ES_AUTOHSCROLL);	}
 };
-
+/**********************************************************************************
+ * 
+ *
+ *
+ */
 class CNumberEdit	: public CEdit {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | ES_NUMBER);	}
@@ -274,12 +279,15 @@ public:
 		}
 	}
 };
-
+/**********************************************************************************
+ * 
+ *
+ *
+ */
 class CPasswordEdit	: public CEdit {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{ return(CEdit::WindowStyle() | ES_PASSWORD);	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -307,7 +315,6 @@ public:
 		return LOWORD((DWORD)SendMessage( UDM_GETPOS, 0, 0 ));
 	}
 };
-
 /**********************************************************************************
  * 
  *
@@ -358,7 +365,6 @@ public:
 		return TabCtrl_AdjustRect(m_hWnd, bLarger, &rc);
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -482,8 +488,6 @@ public:
 		return Header_Layout(m_hWnd, &hdLayout); 
 	}
 };
-
-
 /**********************************************************************************
  *
  *
@@ -786,7 +790,6 @@ public:
 //		SetFocus();
 //	}
 //};
-
 /**********************************************************************************
  *
  *
@@ -796,7 +799,6 @@ class CVirtualListView : public CListView {
 protected:
 	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT | LVS_OWNERDATA);	}
 };
-
 /**********************************************************************************
  *
  *
@@ -823,7 +825,6 @@ public:
 		CWnd::SendMessage( TB_AUTOSIZE, 0, 0 );
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -850,7 +851,6 @@ public:
 		CWnd::SendMessage( RB_INSERTBAND, (WPARAM)-1, (LPARAM)lpRebarBandInfo );
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -930,7 +930,6 @@ public:
 		return ComboBox_FindStringExact(m_hWnd, idx, lpszFind);
 	}
 };
-
 /**********************************************************************************
  *
  *

@@ -21,6 +21,7 @@ namespace MT {
 
 		virtual BOOL	Lock( DWORD dwTimeout = INFINITE ){
 			::WaitForSingleObject(m_hObject, dwTimeout);
+			return TRUE;
 		}
 		virtual BOOL	Unlock() = 0;
 		virtual BOOL	Unlock( LONG, LPLONG ){
@@ -162,26 +163,28 @@ namespace MT {
 		BOOL			m_bAcquired;
 
 	public:
-		explicit CSingleLock( CSyncObject* pObject, BOOL bIntialLock = FALSE ) : m_pObject(pObject) {
+		explicit CSingleLock( CSyncObject* pObject, BOOL bIntialLock = FALSE )
+			: m_pObject(pObject), m_hObject(NULL), m_bAcquired(FALSE) {
+			if( bIntialLock )
+				Lock();
 		}
 		~CSingleLock( void ){
 			Unlock();
 		}
 
 		BOOL	Lock( DWORD dwTimeout = INFINITE ){
-			m_bAcquired	= TRUE;
-			if( m_pObject )
-				m_bAcquired	= m_pObject->Lock( dwTimeout );
+			if( m_pObject && !m_bAcquired )
+				return(m_bAcquired = m_pObject->Lock( dwTimeout ));
 			return(m_bAcquired);
 		}
 		BOOL	Unlock( void ){
 			if(m_bAcquired)
-				return(m_bAcquired = m_pObject->Unlock());
+				return(m_bAcquired = !m_pObject->Unlock());
 			return(m_bAcquired);
 		}
 		BOOL	Unlock( LONG lCount, LPLONG lPrevCount = NULL ){
 			if(m_bAcquired)
-				return(m_bAcquired = m_pObject->Unlock(lCount, lPrevCount));
+				return(m_bAcquired = !m_pObject->Unlock(lCount, lPrevCount));
 			return(m_bAcquired);
 		}
 		BOOL	IsLocked( void ){
@@ -322,20 +325,27 @@ namespace MT {
 }
 
 namespace MT {
-
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class IRunable {
+	protected:
+		virtual unsigned		run( LPVOID )	= 0;
+	};
 	/**********************************************************************************
 	 *
 	 *
 	 *
 	 */
 	class ThreadContext {
-	protected:
+	public:
 		HANDLE		m_hThread;
-		DWORD		m_dwThreadID;
+		UINT		m_uThreadID;
 
-		ThreadContext( void ) : m_hThread(NULL), m_dwThreadID(0) {}
+		ThreadContext( void ) : m_hThread(NULL), m_uThreadID(0) {}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -354,12 +364,12 @@ namespace MT {
 	protected:
 		virtual unsigned		run( LPVOID lpParam )		= 0;
 
-	public:
-		HANDLE			m_hThread;
-		UINT			m_uThreadID;
+//	public:
+//		HANDLE			m_hThread;
+//		UINT			m_uThreadID;
 
 	public:
-		IThread( void ) : m_hThread(NULL), m_uThreadID(0) {
+		IThread( void ) : ThreadContext() /*, m_hThread(NULL), m_uThreadID(0)*/ {
 		}
 
 		HANDLE			Start( void ){
@@ -377,15 +387,19 @@ namespace MT {
 			m_hThread	= NULL;
 		}
 
-		BOOL			Suspend( void ){
+		virtual BOOL			Suspend( void ){
 			return FALSE;
 		}
 
-		BOOL			Resume( void ){
+		virtual BOOL			Resume( void ){
 			return FALSE;
 		}
 
-		DWORD			Join( DWORD dwTimeout = INFINITE ){
+		virtual DWORD			Join( DWORD dwTimeout = INFINITE ){
+			return ::WaitForSingleObject(m_hThread, dwTimeout);
+		}
+
+		virtual DWORD			Wait( DWORD dwTimeout = INFINITE ){
 			return ::WaitForSingleObject(m_hThread, dwTimeout);
 		}
 	};

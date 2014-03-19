@@ -105,11 +105,19 @@ public:
 		return(*this);
 	}
 
-	operator const TYPE*(){
+	operator const TYPE*() const {
 		return this->c_str();
 	}
 	operator TYPE*(){
 		return (TYPE*)this->c_str();
+	}
+
+	int		ToInt( void ) const {
+		return _tstoi( c_str() );
+	}
+
+	double	ToDouble( void ) const {
+		return _tstof( c_str() );
 	}
 
 	static
