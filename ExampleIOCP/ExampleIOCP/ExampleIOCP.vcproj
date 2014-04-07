@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Toolkit"
-	ProjectGUID="{861E7381-4398-41A6-83F5-90C6A08F746D}"
-	RootNamespace="Toolkit"
+	Name="ExampleIOCP"
+	ProjectGUID="{946A7723-A6F9-443B-AE5D-5A401E903923}"
+	RootNamespace="ExampleIOCP"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,7 +20,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,11 +41,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+				AdditionalIncludeDirectories="..\..\Toolkit"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -59,10 +60,17 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -74,6 +82,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -81,7 +92,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -104,10 +115,10 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
+				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -121,10 +132,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -136,6 +156,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -144,148 +167,50 @@
 	</References>
 	<Files>
 		<Filter
-			Name="HeaderFiles"
+			Name="ソース ファイル"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath=".\ExampleIOCP.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\stdafx.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="ヘッダー ファイル"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Base64.h"
+				RelativePath=".\ExampleIOCP.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Buffer.h"
+				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CommandListener1.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CommandListener2.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ComponentWnd.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Crypto.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Database.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DBG.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DC.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DC.old.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Form.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Generic.h"
-				>
-			</File>
-			<File
-				RelativePath=".\GridPanel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Handler.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Inet.h"
-				>
-			</File>
-			<File
-				RelativePath=".\IOCP.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Log.h"
-				>
-			</File>
-			<File
-				RelativePath=".\NotifyListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Observar.h"
-				>
-			</File>
-			<File
-				RelativePath=".\OpenGL.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Panel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\SpinCtrl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Splitter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Sync.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Thread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ThreeDMath.h"
-				>
-			</File>
-			<File
-				RelativePath=".\ToolHelpEx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TString.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Types.h"
-				>
-			</File>
-			<File
-				RelativePath=".\UseGUIToolkit.h"
-				>
-			</File>
-			<File
-				RelativePath=".\UseOpenGL.h"
-				>
-			</File>
-			<File
-				RelativePath=".\UseToolkit.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Wnd.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="SourceFiles"
-			>
-			<File
-				RelativePath=".\Toolkit.cpp"
+				RelativePath=".\targetver.h"
 				>
 			</File>
 		</Filter>

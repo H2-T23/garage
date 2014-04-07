@@ -107,31 +107,31 @@ namespace SimpleIOCP{
 
 		SOCKET            m_Socket;  //accepted socket
 		int               m_nOpCode; //will be used by the worker thread to decide what operation to perform
-		char              m_szBuffer[MAX_BUFFER_LEN];
+		char              m_szBuffer[ MAX_BUFFER_LEN ];
 
 	public:
-		void SetOpCode(int n)	{	m_nOpCode = n;	}
-		int GetOpCode()	{	return m_nOpCode;	}
+		void SetOpCode(int n)			{ m_nOpCode = n;	}
+		int GetOpCode()					{ return m_nOpCode;	}
 
-		void SetTotalBytes(int n)	{	m_nTotalBytes = n;	}
-		int GetTotalBytes()	{	return m_nTotalBytes;	}
+		void SetTotalBytes(int n)		{ m_nTotalBytes = n;	}
+		int GetTotalBytes()				{ return m_nTotalBytes;	}
 
-		void SetSentBytes(int n)	{	m_nSentBytes = n;	}
-		void IncrSentBytes(int n)	{	m_nSentBytes += n;	}
-		int GetSentBytes()	{	return m_nSentBytes;	}
+		void SetSentBytes(int n)		{ m_nSentBytes = n;	}
+		void IncrSentBytes(int n)		{ m_nSentBytes += n;	}
+		int GetSentBytes()				{ return m_nSentBytes;	}
 
-		void SetSocket(SOCKET s)	{	m_Socket = s;	}
-		SOCKET GetSocket()	{	return m_Socket;	}
+		void SetSocket(SOCKET s)		{ m_Socket = s;	}
+		SOCKET GetSocket()				{ return m_Socket;	}
 
-		void SetBuffer(char *szBuffer)	{	strcpy(m_szBuffer, szBuffer);	}
-		void GetBuffer(char *szBuffer)	{	strcpy(szBuffer, m_szBuffer);	}
-		void ZeroBuffer()	{	ZeroMemory(m_szBuffer, MAX_BUFFER_LEN);	}
+		void SetBuffer(char *szBuffer)	{ strcpy(m_szBuffer, szBuffer);	}
+		void GetBuffer(char *szBuffer)	{ strcpy(szBuffer, m_szBuffer);	}
+		void ZeroBuffer()				{ ZeroMemory(m_szBuffer, MAX_BUFFER_LEN);	}
 
-		void SetWSABUFLength(int nLength)	{	m_pwbuf->len = nLength;	}
-		int GetWSABUFLength()	{	return m_pwbuf->len;	}
-		WSABUF* GetWSABUFPtr()	{	return m_pwbuf;	}
+		void SetWSABUFLength(int nLength)	{ m_pwbuf->len = nLength;	}
+		int GetWSABUFLength()				{ return m_pwbuf->len;	}
+		WSABUF* GetWSABUFPtr()				{ return m_pwbuf;	}
 
-		OVERLAPPED* GetOVERLAPPEDPtr() {	return m_pol;	}
+		OVERLAPPED* GetOVERLAPPEDPtr()		{	return m_pol;	}
 
 		void ResetWSABUF()	{
 			ZeroBuffer();
@@ -403,7 +403,6 @@ namespace ACCEPT {
 	bool	AssociateWithIOCP( CClientContext* pClientContext )
 	{
 		HANDLE hTemp	= CreateIoCompletionPort( (HANDLE)pClientContext->GetSocket(), g_hIOCompletionPort, (DWORD)pClientContext, 0 );
-
 		if( NULL == hTemp ){
 			TRACE("\nError occurred while executing CreateIoCompletionPort().");
 

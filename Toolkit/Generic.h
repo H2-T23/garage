@@ -1,8 +1,8 @@
 #pragma once
 
 
-namespace GENERIC {
-
+namespace GENERIC 
+{
 	/**********************************************************************************
 	 *
 	 *
@@ -19,7 +19,6 @@ namespace GENERIC {
 		TNonCopyable&	operator=(const TNonCopyable&);
 		TYPE&			operator=(const TYPE&);
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -33,7 +32,6 @@ namespace GENERIC {
 			return(ins);
 		}
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -85,8 +83,6 @@ namespace GENERIC {
 
 		operator TYPE(){ return(m_value); }
 	};
-
-
 	/**********************************************************************************
 	 *
 	 *
@@ -138,7 +134,6 @@ namespace GENERIC {
 
 		operator TYPE(){ return(m_value); }
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -203,7 +198,6 @@ namespace GENERIC {
 		operator TYPE(){ return(m_hHandle); }
 		operator HANDLE() { return (HANDLE)m_hHandle; }
 	};
-
 	/**********************************************************************************
 	 *
 	 *
@@ -222,5 +216,4 @@ namespace GENERIC {
 			return(A==B);		
 		}
 	};
-
 }
