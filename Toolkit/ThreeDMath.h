@@ -9,15 +9,21 @@ namespace ThreeDMath {
 	inline double	DEGREE( double dRadius ){ return(dRadius * 180.0 / PI); }
 	// ラジアン	= 度 x 円周率 / 180
 	inline double	RADIUS( double dDegree ){ return(dDegree * PI / 180.0);	}
-
+	/**********************************************************************************
+	 */
 	template<typename TYPE>
-	inline TYPE		SQUARE(TYPE v){ return(v*v); }
-
+	inline TYPE		SQUARE(TYPE v){
+		return(v*v);
+	}
+	/**********************************************************************************
+	 */
 	template<typename TYPE>
-	inline TYPE		CUBE(TYPE v){ return(v*v*v); }
-
+	inline TYPE		CUBE(TYPE v){
+		return(v*v*v);
+	}
+	/**********************************************************************************
+	 */
 	class CVector3;
-	class CVector4;
 	class CMatrix3x3;
 	class CMatrix4x4;
 	class CQuaternion;
@@ -35,7 +41,7 @@ namespace ThreeDMath {
 			Set(vec.x, vec.y, vec.z);
 		}
 		
-		void	Set( double x, double y, double z ){
+		inline void	Set( double x, double y, double z ){
 			this->x = x;
 			this->y = y;
 			this->z = z;
@@ -64,50 +70,85 @@ namespace ThreeDMath {
 			z /= len;	if(fabs(z) < EPS) z = ZERO;
 		}
 
+		void	Zero( void ){
+			Set( 0, 0, 0 );
+		}
+
+		double				Length( void ){
+			return double(sqrt(SQUARE(x) + SQUARE(y) + SQUARE(z)));
+		}
+
+		double				Dot( const CVector3& vec ) const {
+			return CVector3::Dot(*this, vec);
+		}
+
+		CVector3			Cross( const double dScaler ) {
+			return CVector3::Cross(*this, dScaler);
+		}
+
+		CVector3			Cross( const CVector3& vec ) const {
+			return CVector3::Cross(*this, vec);
+		}
+
 	public:
-		static CVector3		add( const CVector3& v1, const CVector3& v2 ){
+		static CVector3		Add( const CVector3& v1, const CVector3& v2 ){
 			return CVector3(	v1.x + v2.x
 							,	v1.y + v2.y
 							,	v1.z + v2.z	);
 		}
-		static CVector3		sub( const CVector3& v1, const CVector3& v2 ){
+		static CVector3		Sub( const CVector3& v1, const CVector3& v2 ){
 			return CVector3(	v1.x - v2.x
 							,	v1.y - v2.y
 							,	v1.z - v2.z	);
 		}
-		static double		dot( const CVector3& v1, const CVector3& v2 ){
+		static double		Dot( const CVector3& v1, const CVector3& v2 ){
 			return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
 		}
-		static CVector3		cross( const CVector3& v1, double dScaler ){
+		static CVector3		Cross( const CVector3& v1, double dScaler ){
 			return CVector3(v1.x * dScaler, v1.y * dScaler, v1.z * dScaler);
 		}
-		static CVector3		cross( const CVector3& v1, const CVector3& v2 ){
-			CVector3	v;
-			v.x	= (v1.y * v2.z - v1.z * v2.y);
-			v.y	= (v1.z * v2.x - v1.x * v2.z);
-			v.z	= (v1.x * v2.y - v1.y * v2.x);
-			return v;
+		static CVector3		Cross( const CVector3& v1, const CVector3& v2 ){
+			return CVector3(	(v1.y * v2.z - v1.z * v2.y)
+							,	(v1.z * v2.x - v1.x * v2.z)
+							,	(v1.x * v2.y - v1.y * v2.x)	);
 		}
 	};
-	
 	CVector3	operator+(const CVector3& v1, const CVector3& v2){
-		return CVector3::add(v1, v2);
+		return CVector3::Add(v1, v2);
 	}
-
 	CVector3	operator-(const CVector3& v1, const CVector3& v2){
-		return CVector3::sub(v1, v2);
+		return CVector3::Sub(v1, v2);
 	}
-
 	CVector3	operator*(const CVector3& v1, double dScaler ){
-		return CVector3::cross(v1, dScaler);
+		return CVector3::Cross(v1, dScaler);
 	}
-
 	CVector3	operator*(double dScaler, const CVector3& v1 ){
-		return CVector3::cross(v1, dScaler);
+		return CVector3::Cross(v1, dScaler);
 	}
-
 	CVector3	operator*(const CVector3& v1, const CVector3& v2){
-		return CVector3::cross(v1, v2);
+		return CVector3::Cross(v1, v2);
+	}
+	/**********************************************************************************
+	 */
+	void	MatrixCross( const int elements, double* pMat, const double* pMatA, const double* pMatB ){
+		for( int i=0; i<elements; i++ ){
+			for( int j=0; j<elements; j++ )
+			{
+				*(pMat + i * elements + j)	= 0.0;
+
+				int	idx, idxA, idxB;
+				for( int k=0; k<elements; k++ )
+				{
+					idx		= (i * elements + j);
+					idxA	= (i * elements + k);
+					idxB	= (k * elements + j);
+
+					DBG::TRACE(_T("%d, %d, %d"), idx, idxA, idxB );
+
+					*(pMat + i * elements + j) += *(pMatA + i * elements + k) * *(pMatB + k * elements + j);
+				}
+			}
+		}
 	}
 	/**********************************************************************************
 	 */
@@ -119,7 +160,64 @@ namespace ThreeDMath {
 	 */
 	class CMatrix3x3 {
 	public:
-		double	mat[ 9 ];
+		union {
+			double	a[ 3 ][ 3 ];
+			double	b[ 9 ];
+		} mat;
+
+		CMatrix3x3( void ){
+			Identity();
+		}
+
+		CMatrix3x3(	double m00, double m01, double m02
+				,	double m10, double m11, double m12
+				,	double m20, double m21, double m22
+				){
+			Set( m00, m01, m02,
+				 m10, m11, m12,
+				 m20, m21, m22 );
+		}
+
+		void	Set(	double m00, double m01, double m02
+					,	double m10, double m11, double m12
+					,	double m20, double m21, double m22
+					){
+			mat.a[ 0 ][ 0 ]	= m00;	mat.a[ 0 ][ 1 ]	= m01;	mat.a[ 0 ][ 2 ]	= m02;
+			mat.a[ 1 ][ 0 ]	= m10;	mat.a[ 1 ][ 1 ]	= m11;	mat.a[ 1 ][ 2 ]	= m12;
+			mat.a[ 2 ][ 0 ]	= m20;	mat.a[ 2 ][ 1 ]	= m21;	mat.a[ 2 ][ 2 ]	= m22;
+		}
+
+		void	Zero( void ){
+			Set( 0, 0, 0, 
+				 0, 0, 0,
+				 0, 0, 0 );
+		}
+
+		void	Identity( void ){
+			Set( 1, 0, 0,
+				 0, 1, 0, 
+				 0, 0, 1 );
+		}
+
+		double&		at( int i ){
+			return mat.b[ i ];
+		}
+
+		double&		at( int i, int j ){
+			return mat.a[ i ][ j ];
+		}
+
+		void		Convert( const CQuaternion& qt );
+
+	public:
+		static CMatrix3x3	Cross( const CMatrix3x3& m1, const CMatrix3x3& m2 ){
+			CMatrix3x3	ans;
+			ans.Zero();
+
+			MatrixCross(3, ans.mat.b, m1.mat.b, m2.mat.b);
+
+			return ans;
+		}
 	};
 	/**********************************************************************************
 	 */
@@ -174,16 +272,10 @@ namespace ThreeDMath {
 		double			S;
 		CVector3		V;
 
-		CQuaternion( void ) : S(1), V(0,0,0) {}
-		CQuaternion( double s, double x, double y, double z ) {
-			Set(s,x,y,z);
-		}
-		CQuaternion( double s, const CVector3& vec ){
-			Set( s, vec );
-		}
-		CQuaternion( const CQuaternion& qt ){
-			Set( qt );
-		}
+		CQuaternion( void ) : S(1.0), V(0.0,0.0,0.0) {}
+		CQuaternion( double s, const CVector3& vec ) : S(s), V(vec) {}
+		CQuaternion( double s, double x, double y, double z ) : S(s), V(x,y,z) {}
+		CQuaternion( const CQuaternion& q ) : S(q.S), V(q.V) {}
 
 		void	Set( const CQuaternion& qt ){
 			Set( qt.S, qt.V );
@@ -196,27 +288,185 @@ namespace ThreeDMath {
 			V.Set(x, y, z);
 		}
 
+		void	Zero( void ){
+			Set( 0, 0, 0, 0 );
+		}
+
+		void	Identity( void ){
+			Set( 1, 0, 0, 0 );
+		}
+
+		double	Norm( void ) const {
+			return sqrt(SQUARE(S) + SQUARE(V.x) + SQUARE(V.y) + SQUARE(V.z));
+		}
+
+		void	Normalize( void ){
+			double	norm	= Norm();
+			CQuaternion	q = CQuaternion::Div(*this, norm);
+			Set( q );
+		}
+
+		void	GetRotation( double m[][4] ){
+			m[0][0] = 1.0 - 2.0 * (V.y * V.y + V.z * V.z);
+			m[0][1] =       2.0 * (V.x * V.y - V.z * S);
+			m[0][2] =       2.0 * (V.z * V.x + S * V.y);
+			m[0][3] = 0.0;
+			m[1][0] =       2.0 * (V.x * V.y + V.z * S);
+			m[1][1] = 1.0 - 2.0 * (V.z * V.z + V.x * V.x);
+			m[1][2] =       2.0 * (V.y * V.z - S * V.x);
+			m[1][3] = 0.0;
+			m[2][0] =       2.0 * (V.z * V.x - S * V.y);
+			m[2][1] =       2.0 * (V.y * V.z + V.x * S);
+			m[2][2] = 1.0 - 2.0 * (V.y * V.y + V.x * V.x);
+			m[2][3] = 0.0;
+			m[3][0] = 0.0;
+			m[3][1] = 0.0;
+			m[3][2] = 0.0;
+			m[3][3] = 1.0;
+		}
+
 	public:
-		static CQuaternion		add( const CQuaternion& q1, const CQuaternion& q2 ){
-			return CQuaternion(q1.S + q2.S, q1.V + q2.V);
+		static CQuaternion	Add(const CQuaternion& q1, const CQuaternion& q2){
+			return CQuaternion(	q1.S	+ q2.S
+							,	q1.V.x	+ q2.V.x
+							,	q1.V.y	+ q2.V.y
+							,	q1.V.z	+ q2.V.z	);
 		}
-		static CQuaternion		sub( const CQuaternion& q1, const CQuaternion& q2 ){
-			return CQuaternion(q1.S - q2.S, q1.V - q2.V);
+
+		static CQuaternion	Sub(const CQuaternion& q1, const CQuaternion& q2){
+			return CQuaternion(	q1.S	- q2.S
+							,	q1.V.x	- q2.V.x
+							,	q1.V.y	- q2.V.y
+							,	q1.V.z	- q2.V.z	);
 		}
-		static CQuaternion		cross( const CQuaternion& q1, const CQuaternion& q2 ){
-			return CQuaternion( q1.S * q2.S - CVector3::dot(q1.V, q2.V)	//２項目はベクトル内積
-							,	q1.S * q2.V + q2.S * q1.V + CVector3::cross(q1.V, q2.V)	); //３項目はベクトル外積
+
+		static CQuaternion	Cross( const CQuaternion& q1, const double dScaler ){
+			return CQuaternion(	q1.S	* dScaler
+							,	q1.V.x	* dScaler
+							,	q1.V.y	* dScaler
+							,	q1.V.z	* dScaler	);
+		}
+
+		static CQuaternion	Cross( const double dScaler, const CQuaternion& q1 ){
+			return CQuaternion::Cross(q1, dScaler);
+		}
+
+		static CQuaternion	Cross( const CQuaternion& q1, const CQuaternion& q2 ){
+			return CQuaternion(	q1.S * q2.S - CVector3::Dot(q1.V, q2.V)
+							,	q1.S * q2.V + q2.S * q1.V + CVector3::Cross(q1.V, q2.V)	);
+		}
+
+		static CQuaternion	Div( const CQuaternion& q1, const double dScaler ){
+			return CQuaternion(	q1.S	/ dScaler
+							,	q1.V.x	/ dScaler
+							,	q1.V.y	/ dScaler
+							,	q1.V.z	/ dScaler	);
 		}
 	};
 
 	CQuaternion		operator+( const CQuaternion& q1, const CQuaternion& q2 ){
-		return CQuaternion::add(q1, q2);
-	}
-	CQuaternion		operator-( const CQuaternion& q1, const CQuaternion& q2 ){
-		return CQuaternion::sub(q1, q2);
-	}
-	CQuaternion		operator*( const CQuaternion& q1, const CQuaternion& q2 ){
-		return CQuaternion::cross(q1, q2);
+		return CQuaternion::Add(q1, q2);
 	}
 
+	CQuaternion		operator-( const CQuaternion& q1, const CQuaternion& q2 ){
+		return CQuaternion::Sub(q1, q2);
+	}
+
+	CQuaternion		operator*( const CQuaternion& q1, const double dScaler ){
+		return CQuaternion::Cross(q1, dScaler);
+	}
+
+	CQuaternion		operator*( const double dScaler, const CQuaternion& q1 ){
+		return CQuaternion::Cross(dScaler, q1);
+	}
+
+	CQuaternion		operator*( const CQuaternion& q1, const CQuaternion& q2 ){
+		return CQuaternion::Cross(q1, q2);
+	}
+	/**********************************************************************************
+	 */
+	void	CMatrix3x3::Convert( const CQuaternion& qt ){
+		double	N	= SQUARE(qt.S) + SQUARE(qt.V.x) + SQUARE(qt.V.y) + SQUARE(qt.V.z);
+		double	S	= ZERO;
+		if( N > ZERO ){
+			S	= 2.0 / N;
+		}
+
+		double	sx	= qt.V.x * S;
+		double	sy	= qt.V.y * S;
+		double	sz	= qt.V.z * S;
+
+		double	xx	= qt.V.x * (qt.V.x * S);
+		double	xy	= qt.V.x * (qt.V.y * S);
+		double	xz	= qt.V.x * (qt.V.z * S);
+
+		double	yx	= qt.V.y * (qt.V.x * S);
+		double	yy	= qt.V.y * (qt.V.y * S);
+		double	yz	= qt.V.y * (qt.V.z * S);
+
+		double	zx	= qt.V.z * (qt.V.x * S);
+		double	zy	= qt.V.z * (qt.V.y * S);
+		double	zz	= qt.V.z * (qt.V.z * S);
+
+	//	Set((1.0f - yy - zz),	(xy + sz),			(xz - sy),		
+	//		(xy - sz),			(1.0f - xx - zz),	(yz + sx),		
+	//		(xz + sy),			(yz - sx),			(1.0f - xx - yy));
+
+		Set((1.0f - yy + zz),	(xy - sz),			(xz + sy),
+			(xy + sz),			(1.0f - xx + zz),	(yz - sx),
+			(xz - sy),			(yz + sx),			(1.0f - xx + yy));
+	}
+	/**********************************************************************************
+	 */
+	class CArcball {
+	public:
+		bool			m_bDrag;
+		double			m_radius;
+		CVector3		m_start, m_end;
+
+		CArcball( void ) : m_bDrag(false) {
+		}
+
+		inline bool		IsDrag( void ) const {
+			return m_bDrag;
+		}
+
+		CVector3		ConvertXY( int x, int y ){
+			double	distance	= ThreeDMath::SQUARE(x) + ThreeDMath::SQUARE(y);
+			if( distance > ThreeDMath::SQUARE(m_radius) )
+			{
+				return CVector3( x, y, 0 );
+			}
+			else
+			{
+				return CVector3( x, y, sqrt(ThreeDMath::SQUARE(m_radius) - distance) );
+			}
+		}
+
+		void		SetBounds( int w, int h ){
+		}
+
+		void		Begin( int x, int y ){
+		}
+
+		void		End( void ){
+		}
+
+		void		Drag( int x, int y ){
+			m_end	= ConvertXY( x, y );
+			m_end.Normalize();
+		}
+	};
+	/**********************************************************************************
+	 */
+	void	Test( void )
+	{
+		CVector3	a(1,0,0), b(0,1,0), c(0,0,0);
+		c = a * b;
+
+		CQuaternion	q1, q2, q3;
+		q3	= q1 * q2;
+	}
+	/**********************************************************************************
+	 */
 }//End of ThreeDMath

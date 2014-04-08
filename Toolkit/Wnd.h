@@ -381,6 +381,19 @@ protected:
 	virtual LPCTSTR				ClassName( void ) const					= 0;
 
 public:
+//	BOOL	Create(	LPCTSTR		lpWindowName
+//				,	DWORD		dwStyle		= 0
+//				,	DWORD		dwExStyle	= 0
+//				,	int			nX			= CW_USEDEFAULT
+//				,	int			nY			= CW_USEDEFAULT
+//				,	int			nWidth		= CW_USEDEFAULT
+//				,	int			nHeight		= CW_USEDEFAULT
+//				,	CWnd*		pParentWnd	= NULL
+//				,	HMENU		hMenu		= NULL	
+//	){
+//		return TWnd::Create(lpWindow, dwStyle, dwExStyle, nX, nY, nWidth, nHeight, pParentWnd->m_hWnd, hMneu);
+//	}
+
 	BOOL	Create(	LPCTSTR		lpWindowName
 				,	DWORD		dwStyle		= 0
 				,	DWORD		dwExStyle	= 0

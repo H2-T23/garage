@@ -7,6 +7,12 @@
 #include "UseToolkit.h"
 #include "OpenGLPanel.h"
 
+#include <math.h>
+
+#include "UseToolkit.h"
+//#include "UseOpenGL.h"
+#include "OpenGL.h"
+
 #include "ThreeDMath.h"
 
 using namespace ThreeDMath;
@@ -84,78 +90,126 @@ public:
 	}
 };
 
-/**********************************************************************************
- *
- *
- *
- */
-class CArcBall {
+
+static const GLfloat	white[]	= { ONE, ONE, ONE, ONE };
+static const GLfloat	blue[]	= { ZERO, ZERO, ONE, ONE };
+static const GLfloat	black[]	= { ZERO, ZERO, ZERO, ONE };
+
+
+union Mat {
+	float		m4x4[ 4 ][ 4 ];
+	float		m16[ (4 * 4) ];
+};
+
+double	Transform[16]	= {	 ONE, ZERO, ZERO, ZERO,
+							ZERO,  ONE, ZERO, ZERO,
+							ZERO, ZERO,  ONE, ZERO,
+							ZERO, ZERO, ZERO,  ONE	};
+
+//double	LastRot[16]	= {	 ONE, ZERO, ZERO, ZERO,
+//							ZERO,  ONE, ZERO, ZERO,
+//							ZERO, ZERO,  ONE, ZERO,
+//							ZERO, ZERO, ZERO,  ONE, };
+
+//double	ThisRot[16]	= {	 ONE, ZERO, ZERO, ZERO,
+//							ZERO,  ONE, ZERO, ZERO,
+//							ZERO, ZERO,  ONE, ZERO,
+//							ZERO, ZERO, ZERO,  ONE, };
+
+CMatrix3x3		LastRot, ThisRot;
+
+class CArcball {
 protected:
-	CVector3		m_vBegin;
-	CVector3		m_vEnd;
-	CQuaternion		m_qt;
+	bool				m_bDrag;
+	CVector3			m_vecBegin;
+	CVector3			m_vecEnd;
+	CQuaternion			m_qtRot;
+	double				m_dWidth;
+	double				m_dHeight;
 
-	bool			m_bDrag;
+	void	mapToSphere( double x, double y, CVector3& vec ){
+		CVector3	tmp(0 ,0, 0);
+		tmp.x	= (			(x * m_dWidth));
+		tmp.y	= (ONE -	(y * m_dHeight));
 
-	double			m_dWidth;
-	double			m_dHeight;
-
-	double			m_dCoefX;
-	double			m_dCoefY;
-
-	inline void		mapToSphere( int x, int y, CVector3& vec ) const {
-		vec.x	= x * m_dCoefX;
-		vec.y	= y	* m_dCoefY;
+		double	dLen	= ThreeDMath::SQUARE(tmp.x) + ThreeDMath::SQUARE(tmp.y);
+		if( dLen > ONE )
+		{
+			double	dNorm	= ONE / sqrt(dLen);
+			
+			vec.x	= tmp.x * dNorm;
+			vec.y	= tmp.y * dNorm;
+			vec.z	= ZERO;
+		}
+		else
+		{
+			vec.x	= tmp.x;
+			vec.y	= tmp.y;
+			vec.z	= sqrt( ONE - dLen );
+		}
 	}
 
 public:
-	CArcBall( void ) : m_bDrag(false) {
-		setBounds(ZERO, ZERO);
-	}
-	CArcBall( double Width, double Height ) : m_bDrag(false) {
-		setBounds(Width, Height);
-	}
-	~CArcBall( void ){
-	}
-	
-	inline void		setBounds( double Width, double Height ){
-		m_dWidth	= Width;
-		m_dHeight	= Height;
-		m_dCoefX	= (1.0 / ((Width - 1.0) * 0.5));
-		m_dCoefY	= (1.0 / ((Height- 1.0) * 0.5));
+	CArcball( void )
+		: m_bDrag(false), m_dWidth(ZERO), m_dHeight(ZERO) {
 	}
 
-	inline bool	IsDrag( void ) const {
-		return(m_bDrag);
+	CArcball( double w, double h )
+		: m_bDrag(false) {
+		SetBounds( w, h );
 	}
 
-	void		Begin( int x, int y ){
+	void	SetBounds( double w, double h ){
+		m_dWidth	= (ONE / ((w - ONE) * 0.5));
+		m_dHeight	= (ONE / ((h - ONE) * 0.5));
+	}
+
+	void	Begin( double x, double y ){
 		if( !m_bDrag ){
 			m_bDrag	= true;
-			m_qt.in
-			mapToSphere( x, y, m_vBegin );
-		}	
+
+			mapToSphere( x, y , m_vecBegin );
+		}
 	}
 
-	void		End( void ){
+	void	End( void ){
 		if( m_bDrag ){
 			m_bDrag	= false;
 		}
 	}
 
-	void		Move( int x, int y ){
+	void	Drag( double x, double y ){
+		CArcball::Drag(x, y, m_qtRot);
+	}
+
+	void	Drag( double x, double y, CQuaternion& qtRot ){
 		if( m_bDrag )
 		{
-			mapToSphere( x, y, m_vEnd );
-			CVector3	vPerp	= m_vBegin * m_vEnd;
+			mapToSphere( x, y, m_vecEnd );
 
-			vPerp.Normalize();
-
-			m_qt.V	= vPerp;
-			m_qt.S	= CVector3::dot(m_vBegin, m_vEnd);
+			CVector3	vec	= m_vecBegin * m_vecEnd;
+			if( vec.Length() > (1.0e-5) )
+			{
+				qtRot.V	= vec;
+				qtRot.S	= CVector3::Dot( m_vecBegin, m_vecEnd );
+			}
+			else
+			{
+				qtRot.Zero();
+			}
 		}
 	}
 };
+
+void		MakeRot( const CQuaternion& qt )
+{
+//	Matrix3fSetRotationFromQuat4f( &ThisRot, &ThisQuat );
+//	Matrix3fMulMatrix3f( &ThisRot, &LastRot );
+//	Matrix4fSetRotationFromMatrix3f( Transform, ThisRot );
+	ThisRot.Convert( qt );
+	CMatrix3x3	ans = CMatrix3x3::Cross( ThisRot, LastRot );
+}
+
 /**********************************************************************************
  *
  *
@@ -271,11 +325,18 @@ public:
  */
 class COpenGLPanel : public IOpenGLPanel, public IObservable {
 protected:
-	Vertex		m_Camera;
-	CArcBall	m_Arcball;
+	Vertex			m_Camera;
 
-	CWireSphere	m_WireSphere;
+	bool			bTrack;
+	CQuaternion		qtCurr, qtLast;
+	CPoint			ptBegin;
 
+	CRect			m_rect;
+
+	CArcball		m_Arcball;
+
+	/**********************************************************************************
+	 */
 	void	DrawAxis( void ){
 		glColor3d( 1, 1, 1 );
 		glLineWidth( 5 );
@@ -288,7 +349,8 @@ protected:
 		glVertex3d( 0,  0, +1);
 		glEnd();
 	}
-
+	/**********************************************************************************
+	 */
 	void	DrawCube( void ){
 		glColor3d( 1, 1, 1 );
 		glLineWidth( 1 );
@@ -309,30 +371,243 @@ protected:
 		}
 		glEnd();
 	}
+	/**********************************************************************************
+	 */
+	void	DrawFrame( const float L = 0.5 ){
+		static GLfloat	vData[][3] = {
+			{ -L, -L, -L }, { L, -L, -L }, { L, L, -L }, { -L, L, -L },
+			{ -L, -L,  L }, { L, -L,  L }, { L, L,  L }, { -L, L,  L }
+		};
+		static GLint tindices[][4] = {
+			{ 0, 1, 2, 3 }, { 0, 1, 5, 4 }, { 3, 0, 4, 7 },
+			{ 1, 2, 6, 5 }, { 2, 3, 7, 6 }, { 5, 4, 7, 6 }
+		};
+		
+		glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE, blue );
+		glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT, black );
+		for( int i=0; i<3; ++i ){
+			glBegin( GL_QUADS );
+				glNormal3fv( &vData[ (tindices[i][0]) ][0] );
+				glVertex3fv( &vData[ (tindices[i][0]) ][0] );
+
+				glNormal3fv( &vData[ (tindices[i][1]) ][0] );
+				glVertex3fv( &vData[ (tindices[i][1]) ][0] );
+	
+				glNormal3fv( &vData[ (tindices[i][2]) ][0] );
+				glVertex3fv( &vData[ (tindices[i][2]) ][0] );
+
+				glNormal3fv( &vData[ (tindices[i][3]) ][0] );
+				glVertex3fv( &vData[ (tindices[i][3]) ][0] );
+			glEnd();
+		}
+	}
+	/**********************************************************************************
+	 */
+	void	DrawShape( const float X = (0.525731112119133606 / 2.0), const float Z = (0.850650808352039932 / 2.0) ){
+		static GLfloat		vData[][ 3 ] = {
+			{ -X, ZERO,  Z }, { X, ZERO, Z }, { -X, ZERO, -Z },
+			{  X, ZERO, -Z }, { ZERO, Z, X }, { ZERO,  Z, -X },
+			{ ZERO, -Z, X }, { ZERO, -Z, -X }, { Z, X, ZERO },
+			{ -Z, X, ZERO }, { Z, -X, ZERO }, { -Z, -X, ZERO }
+		};
+
+		static GLint		tindices[][ 3 ] = {
+			{ 0, 4, 1 }, { 0, 9, 4 }, { 9, 5, 4 }, { 4, 5, 8 },
+			{ 4, 8, 1 }, { 8, 10, 1 }, { 8, 3, 10 }, { 5, 3, 8 },
+			{ 5, 2, 3 }, { 2, 7, 3 }, { 7, 10, 3 }, { 7, 6, 10 },
+			{ 7, 11, 6 }, { 11, 0, 6 }, { 0, 1, 6 }, { 6, 1, 10 }, 
+			{ 9, 0, 11 }, { 9, 11, 2 }, { 9, 2, 5 }, { 7, 2, 11 } 
+		};
+
+		::glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, white );
+		for( int i=0; i<20; i++ )
+		{
+			glBegin( GL_TRIANGLES );
+			{
+				glNormal3fv( &vData[ (tindices[ i ][ 0 ]) ][ 0 ] );
+				glVertex3fv( &vData[ (tindices[ i ][ 0 ]) ][ 0 ] );
+
+				glNormal3fv( &vData[ (tindices[ i ][ 1 ]) ][ 0 ] );
+				glVertex3fv( &vData[ (tindices[ i ][ 1 ]) ][ 0 ] );
+
+				glNormal3fv( &vData[ (tindices[ i ][ 2 ]) ][ 0 ] );
+				glVertex3fv( &vData[ (tindices[ i ][ 2 ]) ][ 0 ] );
+			}
+			glEnd();
+		}
+	}
 
 public:
+	/**********************************************************************************
+	 */
 	void	Init( void ){
 		m_Camera	= Model::Instance().m_Camera;
 
-		m_WireSphere.m_vCenter.Set( 0, 0, 0 );
-		m_WireSphere.m_dRadius	= RADIUS( 45 );
-		m_WireSphere.m_vColor.Set( 0, 0, 0 );
-	}
+		static GLfloat	light1[] = { ZERO, ZERO, 10.0, ONE };
 
+		glClearColor( ZERO, ZERO, ZERO, ONE );
+		glEnable( GL_DEPTH_TEST	);
+		glEnable( GL_NORMALIZE	);
+
+		glEnable( GL_LIGHTING	);
+		glLightfv( GL_LIGHT0, GL_DIFFUSE, black );
+
+		glEnable( GL_LIGHT0 );
+		glLightfv( GL_LIGHT1, GL_DIFFUSE, white );
+		glLightfv( GL_LIGHT1, GL_POSITION, light1 );
+
+		glEnable( GL_LIGHT1 );
+
+		bTrack	= false;
+	
+		Trackball( qtCurr, ZERO, ZERO, ZERO, ZERO );
+	}
+	/**********************************************************************************
+	 */
+	void	Trackball( CQuaternion& qt, double x1, double y1, double x2, double y2 ){
+		if( (x1 == x2) && (y1 == y2) )
+		{
+			qt.Identity();
+		}
+		else
+		{
+			const double	R	= 0.8;
+
+			double	distance1	= sqrt( ThreeDMath::SQUARE(x1) + ThreeDMath::SQUARE(y1) );
+			double	z1	= ThreeDMath::SQUARE(R) / distance1;
+			if( R > distance1 ){
+				z1	= sqrt( 2.0 * ThreeDMath::SQUARE(R) - (ThreeDMath::SQUARE(x1) + ThreeDMath::SQUARE(y1)) );
+			}
+			const CQuaternion	q1(0.0, x1, y1, z1);
+
+
+			double	distance2	= sqrt( ThreeDMath::SQUARE(x2) + ThreeDMath::SQUARE(y2) );
+			double	z2	= ThreeDMath::SQUARE(R) / distance2;
+			if( R > distance2 ){
+				z2	= sqrt( 2.0 * ThreeDMath::SQUARE(R) - (ThreeDMath::SQUARE(x2) + ThreeDMath::SQUARE(y2)) );
+			}
+			const CQuaternion	q2(0.0, x2, y2, z2);
+
+
+			CQuaternion	q3	= q1 * q2;
+			q3.Normalize();
+
+			CQuaternion	q4	= q1 - q2;
+			double	norm	= q4.Norm();
+			norm	= norm  / (2.0 * R * 0.70710678118654752440);
+			if( norm > 1.0 ){
+				norm	= 1.0;
+			}
+
+			qt.Set( cos(asin(norm)), (q3.V.x * norm), (q3.V.y * norm), (q3.V.z * norm) );
+		}
+	}
+	/**********************************************************************************
+	 */
+	void	OnMouseMove			( int x, int y, UINT KeyFlags )	{
+		if( bTrack ){
+			DBG::TRACE( _T("Trackball::OnMouseMove(%d, %d, %u)"),x,y,KeyFlags);
+
+			m_Arcball.Drag( double(x), double(y) );
+
+			double	x1		= (2.0 * ptBegin.x - m_rect.Width())	/ m_rect.Width();
+			double	y1		= (m_rect.Height() - 2.0 * ptBegin.y)	/ m_rect.Height();
+			double	x2		= (2.0 *         x - m_rect.Width())	/ m_rect.Width();
+			double	y2		= (m_rect.Height() - 2.0 *         y)	/ m_rect.Height();
+
+			Trackball( qtLast, x1, y1, x2, y2 );
+			ptBegin.Set( x, y );
+
+			CQuaternion	qt = (qtLast * qtCurr);
+			qtCurr = qt;
+
+			static int	cnt = 0;
+			if( ++cnt % 97 ){
+				GLdouble	dScaler	= qtCurr.Norm();
+				qtCurr = CQuaternion::Div(qtCurr, dScaler);
+			}
+
+			Invalidate();
+		}
+	}
+	/**********************************************************************************
+	 */
+	void	OnLButtonDown		( int x, int y, UINT KeyFlags )	{
+		if( MK_LBUTTON == KeyFlags ){
+			bTrack	= true;
+			ptBegin.Set( x, y );
+
+			m_Arcball.Begin( double(x), double(y) );
+
+			DBG::TRACE( _T("Trackball::OnLButtonDown(%d, %d, %u)"),x,y,KeyFlags);
+		}
+	}
+	/**********************************************************************************
+	 */
+	void	OnLButtonUp			( int x, int y, UINT KeyFlags ) {
+		if( bTrack ){
+			bTrack	= false;
+
+			m_Arcball.End();
+
+			DBG::TRACE( _T("Trackball::OnLButtonUp(%d, %d, %u)"),x,y,KeyFlags);
+		}
+	}
+	/**********************************************************************************
+	 */
 	void	Display( void ){
+		DBG::TRACE( _T("Trackball::Display()"));
+
 		glEnable( GL_DEPTH_TEST );
 		glEnable( GL_CULL_FACE );
 
 		glClearColor( 0.0f, 0.0f, 1.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		if( Model::Instance().m_bDrawAxis )
-			DrawAxis();
+		GLdouble	view[4][4] = {
+			{  ONE, ZERO, ZERO, ZERO },
+			{ ZERO,  ONE, ZERO, ZERO },
+			{ ZERO, ZERO,  ONE, ZERO },
+			{ ZERO, ZERO, -4.0,  ONE },
+		//	{ ZERO, ZERO, ZERO,  ONE },
+		};
+		glLoadIdentity();
+		glMultMatrixd( &view[0][0] );
 
-	//	DrawCube();
-		m_WireSphere.Draw();
+		glPushMatrix();
+		{
+			GLdouble	rot[4][4] = {0};
+			qtCurr.GetRotation( rot );
+
+			glMultMatrixd( &rot[0][0] );
+
+			static GLint	displayList = 0;
+			static bool	bInit = true;
+			if( bInit )
+			{
+				bInit	= false;
+
+				displayList	= ::glGenLists( 1 );
+				::glNewList( displayList, GL_COMPILE_AND_EXECUTE );
+				{
+					if( Model::Instance().m_bDrawAxis )
+						DrawAxis();
+
+					DrawFrame();
+					DrawCube();
+					DrawShape();
+				}
+				::glEndList();
+			}
+			else
+			{
+				::glCallList( displayList );
+			}
+		}
+		glPopMatrix();
 	}
-
+	/**********************************************************************************
+	 */
 	void	Resize( int nWidth, int nHeight ){
 		glViewport( 0, 0, nWidth, nHeight );
 
@@ -360,8 +635,8 @@ public:
 	void	OnLButtonUp			( int x, int y, UINT KeyFlags )	{
 		m_Arcball.End();
 	}
-
-
+	/**********************************************************************************
+	 */
 	void	Notify( void ){
 		CRect	rc;
 		GetClientRect( &rc );
@@ -391,12 +666,15 @@ public:
 protected:
 	CButton						m_btnUpdate;
 	CCheckBox					m_chkAxis;
+
 	TSpinCtrl<double,IDC_SPIN_UPDOWN_X>			m_spinX;
 	TSpinCtrl<double,IDC_SPIN_UPDOWN_Y>			m_spinY;
 	TSpinCtrl<double,IDC_SPIN_UPDOWN_W>			m_spinZ;
 
 	TCommandHandler<CInputPanel>	cmd;
 
+	/**********************************************************************************
+	 */
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		if( !m_btnUpdate.Create(this, 10, 10, 100, 30, IDC_UPDATE_BUTTON, _T("Update")) ){
 			return FALSE;
@@ -431,33 +709,39 @@ protected:
 		cmd.Register( IDC_UPDATE_BUTTON, &CInputPanel::OnUpdateBtnClick );
 		cmd.Register( IDC_CHECK_AXIS, &CInputPanel::OnAxisCheck );
 
-
 		SetFontChildren();
 		return TRUE;
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnSize( UINT state, int cx, int cy ){
 		if( cx <= 0 || cy <= 0 )
 			return;
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnCommand( UINT nID, HWND hWndCtrl, UINT nCodeNotify ){
 		cmd.Dispach( nID, nCodeNotify );
 	}
 
 public:
+	/**********************************************************************************
+	 */
 	void	OnUpdateBtnClick( void ){
 		Model::Instance().SetCamera(	m_spinX.GetPos()
 									,	m_spinY.GetPos()
 									,	m_spinZ.GetPos()	);
 		Model::Instance().NotifyAll();
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnAxisCheck( void ){
 		Model::Instance().m_bDrawAxis	= m_chkAxis.GetCheck() == 0 ? false : true;
 		Model::Instance().NotifyAll();
 	}
 
+	/**********************************************************************************
+	 */
 	void	Notify( void ){
 	}
 };
@@ -472,6 +756,8 @@ protected:
 	COpenGLPanel			m_wndOpenGL;
 	CInputPanel				m_wndInput;
 
+	/**********************************************************************************
+	 */
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 
 		if( !m_wndOpenGL.Create(this, 0, 0, 0, 0) ){
@@ -490,22 +776,27 @@ protected:
 		Model::Instance().add( &m_wndOpenGL	);
 		Model::Instance().add( &m_wndInput	);
 
+		SetFontChildren();
 		return TRUE;
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnLButtonDown( int x, int y, UINT KeyFlags ){
 		m_Splitter.BeginSplitterMoving();
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnLButtonUp( int x, int y, UINT KeyFlags ){
 		m_Splitter.EndSplitterMoving();
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnMouseMove( int x, int y, UINT KeyFlags ){
 		if( m_Splitter.IsSplitterMoving( KeyFlags ) )
 			m_Splitter.MoveSplitter( x, y );
 	}
-
+	/**********************************************************************************
+	 */
 	void	OnSize( UINT state, int cx, int cy ){
 		m_Splitter.AdjustWindow( cx, cy );
 	}
@@ -522,6 +813,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	//	MakeRot();
 
 	CMainForm	Form;
 	if( Form.Create(_T("ExampleOpenGL"),0,0,100,100,600,600) ){

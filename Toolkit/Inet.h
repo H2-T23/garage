@@ -124,16 +124,20 @@ namespace INET {
 	 */
 	class CSocket : public THandle<CSocket,SOCKET,INVALID_SOCKET> {
 	public:
-		CSocket( void ) : SUPER() {}
-		CSocket( const CSocket& sock ) : SUPER(sock) {}
-		/*explicit*/ CSocket( SOCKET sock ) : SUPER(sock) {}
+		SOCKET&		m_sock;
+		CSocket( void ) : SUPER(), m_sock(SUPER::m_hHandle) {}
+		CSocket( const CSocket& sock ) : SUPER(sock), m_sock(SUPER::m_hHandle) {}
+		/*explicit*/ CSocket( SOCKET sock ) : SUPER(sock), m_sock(SUPER::m_hHandle) {}
 
-		CSocket( int nAf, int nType, int nProtocol ) : SUPER() {
+		CSocket( int nAf, int nType, int nProtocol ) : SUPER(), m_sock(SUPER::m_hHandle) {
 			Create(nAf, nType, nProtocol);
 		}
 
+		inline bool	IsInvalid( void ) const {
+			return(m_sock==INVALID_SOCKET);
+		}
 		inline bool	IsValid( void ) const {
-			return(GetHandle()!=INVALID_SOCKET);
+			return(m_sock!=INVALID_SOCKET);
 		}
 
 		virtual BOOL	Create( int nAf, int nType, int nProtocol ){
@@ -209,19 +213,34 @@ namespace INET {
 	 */
 	class CListenSocket : public CSocket, public TNonCopyable<CListenSocket> {
 	public:
-		const int		m_AF;
-		const int		m_TYPE;
+		int				m_Af;
+		int				m_Type;
+		int				m_Protocol;
+		int				m_Port;
+
 		SOCKADDR_IN		Addr;
 
-		CListenSocket( void ) : CSocket(), m_AF(AF_INET), m_TYPE(SOCK_STREAM) {}
+		CListenSocket( void )
+			: CSocket(), m_Af(AF_INET), m_Type(SOCK_STREAM), m_Protocol(0), m_Port(0) {
+		}
 
-		BOOL		Create( int nPort ){
-			if( !CSocket::Create(m_AF, m_TYPE, 0) ){
+		BOOL	Create( int nAf, int nType, int nProtocol, int nPort ){
+			m_Af		= nAf;
+			m_Type		= nType;
+			m_Protocol	= nProtocol;
+			m_Port		= nPort;
+			return CListenSocket::Create( m_Port );
+		}
+
+		BOOL	Create( int nPort ){
+			m_Port	= nPort;
+
+			if( !CSocket::Create(m_Af, m_Type, m_Protocol) ){
 				return FALSE;
 			}
 
-			Addr.sin_family				= m_AF;
-			Addr.sin_port				= htons(nPort);
+			Addr.sin_family				= m_Af;
+			Addr.sin_port				= htons(m_Port);
 			Addr.sin_addr.S_un.S_addr	= INADDR_ANY;
 
 			if( Bind((const sockaddr*)&Addr, sizeof(Addr)) == SOCKET_ERROR ){
@@ -237,8 +256,8 @@ namespace INET {
 			return TRUE;
 		}
 
-		CSocket		Accept( SOCKADDR* pAddr, int nLen ){
-			CSocket	sock	= CSocket::Accept(pAddr, nLen);
+		CSocket		Accept( SOCKADDR& pAddr, int& nLen ){
+			CSocket	sock	= CSocket::Accept(&pAddr, nLen);
 			return sock;
 		}
 	};

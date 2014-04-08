@@ -155,7 +155,7 @@ public:
 	void	OnVScroll			( HWND hWndCtl, UINT code, int idx ){
 		if( m_updown.m_hWnd == hWndCtl && SB_THUMBPOSITION == code ){
 			DBG::TRACE(_T("OnVScroll(%d)"), idx);
-			SetPos( m_range.Index2Pos(m_idx) );
+			SetPos( m_range.Index2Pos(idx) );
 		}
 	}
 

@@ -6,23 +6,38 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="SourceFiles">
-      <UniqueIdentifier>{73b33eb7-2021-4bd1-8b8d-31b336ec84b0}</UniqueIdentifier>
+      <UniqueIdentifier>{ffa911f8-5139-4851-a1d1-31efd95357ce}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base64.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListener1.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListener2.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
     <ClInclude Include="ComponentWnd.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Database.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="Dbg.h">
+    <ClInclude Include="DBG.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="DC.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DC.old.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Form.h">
@@ -40,7 +55,13 @@
     <ClInclude Include="Inet.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="IOCP.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
     <ClInclude Include="Log.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="NotifyListener.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Observar.h">
@@ -50,9 +71,6 @@
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Panel.h">
-      <Filter>HeaderFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="Rect.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="SpinCtrl.h">
@@ -65,6 +83,12 @@
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Thread.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreeDMath.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolHelpEx.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="TString.h">

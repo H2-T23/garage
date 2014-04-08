@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{18009649-F729-4C18-8088-035F6897690F}</ProjectGuid>
-    <RootNamespace>ExampleOpenGL</RootNamespace>
+    <ProjectGuid>{3DE8A13B-B309-4C78-B81E-F6319E09FC37}</ProjectGuid>
+    <RootNamespace>ExampleInet</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -82,16 +82,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ExampleOpenGL.cpp" />
+    <ClCompile Include="ExampleInet.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ExampleOpenGL.h" />
+    <ClInclude Include="ExampleInet.h" />
+    <ClInclude Include="SimpleInet.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Toolkit\Toolkit.vcxproj">
+      <Project>{861e7381-4398-41a6-83f5-90c6a08f746d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

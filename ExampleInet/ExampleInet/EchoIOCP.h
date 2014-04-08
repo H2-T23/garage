@@ -6,8 +6,16 @@
 #include <mswsock.h>
 #include "Inet.h"
 #include "Thread.h"
+#include "Buffer.h"
+#include "IOCP.h"
 
 namespace ECHO_IOCP {
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	typedef	CBuffer			CPacket;
 	/**********************************************************************************
 	 *
 	 *
@@ -59,50 +67,6 @@ namespace ECHO_IOCP {
 	 *
 	 *
 	 */
-	class CIOCP {
-	protected:
-		HANDLE		m_hIOCP;
-
-	public:
-		CIOCP( void ) : m_hIOCP(NULL) {
-		}
-		~CIOCP( void ){
-		}
-
-		BOOL	Create( void ){
-			m_hIOCP	= ::CreateIoCompletionPort( INVALID_HANDLE_VALUE, NULL, 0, 0 );
-			if( m_hIOCP == NULL ){
-				return FALSE;
-			}
-			return TRUE;
-		}
-
-		void	Close( void ){
-			if( m_hIOCP )
-				::CloseHandle( m_hIOCP );
-			m_hIOCP	= NULL;
-		}
-
-		void	PostQueuedCompletionStatus( void ){
-			::PostQueuedCompletionStatus( m_hIOCP, 0, (DWORD)NULL, NULL );
-		}
-
-		BOOL	GetQueuedCompletionStatus( LPDWORD lpNumberOfBytesTransferred, PULONG_PTR lpCompletionKey, LPOVERLAPPED *lpOverlapped, DWORD dwMilliseconds ){
-			return ::GetQueuedCompletionStatus(m_hIOCP, lpNumberOfBytesTransferred, lpCompletionKey, lpOverlapped, dwMilliseconds );
-		}
-
-		BOOL	IoCompletionPort( HANDLE hHandle, ULONG_PTR lpBuf ){
-			if( ::CreateIoCompletionPort( hHandle, m_hIOCP, lpBuf, 0 ) == m_hIOCP ){
-				return TRUE;
-			}
-			return FALSE;
-		}
-	}; 
-	/**********************************************************************************
-	 *
-	 *
-	 *
-	 */
 	class CIocpState {
 	public:
 		enum OPERATION {
@@ -119,7 +83,7 @@ namespace ECHO_IOCP {
 		DWORD				length;
 		char				buf[ MAX_BUF ];
 
-		std::vector<char>	m_packet;
+		CPacket				m_packet;
 
 
 		CIocpState( void ) : operation(OP_NONE), length(0) {}
@@ -182,9 +146,9 @@ namespace ECHO_IOCP {
 	public:
 		static LPFN_ACCEPTEX	AcceptEx;
 
-		static BOOL		Load( void ){
+		static BOOL		Load( SOCKET sock ){
 			DWORD	dwBytes	= 0;
-			::WSAIoctl(NULL, SIO_GET_EXTENSION_FUNCTION_POINTER, 
+			::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, 
 						&GuidAcceptEx, sizeof(GuidAcceptEx),
 						&AcceptEx, sizeof(AcceptEx),
 						&dwBytes, NULL, NULL);
@@ -347,9 +311,7 @@ namespace ECHO_IOCP {
 						{
 							DBG::TRACE(_T("* read operation completed, %d bytes read."), length);
 							pState->length	= length;
-							std::vector<char>	recvbuf( pState->buf, &pState->buf[ length - 1 ] );
-							pState->m_packet.insert( pState->m_packet.end(), recvbuf.begin(), recvbuf.end() );
-							int	sz	= pState->m_packet.size();
+							int	sz	= pState->m_packet.Append( (LPBYTE)pState->buf, length );
 							if( sz >= 256 )
 								pState->Send( pOverlapped );
 							else

@@ -82,8 +82,7 @@ public:
  *
  *
  */
-
-class CVerticalSplitter		: public CSplitter {
+ class CVerticalSplitter		: public CSplitter {
 public:
 	CVerticalSplitter( void ) : CSplitter() {
 		LoadCursor();
@@ -122,7 +121,6 @@ public:
 										, (cx - SplitterPos() - SPLITBAR_SIZE-1), cy );
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -167,3 +165,35 @@ public:
 										, cx, (cy - SplitterPos() - SPLITBAR_SIZE-1) );
 	}
 };
+/**********************************************************************************
+ *
+ *
+ *
+ */
+template<class BASE, class SPLITTER>
+class TSplitter : public BASE {
+protected:
+	SPLITTER		m_Splitter;
+public:
+	void	OnLButtonDown( int x, int y, UINT KeyFlags ){
+		m_Splitter.BeginSplitterMoving();	
+	}
+
+	void	OnLButtonUp( int x, int y, UINT KeyFlags ){
+		m_Splitter.EndSplitterMoving();
+	}
+
+	void	OnMouseMove(  int x, int y, UINT KeyFlags ){
+		if( m_Splitter.IsSplitterMoving(KeyFlags) )
+			m_Splitter.MoveSplitter(x, y);
+	}
+
+	void	OnSize(UINT, int cx, int cy){
+		m_Splitter.AdjustWindow(cx, cy);
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
