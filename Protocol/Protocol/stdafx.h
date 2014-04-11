@@ -28,6 +28,10 @@
 #include <string>
 
 #include <winsock2.h>
+#include <mswsock.h>
+
+#pragma comment(lib,"Ws2_32.lib")
+
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
 /**************************************************************************
  */

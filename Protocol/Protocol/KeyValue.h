@@ -7,8 +7,8 @@ protected:
 	typedef	Map::iterator						Iterator;
 	typedef std::pair<const String,String>		Pair;
 
-	Map			m_map;
-	Iterator	m_it;
+	Map					m_map;
+	Iterator			m_it;
 
 public:
 	template<typename TYPE>
@@ -30,6 +30,10 @@ public:
 		return NULL;
 	}
 
+	void			Clear( void ){
+		m_map.clear();
+	}
+
 	String			ToString( const String& strKey ){
 		String	str;
 		const char* pValue = Find( strKey );
@@ -40,7 +44,9 @@ public:
 
 	const char*		Begin( void ){
 		m_it	= m_map.begin();
-		return m_it->first.c_str();;
+		if( hasNext() )
+			return(m_it->first.c_str());
+		return NULL;
 	}
 
 	bool			hasNext( void ){
@@ -60,13 +66,25 @@ public:
 	{
 		CKeyValue	KeyValue;
 
+		const char*	pKey	= NULL;
+
+		for( pKey=KeyValue.Begin(); KeyValue.hasNext(); pKey=KeyValue.Next() ){
+			TRACE(KeyValue.ToString( pKey ).c_str());
+		}
+
 		KeyValue.Set( "system.mode", 1.23 );
 		KeyValue.Set( "scan.mode", "BW" );
 		KeyValue.Set( "num_vector", 512 );
+		KeyValue.Set( "debug", true );
 
-		char*	pKey = (char*)KeyValue.Begin();
-		for( ; KeyValue.hasNext(); pKey=(char*)KeyValue.Next() ){
-			TRACE(KeyValue.ToString( (const char*)pKey ).c_str());
+		for( pKey=KeyValue.Begin(); KeyValue.hasNext(); pKey=KeyValue.Next() ){
+			TRACE(KeyValue.ToString( pKey ).c_str());
+		}
+
+		KeyValue.Clear();
+
+		for( pKey=KeyValue.Begin(); KeyValue.hasNext(); pKey=KeyValue.Next() ){
+			TRACE(KeyValue.ToString( pKey ).c_str());
 		}
 	}
 };

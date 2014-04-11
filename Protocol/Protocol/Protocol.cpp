@@ -3,201 +3,256 @@
 
 #include "stdafx.h"
 #include "Protocol.h"
+#include "HttpProtocol.h"
+#include "XmlRpcProtocol.h"
+
 #include "Command.h"
 #include "KeyValue.h"
 
+
+
 /**********************************************************************************
  */
-//class CBuffer : public std::string {};
-typedef std::string		CBuffer;
-/**********************************************************************************
- */
-class CSocket {
+class ISocket {
 public:
-	SOCKET			m_sock;
+	class SocketOption {
+	public:
+		int		nAf, nType, nProtocol;
 
-public:
-	int			Send( CBuffer* pBuffer ){
-	}
-
-	int			Recv( CBuffer* pBuffer ){
-	}
-};
-/**********************************************************************************
- */
-class IEventHandler {
-public:
-	enum EnumType {
-		OP_READ	= 0, OP_WRITE, OP_ACCEPT, OP_CLOSE, OP_CONNECT
-	};
-
-	virtual int		Preform( EnumType nType, CBuffer* pBuffer ){
-		switch( nType ){
-		case OP_READ:
-			OnRead( pBuffer );
-			break;
-
-		case OP_WRITE:
-			OnWrite( pBuffer );
-			break;
-
-		case OP_ACCEPT:
-			OnAccept( pBuffer );
-			break;
-
-		case OP_CLOSE:
-			OnClose( pBuffer );
-			break;
-
-		case OP_CONNECT:
-			OnConnect( pBuffer );
-			break;
-
-		default:
-			return -1;
+		SocketOption( int af = 0, int type = 0, int protocol = 0 )
+			: nAf(af), nType(type), nProtocol(protocol) {
 		}
-		return 1;
+	};
+
+public:
+	SOCKET				m_sock;
+	SocketOption		m_sockOption;
+
+	int					Af( void ) const		{ return(m_sockOption.nAf); }
+	int					Type( void ) const		{ return(m_sockOption.nType); }
+	int					Protocol( void ) const	{ return(m_sockOption.nProtocol); }
+
+public:
+	ISocket( void ) : m_sock(INVALID_SOCKET) {}
+
+public:
+	inline bool			IsInvalid( void ) const {
+		return(m_sock==INVALID_SOCKET);
+	}
+	inline bool			IsValid( void ) const {
+		return !IsInvalid();
 	}
 
-	virtual int		OnRead( LPVOID )	{ return 0; }
-	virtual int		OnWrite( LPVOID )	{ return 0; }
-	virtual int		OnAccept( LPVOID )	{ return 0; }
-	virtual int		OnClose( LPVOID )	{ return 0; }
-	virtual int		OnConnect( LPVOID )	{ return 0; }
+public:
+	virtual bool		Create( SocketOption& Option )				= 0;
+	virtual int			Close( void )								= 0;
+	virtual int			Shutdown( void )							= 0;
+
+	virtual int			Recv( CBuffer* pBuffer )					= 0;
+	virtual int			Send( CBuffer* pBuffer )					= 0;
+
+	virtual int			Accept( LPSOCKADDR lpAddr, int& nLen )		= 0;
 };
 /**********************************************************************************
  */
+class CSocket	: public ISocket {
+public:
+
+public:
+	CSocket( void ) : ISocket() {}
+
+public:
+	bool		Create( SocketOption& Option ){
+		m_sock	= ::socket(Option.nAf, Option.nProtocol, Option.nType);
+		return IsValid();
+	}
+
+	int			Close( void ){
+		return ::closesocket(m_sock);
+	}
+
+	virtual int		Shutdown( void ){
+		return ::shutdown(m_sock,2);
+	}
+
+	virtual int		Send( const CBuffer* pBuffer ){
+		return ::send(m_sock, &pBuffer->at( 0 ), pBuffer->size(), 0 );
+	}
+
+	virtual int		Recv( CBuffer* pBuffer ){
+		return ::recv(m_sock, &pBuffer->at( 0 ), pBuffer->size(), 0 );
+	}
+
+	virtual int		Accept( LPSOCKADDR lpAddr, int& nLen ){
+		return ::accept(m_sock, lpAddr, &nLen );
+	}
+};
 /**********************************************************************************
  */
-class CHttpProtocol		: public IEventHandler {
-public:
-	enum {
-		REQUEST_LINE	= 0	,
-		REQUEST_HEADER		,
-		REQUEST_BODY		,
+class CSocketEx : public CSocket {
+protected:
+	
+
+	SOCKET				m_sockAccept;
+	
+	OVERLAPPED			m_Overlapped;
+	WSABUF				m_dataBuf;
+
+
+	//bool		LoadAcceptEx( SOCKET sock ){
+	//	GUID	GuidAcceptEx	= WSAID_ACCEPTEX;
+	//	DWORD	dwBytes	= 0;
+	//	if( 0 == ::WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &GuidAcceptEx, sizeof(GuidAcceptEx), &m_lpAcceptEx, sizeof(m_lpAcceptEx), &dwBytes, NULL, NULL) ){
+	//		m_sockAccept	= ::socket(Af(), Type(), Protocol());
+	//		if( m_sockAccept != INVALID_SOCKET ){
+	//			return(true);
+	//		}
+	//	}
+	//	return(false);
+	//}
+
+	class CAcceptEx {
+	public:
+		LPFN_ACCEPTEX		AcceptEx;
+
+		inline bool		IsInvalid( void ) const {
+			return(AcceptEx==NULL);
+		}
+
+		CAcceptEx( void ) : AcceptEx(NULL) {
+		}
+
+		CAcceptEx( SOCKET sock ) : AcceptEx(NULL) {
+			Load(sock);
+		}
+
+		bool	Load( SOCKET sock ){
+			GUID	GuidAcceptEx	= WSAID_ACCEPTEX;
+			DWORD	dwBytes	= 0;
+			::WSAIoctl( sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &GuidAcceptEx, sizeof(GuidAcceptEx), &AcceptEx, sizeof(AcceptEx), &dwBytes, NULL, NULL );
+			return !IsInvalid();
+		}
+
+		void	Unload( void ){
+			if( !IsInvalid() )
+				AcceptEx	= NULL;
+		}
 	};
 
-	std::string		m_Req, m_Header, m_Body;
-	int state;
-	int	response;
 
-	CHttpProtocol( void ) : state(REQUEST_LINE) {
-	}
+	class CTransmitFile {
+	public:
+		LPFN_TRANSMITFILE			TransmitFile;
 
-	virtual int		Get( std::string& uri ){
-		TRACE("HTTP: %s",uri.c_str());
+		inline bool		IsInvalid( void ) const {
+			return(TransmitFile == NULL);
+		}
 
-		return 1;
-	}
+		CTransmitFile( void ) : TransmitFile(NULL) {
+		}
 
-	virtual int		Put( std::string& uri ){
-		return 0;
-	}
+		CTransmitFile( SOCKET sock ) : TransmitFile(NULL) {
+			Load(sock);
+		}
 
-	virtual int		Post( std::string& uri ){
-		return 0;
-	}
+		bool	Load( SOCKET sock ){
+			GUID	GuidTransmitFile	= WSAID_TRANSMITFILE;
+			DWORD	dwBytes	= 0;
+			::WSAIoctl( sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &GuidTransmitFile, sizeof(GuidTransmitFile), &TransmitFile, sizeof(TransmitFile), &dwBytes, NULL, NULL );
+			return !IsInvalid();
+		}
 
-	virtual int		Head( std::string& uri ){
-		return 0;
-	}
+		void	Unload( void ){
+			if( !IsInvalid() )
+				TransmitFile	= NULL;
+		}
+	};
 
-	virtual int		OnRead( LPVOID lpParam )
-	{
-		CBuffer* pBuffer = (CBuffer*)lpParam;
+	CAcceptEx				m_AcceptEx;
+	CTransmitFile			m_TransmitFile;
 
-	//	int	cnt = 0;
-		int	idx	= 0;
-		int siz	= -1;
-
-	//	while( 1 )
-		do
-		{
-			int len	= 0;
-
-			siz = pBuffer->find('\n', idx);
-			if( siz > 0 ){
-				len	= siz - idx;
-			}else{
-				len	= pBuffer->length() - idx;
+public:
+	BOOL		TransmitFile( HANDLE hFile, DWORD dwNumberOfBytesToWrite, DWORD dwNumberOfBytesPerSend, LPOVERLAPPED lpOveralapped, LPTRANSMIT_FILE_BUFFERS lpTransmitBuffers, DWORD dwFlags ){
+		if( m_TransmitFile.IsInvalid() ){
+			if( !m_TransmitFile.Load( m_sock ) ){
+				return FALSE;
 			}
+		}
+		return m_TransmitFile.TransmitFile(m_sock, hFile, dwNumberOfBytesToWrite, dwNumberOfBytesPerSend, lpOveralapped, lpTransmitBuffers, dwFlags);
+	}
 
-			if( len > 0 )
+public:
+	CSocketEx( void )
+		: CSocket(), m_sockAccept(INVALID_SOCKET) {
+	}
+
+public:
+	bool		Create( SocketOption& Option ){
+		if(CSocket::Create(Option)){
+		//	if(LoadAcceptEx(m_sock))
 			{
-				switch( state ){
-				case REQUEST_LINE:
-					m_Req.append( &pBuffer->at( idx ), len );
-					if( siz > 0 ){
-						m_Req.append( "\n\0" );
-						state++;
-					}
-					break;
-
-				case REQUEST_HEADER:
-					m_Header.append( &pBuffer->at( idx ), len );
-					if( siz > 0 ){
-						m_Header.append( "\n\0" );
-						state++;
-					}
-					break;
-
-				case REQUEST_BODY:
-					m_Body.append( &pBuffer->at( idx ), len );
-					if( siz > 0 ){
-						m_Body.append( "\n\0" );
-						state++;
-					}
-					break;
-				}
-
-				if( siz > 0 )
-				{
-					idx = (siz + 1);
-				}
-				else
-				{
-			//		break;
-				}
+				return(true);
 			}
-			else
-			{
-				break;
-			}
-	//	}
-		} while( siz > 0 );
+		}
+		return(false);
+	}
 
-		if( state <= REQUEST_BODY ){
+	virtual int		Send( const CBuffer* pBuffer ){
+		m_dataBuf.buf		= (char*)&pBuffer->at( 0 );
+		m_dataBuf.len		= pBuffer->size();
+
+		DWORD	dwSize	= 0;
+
+		int	nRet = ::WSASend( m_sock, &m_dataBuf, 1, &dwSize, 0, &m_Overlapped, NULL );
+		if( (nRet == SOCKET_ERROR) && (WSA_IO_PENDING == ::WSAGetLastError()) ){
 			return 0;
 		}
-
-		TRACE( m_Req.c_str() );
-		TRACE( m_Header.c_str() );
-		TRACE( m_Body.c_str() );
-
-		char cmd[32],uri[256],ver[64];
-
-		sscanf( m_Req.c_str(), "%s %s %s", cmd, uri, ver );
-		if( strcmp(cmd,"GET") == 0 ){
-			return Get( std::string(uri) );
-		}else if( strcmp(cmd,"POST") == 0 ){
-			return Post( std::string(uri) );
-		}else if( strcmp(cmd,"HEAD") == 0 ){
-			return Head( std::string(uri) );
-		}else if( strcmp(cmd,"PUT") == 0 ){
-			return Put( std::string(uri) );
-		}
-		
-		return 1;
+		return -1;
 	}
-};
-/**********************************************************************************
- */
-class CXmlRpcProtocol	: public CHttpProtocol {
-public:
-	virtual int			Post( std::string& uri ){
-		TRACE("XmlRpc:%s",m_Body.c_str());
 
-		return 1;
+	virtual int		Recv( CBuffer* pBuffer ){
+		m_dataBuf.buf		= &pBuffer->at( 0 );
+		m_dataBuf.len		= pBuffer->size();
+
+		DWORD	dwSize	= 0;
+
+		int	nRet = ::WSARecv( m_sock, &m_dataBuf, 1, &dwSize, 0, &m_Overlapped, NULL );
+		if( (nRet == SOCKET_ERROR) && (WSA_IO_PENDING == ::WSAGetLastError()) ){
+			return 0;
+		}
+		return -1;
+	}
+
+	virtual int		Accept( LPSOCKADDR lpAddr, int& nLen ){
+	/****
+		BOOL	AcceptEx(
+					SOCKET			sListenSocket			// [I N] リッスンソケット 
+				,	SOCKET			sAcceptSocket			// [I N] クライアントと接続したいサーバソケット 
+				,	PVOID			lpOutputBuffer			// [I N] バッファ
+				,	DWORD			dwReceiveDataLength		// [I N] 受信バッファサイズ 
+				,	DWORD			dwLocalAddressLength	// [I N] サーバーアドレスサイズ(SOCKADDR_IN + 16バイト)
+				,	DWORD			dwRemoteAddressLength	// [I N] クライアントアドレスサイズ(SOCKADDR_IN + 16バイト)
+				,	LPDWORD			lpdwBytesReceived		// [OUT] 受信サイズ 
+				,	LPOVERLAPPED	lpOverlapped			// [I N] 
+			);
+
+			lpOutputBuffer---->	+-----------------------+
+								|						|
+								| 受信バッファ			|
+								|						|
+								+-----------------------+
+								| サーバーアドレス		|
+								+-----------------------+
+								| クライアントアドレス	|
+								+-----------------------+
+	 */
+		if( m_AcceptEx.IsInvalid() ){
+			if( !m_AcceptEx.Load( m_sock ) ){
+				return FALSE;
+			}
+		}
+		DWORD	dwBytes	= 0;
+		return m_AcceptEx.AcceptEx(m_sock, m_sockAccept, NULL, 0, 0, 0, &dwBytes, &m_Overlapped);
 	}
 };
 /**********************************************************************************
@@ -227,13 +282,6 @@ public:
 	}
 };
  */
-/**********************************************************************************
- */
-class ISocket {
-public:
-	virtual int		Recv( CBuffer* pBuffer )	= 0;
-	virtual int		Send( CBuffer* pBuffer )	= 0;
-};
 /**********************************************************************************
  */
 class CSession : public IEventHandler {

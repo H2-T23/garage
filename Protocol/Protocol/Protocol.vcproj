@@ -205,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\HttpProtocol.h"
+				>
+			</File>
+			<File
 				RelativePath=".\KeyValue.h"
 				>
 			</File>
@@ -218,6 +222,10 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlRpcProtocol.h"
 				>
 			</File>
 		</Filter>
