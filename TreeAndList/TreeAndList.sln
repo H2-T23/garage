@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TreeAndList", "TreeAndList\TreeAndList.vcproj", "{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}.Debug|Win32.Build.0 = Debug|Win32
+		{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}.Release|Win32.ActiveCfg = Release|Win32
+		{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}.Release|Win32.Build.0 = Release|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.Build.0 = Debug|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Release|Win32.ActiveCfg = Release|Win32
+		{861E7381-4398-41A6-83F5-90C6A08F746D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
