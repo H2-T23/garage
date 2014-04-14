@@ -6,53 +6,10 @@
 #include "HttpProtocol.h"
 #include "XmlRpcProtocol.h"
 
-#include "Command.h"
+#include "ICommand.h"
 #include "KeyValue.h"
 
 
-
-/**********************************************************************************
- */
-class ISocket {
-public:
-	class SocketOption {
-	public:
-		int		nAf, nType, nProtocol;
-
-		SocketOption( int af = 0, int type = 0, int protocol = 0 )
-			: nAf(af), nType(type), nProtocol(protocol) {
-		}
-	};
-
-public:
-	SOCKET				m_sock;
-	SocketOption		m_sockOption;
-
-	int					Af( void ) const		{ return(m_sockOption.nAf); }
-	int					Type( void ) const		{ return(m_sockOption.nType); }
-	int					Protocol( void ) const	{ return(m_sockOption.nProtocol); }
-
-public:
-	ISocket( void ) : m_sock(INVALID_SOCKET) {}
-
-public:
-	inline bool			IsInvalid( void ) const {
-		return(m_sock==INVALID_SOCKET);
-	}
-	inline bool			IsValid( void ) const {
-		return !IsInvalid();
-	}
-
-public:
-	virtual bool		Create( SocketOption& Option )				= 0;
-	virtual int			Close( void )								= 0;
-	virtual int			Shutdown( void )							= 0;
-
-	virtual int			Recv( CBuffer* pBuffer )					= 0;
-	virtual int			Send( CBuffer* pBuffer )					= 0;
-
-	virtual int			Accept( LPSOCKADDR lpAddr, int& nLen )		= 0;
-};
 /**********************************************************************************
  */
 class CSocket	: public ISocket {
@@ -489,14 +446,6 @@ public:
 };
 /**********************************************************************************
  */
-class CXmlRpcRequest : public CXmlRpcValue {
-public:
-	std::string&		ToXml( void ) {
-		return m_xml;
-	}
-};
-/**********************************************************************************
- */
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -511,15 +460,44 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	CXmlRpcProtocol	Protocol;
 
-	std::string		str1("POST /index.html HTTP1.0\n");
+	std::string		strBody = 
+		"<?xml version=\"1.0\"?>"
+		"<methodCall>"
+		"<methodName>SetDRParameter</methodName>"
+		"<params>"
+		"<param>"
+		"<value><int>123</int></value>"
+		"</param>"
+		"</params>"
+		"</methodCall>"
+		"\n"
+		;
+
+	std::string		strReq("POST /RPC2 HTTP1.0\n");
 	std::string		str2("Content-Length");
 	std::string		str2_2(": 12\n\n");
 	std::string		str3("xml-value:20\n");
 
-	Protocol.OnRead( &str1 );
-	Protocol.OnRead( &str2 );
-	Protocol.OnRead( &str2_2 );
-	Protocol.OnRead( &str3 );
+	std::string		strUserAgent("User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows XP)\n");
+	std::string		strHost("Host: XmlRpc\n");
+	std::string		strContentType("Content-Type: text/xml\n");
+	std::string		strContentLength("Content-Length: ");
+//	strContentLength.append( atoi(strBody.c_str()) );
+	char	tmp[32];
+	sprintf(tmp, "%d\n", strBody.length());
+	std::string		strLen(tmp);
+
+	std::string		strNN("\n");
+
+	Protocol.OnRead( &strReq );
+	Protocol.OnRead( &strUserAgent );
+	Protocol.OnRead( &strHost );
+	Protocol.OnRead( &strContentType );
+	Protocol.OnRead( &strContentLength );
+	Protocol.OnRead( &strLen );
+	Protocol.OnRead( &strNN );
+	Protocol.OnRead( &strBody );
+
 
 	CXmlRpcValue	value(999);
 	TRACE(value.ToXml().c_str());

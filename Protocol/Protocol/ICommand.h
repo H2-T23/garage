@@ -16,11 +16,11 @@ public:
 	ICommand( const std::string& strCmdName ) : m_strCommandName(strCmdName) {}
 	ICommand( const char* pCmdName ) : m_strCommandName(pCmdName) {}
 
-	const std::string&		GetCommandName( void ) const {
-		return m_strCommandName;
+	const char*			GetCommandName( void ) const {
+		return m_strCommandName.c_str();
 	}
 
-	virtual int			Execute( const void* lpParam ) = 0;
+	virtual int			Execute( LPARAM lParam, WPARAM wParam = NULL ) = 0;
 };
 /**********************************************************************************
  */
@@ -81,8 +81,8 @@ public:
 		CGetCommand( void ) : ICommand("GetCommand") {
 		}
 
-		int		Execute( const void* lpParam ){
-			TRACE("%s.\n",GetCommandName().c_str());
+		int		Execute( LPARAM, WPARAM ){
+			TRACE("%s.\n",GetCommandName());
 			return 0;
 		}
 	};
@@ -91,8 +91,8 @@ public:
 	public:
 		CPutCommand( void ) : ICommand("PutCommand") {}
 
-		int		Execute( const void* lpParam ){
-			TRACE("%s.\n",GetCommandName().c_str());
+		int		Execute( LPARAM, WPARAM ){
+			TRACE("%s.\n",GetCommandName());
 			return 0;
 		}
 	};
@@ -102,8 +102,8 @@ public:
 	public:
 		CPostCommand( void ) : ICommand("PostCommand") {}
 
-		int		Execute( const void* lpParam ){
-			TRACE("%s.\n",GetCommandName().c_str());
+		int		Execute( LPARAM, WPARAM ){
+			TRACE("%s.\n",GetCommandName());
 			return 0;
 		}
 	};

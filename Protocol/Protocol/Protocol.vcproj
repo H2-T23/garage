@@ -201,11 +201,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Command.h"
+				RelativePath=".\HttpProtocol.h"
 				>
 			</File>
 			<File
-				RelativePath=".\HttpProtocol.h"
+				RelativePath=".\ICommand.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IEventHandler.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ISocket.h"
 				>
 			</File>
 			<File

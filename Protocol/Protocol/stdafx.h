@@ -33,6 +33,20 @@
 #pragma comment(lib,"Ws2_32.lib")
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
+/**********************************************************************************
+ */
+class CBuffer : public std::string {
+public:
+	CBuffer( const char* p ) : std::string(p) {}
+	CBuffer( const std::string& str ) : std::string(str) {}
+};
+//class CBuffer : public std::vector<CHAR> {};
+
+//typedef std::string		CBuffer;
+
+#include "ISocket.h"
+#include "IEventHandler.h"
+
 /**************************************************************************
  */
 class CTrace {
