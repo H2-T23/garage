@@ -40,8 +40,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	//za = ya;
 
+
 	ECHO_IOCP::CIOCPControler	iocpCtrl;
 	iocpCtrl.Start();
+
+	ECHO_IOCP::EntryHook();
 
 	ECHO_IOCP::CEchoClient		client;
 	client.Start();

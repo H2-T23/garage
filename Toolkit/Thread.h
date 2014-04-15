@@ -330,9 +330,76 @@ namespace MT {
 	 *
 	 *
 	 */
-	class IRunable {
+	class IRunnable {
+	public:
+		virtual void	run( void ) = 0;
+		virtual void	exit( void ){}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	class CThread : public IRunnable {
+	private:
+		static unsigned __stdcall		EntryPoint( void* lpParam ){
+			CThread* pThread	= static_cast<CThread*>( lpParam );
+			if( pThread ){
+				pThread->run();
+			}
+			return 0;
+		}
+
+	public:
+		unsigned			m_Id;
+		HANDLE				m_hThread;
+
 	protected:
-		virtual unsigned		run( LPVOID )	= 0;
+		IRunnable*			m_pRunnable;
+
+		virtual void	run( void ){
+			if(m_pRunnable){
+				m_pRunnable->run();
+			}
+		}
+
+	public:
+		CThread( void ) : m_pRunnable(NULL) {
+		}
+
+		CThread( IRunnable* runnable ) : m_pRunnable(runnable) {
+		}
+
+		virtual ~CThread( void ){
+			if(m_pRunnable){
+				delete m_pRunnable;
+			}
+			m_pRunnable	= NULL;
+		}
+
+		void	Start( unsigned init = 0 ){
+			HANDLE	hThread = (HANDLE)::_beginthreadex(NULL, 0, &CThread::EntryPoint, (void*)(this), init, &m_Id);
+			if( hThread ){
+				m_hThread	= hThread;
+			}
+		}
+
+		void	Terminate( void ){
+			if(m_pRunnable)
+				m_pRunnable->exit();
+		}
+
+		void	Suspend( void ){
+			SuspendThread( m_hThread );
+		}
+
+		void	Resume( void ){
+			ResumeThread( m_hThread );
+		}
+
+		void	Wait( DWORD dwMilliseconds = INFINITE ){
+			WaitForSingleObject(m_hThread, dwMilliseconds);
+		}
 	};
 	/**********************************************************************************
 	 *

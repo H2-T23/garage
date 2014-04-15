@@ -34,9 +34,9 @@ namespace SimpleIOCP{
 	 *
 	 *
 	 */
-	HANDLE				g_hIOCompletionPort	= NULL;
+	HANDLE							g_hIOCompletionPort	= NULL;
 
-	CRITICAL_SECTION	g_csClientList;
+	CRITICAL_SECTION				g_csClientList;
 	class CClientContext;
 	std::vector<CClientContext*>	g_ClientContext;
 	/**********************************************************************************

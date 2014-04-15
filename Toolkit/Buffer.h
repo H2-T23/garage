@@ -2,6 +2,11 @@
 
 #include <vector>
 
+class IBuffer {
+public:
+
+};
+
 class CBuffer {
 private:
 	typedef unsigned				INDEX, SIZE;

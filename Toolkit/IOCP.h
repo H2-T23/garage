@@ -43,4 +43,8 @@ public:
 		}
 		return FALSE;
 	}
+
+	BOOL	IoCompletionPort( SOCKET sock, ULONG_PTR lpBuf ){
+		return CIOCP::IoCompletionPort( (HANDLE)sock, lpBuf );
+	}
 }; 

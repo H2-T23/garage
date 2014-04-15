@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="Protocol"
-	ProjectGUID="{15D2372E-0C55-480E-A593-AE3C2FC24B55}"
-	RootNamespace="Protocol"
+	Name="KeyValue"
+	ProjectGUID="{86230FBB-0203-4412-A7D5-6607A0D1E19D}"
+	RootNamespace="KeyValue"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -172,7 +172,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Protocol.cpp"
+				RelativePath=".\KeyValue.cpp"
 				>
 			</File>
 			<File
@@ -202,7 +202,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Protocol.h"
+				RelativePath=".\KeyValue.h"
 				>
 			</File>
 			<File

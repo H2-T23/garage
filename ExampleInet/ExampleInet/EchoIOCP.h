@@ -4,10 +4,19 @@
 #include <stdlib.h>
 
 #include <mswsock.h>
+
+#include <tlhelp32.h>
+#include <dbghelp.h>
+#pragma comment(lib,"dbghelp.lib")
+
+
 #include "Inet.h"
 #include "Thread.h"
 #include "Buffer.h"
 #include "IOCP.h"
+
+
+
 
 namespace ECHO_IOCP {
 	/**********************************************************************************
@@ -468,8 +477,106 @@ namespace ECHO_IOCP {
 	};
 	/**********************************************************************************
 	 *
+	 *	int	::send(SOCKET s, const char* buf, int len, int flags);
+	 *
+	 */
+	void	EntryOneModule( PCSTR lpModuleName, PROC pOldMethod, PROC pNewMethod, HMODULE hModule )
+	{
+		ULONG	uSize	= 0;
+		PIMAGE_IMPORT_DESCRIPTOR	pImportDesc	= (PIMAGE_IMPORT_DESCRIPTOR)::ImageDirectoryEntryToData( hModule, TRUE, IMAGE_DIRECTORY_ENTRY_IMPORT, &uSize );
+		if( pImportDesc )
+		{
+			while( pImportDesc->Name )
+			{
+				PSTR	pModName	= (PSTR)( (BYTE*)hModule + pImportDesc->Name );
+				DBG::TRACE("\t%s",pModName);
+				if( ::lstrcmpiA(pModName, lpModuleName) == 0 )
+				{
+					break;
+				}
+
+				pImportDesc++;
+			}
+
+			if( pImportDesc->Name )
+			{
+				PIMAGE_THUNK_DATA	pThunk	= (PIMAGE_THUNK_DATA)( (BYTE*)hModule + pImportDesc->FirstThunk );
+
+				while( pThunk->u1.Function )
+				{
+					PROC*	pMethod	= (PROC*)(&pThunk->u1.Function);
+					if( *pMethod == pOldMethod )
+					{
+						DWORD	dwDummy	= 0;
+						::VirtualProtect( pMethod, sizeof(pMethod), PAGE_EXECUTE_READWRITE, &dwDummy );
+						::WriteProcessMemory( ::GetCurrentProcess(), pMethod, &pNewMethod, sizeof(pNewMethod), NULL );
+						DBG::TRACE( "Replase.\n" );
+						return;
+					}
+
+					pThunk++;
+				}
+			}
+		}
+	}
+	/**********************************************************************************
+	 *
 	 *
 	 *
 	 */
+	void	EntryAllModule( PCSTR lpModuleName, PROC pOldMethod, PROC pNewMethod )
+	{
+		HANDLE	hSnapshot	= ::CreateToolhelp32Snapshot( TH32CS_SNAPMODULE, GetCurrentProcessId() );
+		if( hSnapshot != INVALID_HANDLE_VALUE )
+		{
+			MODULEENTRY32	entry;
+			entry.dwSize	= sizeof(entry);
+
+			BOOL	bResult	= ::Module32First( hSnapshot, &entry );
+			while( bResult )
+			{
+				DBG::TRACE( entry.szModule );
+				EntryOneModule( lpModuleName, pOldMethod, pNewMethod, entry.hModule );
+				bResult	= ::Module32Next( hSnapshot, &entry );
+			}
+
+			::CloseHandle( hSnapshot );
+		}
+	}
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	typedef int	(WINAPI *HOOKSEND)(SOCKET,const char*,int,int);
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	int	WINAPI	HookSend( SOCKET s, const char* buf, int len, int flags )
+	{
+		PROC	pMethod	= ::GetProcAddress( GetModuleHandleA("ws2_32.dll"), "send" );
+		if( pMethod )
+		{
+			return ((HOOKSEND)pMethod)( s, buf, len, flags );
+		}
+		return SOCKET_ERROR;
+	}
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
+	void		EntryHook( void )
+	{
+		PROC	pMethod	= NULL;
+
+		pMethod	= ::GetProcAddress( GetModuleHandleA("ws2_32.dll"), "send" );
+		if( pMethod )
+		{
+			EntryAllModule( "ws2_32.dll", pMethod, (PROC)HookSend );
+		}
+	}
 }//
 

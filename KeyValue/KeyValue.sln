@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Protocol", "Protocol\Protocol.vcproj", "{15D2372E-0C55-480E-A593-AE3C2FC24B55}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyValue", "KeyValue\KeyValue.vcproj", "{86230FBB-0203-4412-A7D5-6607A0D1E19D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
@@ -11,10 +11,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{15D2372E-0C55-480E-A593-AE3C2FC24B55}.Debug|Win32.ActiveCfg = Debug|Win32
-		{15D2372E-0C55-480E-A593-AE3C2FC24B55}.Debug|Win32.Build.0 = Debug|Win32
-		{15D2372E-0C55-480E-A593-AE3C2FC24B55}.Release|Win32.ActiveCfg = Release|Win32
-		{15D2372E-0C55-480E-A593-AE3C2FC24B55}.Release|Win32.Build.0 = Release|Win32
+		{86230FBB-0203-4412-A7D5-6607A0D1E19D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{86230FBB-0203-4412-A7D5-6607A0D1E19D}.Debug|Win32.Build.0 = Debug|Win32
+		{86230FBB-0203-4412-A7D5-6607A0D1E19D}.Release|Win32.ActiveCfg = Release|Win32
+		{86230FBB-0203-4412-A7D5-6607A0D1E19D}.Release|Win32.Build.0 = Release|Win32
 		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{861E7381-4398-41A6-83F5-90C6A08F746D}.Debug|Win32.Build.0 = Debug|Win32
 		{861E7381-4398-41A6-83F5-90C6A08F746D}.Release|Win32.ActiveCfg = Release|Win32

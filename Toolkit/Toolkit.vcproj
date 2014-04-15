@@ -205,11 +205,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\HttpProtocol.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ICommand.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IEventHandler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Inet.h"
 				>
 			</File>
 			<File
 				RelativePath=".\IOCP.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ISocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\KeyValue.h"
 				>
 			</File>
 			<File
@@ -278,6 +298,10 @@
 			</File>
 			<File
 				RelativePath=".\Wnd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\XmlRpcProtocol.h"
 				>
 			</File>
 		</Filter>
