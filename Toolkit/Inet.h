@@ -211,6 +211,17 @@ namespace INET {
 	 *
 	 *
 	 */
+	class CTCPSocket : public CSocket {
+	public:
+		BOOL		Create( void ){
+			return CSocket::Create(AF_INET, SOCK_STREAM, 0);
+		}
+	};
+	/**********************************************************************************
+	 *
+	 *
+	 *
+	 */
 	class CListenSocket : public CSocket, public TNonCopyable<CListenSocket> {
 	public:
 		int				m_Af;
@@ -256,8 +267,8 @@ namespace INET {
 			return TRUE;
 		}
 
-		CSocket		Accept( SOCKADDR& pAddr, int& nLen ){
-			CSocket	sock	= CSocket::Accept(&pAddr, nLen);
+		CSocket		Accept( LPSOCKADDR pAddr, int& nLen ){
+			CSocket	sock	= CSocket::Accept(pAddr, nLen);
 			return sock;
 		}
 	};
