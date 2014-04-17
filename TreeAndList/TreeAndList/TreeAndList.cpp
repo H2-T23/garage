@@ -12,7 +12,6 @@
  */
 class CDocument : public CSubject {
 public:
-
 	typedef std::map<int, std::map<int,TString> >	TABLE;
 	typedef std::map<TString, TStringList>			TREE;
 
@@ -22,8 +21,8 @@ private:
 
 	CDocument(){}
 
-	TABLE	tbl;
-	TREE	tree;
+	TABLE			tbl;
+	TREE			tree;
 
 public:
 	void	SetTable( int nRow, int nCol, TString& str ){

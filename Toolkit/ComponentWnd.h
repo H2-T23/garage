@@ -1041,6 +1041,10 @@ public:
  *
  *
  */
+ class CCheckBoxTreeView : public CTreeView {
+protected:
+	virtual DWORD			WindowStyle( void ) const	{ return(CTreeView::WindowStyle() | TVS_CHECKBOXES);	}
+ };
 /**********************************************************************************
  *
  *

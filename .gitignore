@@ -216,3 +216,8 @@ pip-log.txt
 /Example2DGraphics/Example2DGraphics/ReadMe.txt
 /Example2DGraphics/Example2DGraphics/small.ico
 /ExampleSplitterForSDK/ExampleSplitterForSDK.cpp
+/Lib/DB.cpp
+/Lib/DB.h
+/Lib/Variant.cpp
+/Lib/Variant.h
+/Lib

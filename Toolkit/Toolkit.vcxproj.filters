@@ -6,7 +6,7 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="SourceFiles">
-      <UniqueIdentifier>{ffa911f8-5139-4851-a1d1-31efd95357ce}</UniqueIdentifier>
+      <UniqueIdentifier>{316f8df7-6a85-4340-a51a-cae6b677eb2c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,10 +52,25 @@
     <ClInclude Include="Handler.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="HttpProtocol.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="ICommand.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="IEventHandler.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
     <ClInclude Include="Inet.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="IOCP.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="ISocket.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyValue.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
@@ -107,6 +122,15 @@
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Wnd.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="XmlRpcProtocol.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="DB.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="Variant.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
   </ItemGroup>

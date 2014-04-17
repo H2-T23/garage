@@ -11,18 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{861E7381-4398-41A6-83F5-90C6A08F746D}</ProjectGuid>
-    <RootNamespace>Toolkit</RootNamespace>
+    <ProjectGuid>{9307411D-CDA8-4A34-90FF-A4D2E90D2D2F}</ProjectGuid>
+    <RootNamespace>TreeAndList</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -39,80 +39,59 @@
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\Toolkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Base64.h" />
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="CommandListener1.h" />
-    <ClInclude Include="CommandListener2.h" />
-    <ClInclude Include="ComponentWnd.h" />
-    <ClInclude Include="Crypto.h" />
-    <ClInclude Include="Database.h" />
-    <ClInclude Include="DB.h" />
-    <ClInclude Include="DBG.h" />
-    <ClInclude Include="DC.h" />
-    <ClInclude Include="DC.old.h" />
-    <ClInclude Include="Form.h" />
-    <ClInclude Include="Generic.h" />
-    <ClInclude Include="GridPanel.h" />
-    <ClInclude Include="Handler.h" />
-    <ClInclude Include="HttpProtocol.h" />
-    <ClInclude Include="ICommand.h" />
-    <ClInclude Include="IEventHandler.h" />
-    <ClInclude Include="Inet.h" />
-    <ClInclude Include="IOCP.h" />
-    <ClInclude Include="ISocket.h" />
-    <ClInclude Include="KeyValue.h" />
-    <ClInclude Include="Log.h" />
-    <ClInclude Include="NotifyListener.h" />
-    <ClInclude Include="Observar.h" />
-    <ClInclude Include="OpenGL.h" />
-    <ClInclude Include="Panel.h" />
-    <ClInclude Include="SpinCtrl.h" />
-    <ClInclude Include="Splitter.h" />
-    <ClInclude Include="Sync.h" />
-    <ClInclude Include="Thread.h" />
-    <ClInclude Include="ThreeDMath.h" />
-    <ClInclude Include="ToolHelpEx.h" />
-    <ClInclude Include="TString.h" />
-    <ClInclude Include="Types.h" />
-    <ClInclude Include="UseGUIToolkit.h" />
-    <ClInclude Include="UseOpenGL.h" />
-    <ClInclude Include="UseToolkit.h" />
-    <ClInclude Include="Variant.h" />
-    <ClInclude Include="Wnd.h" />
-    <ClInclude Include="XmlRpcProtocol.h" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TreeAndList.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Toolkit.cpp" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TreeAndList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
