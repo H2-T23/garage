@@ -177,6 +177,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DB.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DBG.h"
 				>
 			</File>
@@ -185,7 +189,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DC.old.h"
+				RelativePath=".\File.h"
 				>
 			</File>
 			<File
@@ -294,6 +298,10 @@
 			</File>
 			<File
 				RelativePath=".\UseToolkit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Variant.h"
 				>
 			</File>
 			<File
