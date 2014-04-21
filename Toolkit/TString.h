@@ -149,7 +149,7 @@ public:
 
 	static
 	BOOL		W2A( const WCHAR* lpSrc, const int cchWideChar, CHAR* lpDst, const int cbMultiBye ){
-		if( ::WideCharToMultiByte(CP_THREAD_ACP, 0, lpSrc, cchWideChar, lpDst, cbMultiByte, NULL, NULL) )
+		if( ::WideCharToMultiByte(CP_THREAD_ACP, 0, lpSrc, cchWideChar, lpDst, cbMultiBye, NULL, NULL) )
 			return TRUE;
 		return FALSE;
 	}

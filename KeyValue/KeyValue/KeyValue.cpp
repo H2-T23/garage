@@ -11,45 +11,143 @@
 #include "ISocket.h"
 #include "IEventHandler.h"
 
+#include "KeyValueClient.h"
+#include "KeyValueServerForm.h"
+
 using namespace INET;
 using namespace MT;
 
-//template<class EventHandlerClass>
-//class TSession : public EventHandlerClass {
-//public:
-//	TSession( SOCKET sock ) /*: EventHandlerClass(sock)*/ {}
-//
-//};
 
 class CKeyValueProtocol : public IEventHandler {
 public:
-	CBuffer			m_Buffer;
+	CBuffer				m_RecvBuffer;
+	CBuffer				m_SendBuffer;
+
+
+	void	Done( std::string& str ){
+		char	strCmd[256], strKey[256], strValue[256];
+
+		str.append( "\0" );
+		sscanf( str.c_str(), "%s %s %s\n", strCmd, strKey, strValue );
+		TRACE( str.c_str() );
+
+		if( str.compare(0, 3, "Set") == 0 )
+		{
+			CKeyValue::Instance().Set( strKey, strValue );
+		}
+		else 
+		if( str.compare(0, 3, "Get") == 0 )
+		{
+			std::string	str( CKeyValue::Instance().Get( strKey ) );
+			str.append( "\n" );
+			m_SendBuffer.Set( (LPBYTE)str.c_str(), str.length() );
+		}
+	}
 
 	int		OnRead( LPVOID lpParam ){
 
-		m_Buffer.Append( *((CBuffer*)lpParam) );
+		CBuffer*	pBuff	= (CBuffer*)(lpParam);
+		//if( pBuff )
+		//{
+		//	BYTE* p = pBuff->At( 0 );
+		//	while( *p ){
+		//		TRACE("%c ",(char)*p);
+		//		p++;
+		//	}
+		//	TRACE("\n");
+		//}
 
-		std::string		str( (char*)m_Buffer.At( 0 ) );
+		m_RecvBuffer.Append( *pBuff );
 
-		int	idx	= str.find( "\n", 0 );
-		if( idx > 0 )
+
+		int	iStart	= 0;
+		int iEnd	= m_RecvBuffer.Find( (BYTE)'\n', iStart );
+		if( iEnd < 0 )
+		{
+			return 0;
+		}
+		else
+		{
+			std::string	strTotal( (char*)m_RecvBuffer.At( 0 ) );
+			m_RecvBuffer.Clear();
+
+			int	len	= strTotal.length();
+
+			std::string	str;
+			do{
+				int	sz	= (iEnd + 1) - iStart;
+				str.resize( sz );
+				memcpy( &str.at( 0 ), &strTotal.at( iStart ), sz );
+
+				Done( str );
+
+				iStart = iEnd + 1;
+				len -= sz;
+				iEnd	= strTotal.find( '\n', iStart );
+			}while( iEnd > 0 );
+
+			if( len > 0 )
+			{
+				int next	= strTotal.length() - len;
+				m_RecvBuffer.Set( (LPBYTE)&strTotal.at( next ), len );
+			}
+		
 			return 1;
+		}
+
+		//std::string		str( (char*)m_RecvBuffer.At( 0 ) );
+
+		//int idx	= str.find( '\n', 0 );
+		//if( idx > 0 )
+		//{
+		//	char	strCmd[256], strKey[256], strValue[256];
+
+		//	str.append( "\0" );
+		//	sscanf( str.c_str(), "%s %s %s\n", strCmd, strKey, strValue );
+		//	TRACE( str.c_str() );
+
+		//	if( str.compare(0, 3, "Set") == 0 )
+		//	{
+		//		CKeyValue::Instance().Set( strKey, strValue );
+		//	}
+		//	else 
+		//	if( str.compare(0, 3, "Get") == 0 )
+		//	{
+		//		std::string	str( CKeyValue::Instance().Get( strKey ) );
+		//		str.append( "\n" );
+		//		m_SendBuffer.Set( (LPBYTE)str.c_str(), str.length() );
+		//	}
+
+		//	m_RecvBuffer.Clear();
+
+		//	return 1;
+		//}
+
+		//return 0;
+	}
+
+	int		OnWrite( LPVOID lpParam ){
+		CBuffer* pBuff = (CBuffer*)lpParam;
+		if( pBuff )
+		{
+			if( m_SendBuffer.Size() > 0 )
+			{
+				pBuff->Set( m_SendBuffer );
+			}
+
+			m_SendBuffer.Clear();
+			return 1;
+		}
 
 		return 0;
 	}
 
-	int		OnWrite( LPVOID lpParam ){
-
-		return 0;
+	void	OnClose( void ){
 	}
 };
 
 class CSession : public IEventHandler {
 public:
-	enum {
-		OP_READ, OP_WRITE
-	};
-
 	OVERLAPPED			m_ol;
 	WSABUF				m_wsaBuf;
 	CBuffer				m_Buffer;
@@ -60,16 +158,40 @@ public:
 	CSession( SOCKET s )
 		: m_pSocket(new CSocket(s)), m_pProtocol(new CKeyValueProtocol())
 	{
-		unsigned	nSize	= 3;//0xFFFF;
+		unsigned	nSize	= 0xFFFF;
 		m_Buffer.Resize( nSize );
 	}
 
-	void		OnEvent( void ){
-		switch( m_op ){
+	~CSession( void ){
+		OnClose();
+	}
+
+	void		OnEvent( int operation ){
+		switch( operation ){
+		case OP_CONNECT:
+			OnConnect( NULL );
+			Recv();
+			break;
+
 		case OP_READ:
-			if( m_pProtocol->OnRead( &m_Buffer ) >= 0 )
+			if( m_pProtocol->OnRead( &m_Buffer ) > 0 )
 			{
-				m_op	= OP_WRITE;
+				m_Buffer.Clear();
+				m_pProtocol->OnWrite( &m_Buffer );
+				
+				if( m_Buffer.Size() > 0 )
+				{
+					Send();
+				}
+				else
+				{
+					m_Buffer.Clear();
+
+					unsigned	nSize	= 0xFFFF;
+					m_Buffer.Resize( nSize );
+
+					Recv();
+				}
 			}
 			else
 			{
@@ -78,8 +200,38 @@ public:
 			break;
 
 		case OP_WRITE:
-			m_pProtocol->OnWrite( &m_Buffer );
+			if( m_pProtocol->OnWrite( &m_Buffer ) > 0 )
+			{
+				m_Buffer.Clear();
+
+				unsigned	nSize	= 0xFFFF;
+				m_Buffer.Resize( nSize );
+
+				Recv();
+			}
+			else
+			{
+				Send();
+			}
 			break;
+		}
+	}
+
+	void		OnEvent( void ){
+		CSession::OnEvent( m_op );
+	}
+
+	void		OnClose( void ){
+		if( m_pProtocol ){
+			m_pProtocol->OnClose();
+			delete m_pProtocol;
+			m_pProtocol	= NULL;
+		}
+
+		if( m_pSocket ){
+			m_pSocket->Close();
+			delete m_pSocket;
+			m_pSocket	= NULL;
 		}
 	}
 
@@ -102,51 +254,61 @@ public:
 		}
 		return TRUE;
 	}
+
+	BOOL		Send( void ){
+		DWORD	dwFlags	= 0;
+
+		m_wsaBuf.buf	= (char*)m_Buffer.At( 0 );
+		m_wsaBuf.len	= m_Buffer.Size();
+
+		memset(&m_ol, 0, sizeof(WSAOVERLAPPED));
+		m_op	= OP_WRITE;
+
+		if( m_pSocket->WSASend(&m_wsaBuf, 1, NULL, dwFlags, &m_ol, NULL) == SOCKET_ERROR )
+		{
+			if( ::WSAGetLastError() == WSA_IO_PENDING )
+			{
+				return TRUE;
+			}
+			return FALSE;
+		}
+		return TRUE;
+	}
 };
 
-//class CIOCPState {
-//public:
-//	OVERLAPPED			m_ol;
-//	WSABUF				m_wsaBuf;
-//
-//	CIOCPState( HANDLE hHandle ) : m_pSesison(new CSession((SOCKET)hHandle)) {
-//
-//	}
-//
-//	CIOCPState( SOCKET s ) : m_pSesison(new CSession(s)) {}
-//
-//	CSession*			m_pSesison;
-//};
-//
 class CSessionManager {
+public:
+	typedef std::map<DWORD, CSession*>		MAP;
+	typedef std::pair<DWORD, CSession*>		PAIR;
+
 private:
-	static std::map<DWORD, LPVOID>		m_map;
+	static MAP		m_map;
 
 public:
 	static LPVOID		New( DWORD dwKey, LPVOID lpParam ){
 		CSession* pSession = new CSession( *(SOCKET*)lpParam );
 		if( pSession )
 		{
-			m_map.insert( std::pair<DWORD, LPVOID>(dwKey, (LPVOID)pSession) );
+			m_map.insert( PAIR(dwKey, pSession) );
 			return (LPVOID)pSession;
 		}
 		return NULL;
 	}
 
 	static void			Delete( DWORD dwKey ){
-		std::map<DWORD, LPVOID>::iterator	it = m_map.find( dwKey );
+		MAP::iterator	it = m_map.find( dwKey );
 		if( it != m_map.end() )
 		{
-			LPVOID	lpParam = it->second;
+			CSession*	pSession = it->second;
 			m_map.erase( it );
 
-			if( lpParam )
-				delete lpParam;
+			if( pSession )
+				delete pSession;
 		}
 	}
 
-	static LPVOID		Find( DWORD dwKey ){
-		std::map<DWORD, LPVOID>::iterator	it = m_map.find( dwKey );
+	static CSession*	Find( DWORD dwKey ){
+		MAP::iterator	it = m_map.find( dwKey );
 		if( it != m_map.end() )
 		{
 			return it->second;
@@ -155,7 +317,7 @@ public:
 	}
 };
 
-std::map<DWORD, LPVOID>		CSessionManager::m_map;
+CSessionManager::MAP		CSessionManager::m_map;
 
 
 class CIOCPWorker	: public IRunnable {
@@ -226,7 +388,7 @@ public:
 					{
 						m_IOCP.IoCompletionPort( (HANDLE)s, (ULONG_PTR)pSession );
 
-						pSession->Recv();
+						pSession->OnEvent( IEventHandler::OP_CONNECT );
 					}
 				}
 			}
@@ -244,37 +406,11 @@ class CKeyValueClient	: public IRunnable {
 protected:
 	void		run( void )
 	{
-		CTCPSocket		sock;
-		if( sock.Create() )
-		{
-			struct sockaddr_in	server;
-			server.sin_family			= AF_INET;
-			server.sin_port				= htons( 54321 );
-			server.sin_addr.s_addr		= inet_addr( "127.0.0.1" );
-			if( server.sin_addr.S_un.S_addr < 0 )
-			{
-				struct hostent*	pHost = gethostbyname( "127.0.0.1" );
-				if( pHost )
-				{
-					server.sin_addr.S_un.S_addr	= *(unsigned int*)pHost->h_addr_list[ 0 ];
-				}
-				else
-				{
-					return;
-				}
-			}
-
-			if( sock.Connect((const sockaddr*)&server, sizeof(server)) == 0 )
-			{
-				std::string		str;
-				str = "Set system.version 1.123\n";
-				sock.Send( (LPVOID)str.c_str(), str.length() );
-
-				Sleep( 1000 );
-
-				sock.Shutdown( 2 );
-			}
-			sock.Close();
+		CClientForm	Form;
+		if( Form.Create(_T("Client"), 0, 0, 100, 100, 600, 600) ){
+			Form.ShowWindow( SW_SHOW );
+			Form.UpdateWindow();
+			Form.MessageLoop();
 		}
 	}
 };
@@ -289,6 +425,13 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	INET::WinInet::Startup();
+
+	CThread*	pKeyValue	= new CThread( new CKeyValueServerFormThread() );
+	if( pKeyValue )
+	{
+		pKeyValue->Start();
+	}
+
 
 	CThread*	pThreadServer	= new CThread( new CIOCPServer() );
 	if( pThreadServer )

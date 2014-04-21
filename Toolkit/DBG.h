@@ -92,9 +92,9 @@ private:
 	}
 
 public:
-#ifndef TRACE
 	static MT::CCriticalSection	cs;
 
+#ifndef TRACE
 	static void		TRACE( LPCWSTR fmt, ... ){
 		MT::CSingleLock	lock(&cs);
 		lock.Lock();

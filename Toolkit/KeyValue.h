@@ -1,28 +1,39 @@
 #pragma once
 
-class CKeyValue {
+#include "Generic.h"
+#include "Thread.h"
+
+class CKeyValue : public GENERIC::TSingleton<CKeyValue> {
 protected:
 	typedef	std::string							String;
 	typedef std::map<const String,String>		Map;
 	typedef	Map::iterator						Iterator;
 	typedef std::pair<const String,String>		Pair;
 
-	Map					m_map;
-	Iterator			m_it;
+	Map						m_map;
+	Iterator				m_it;
+
+	MT::CCriticalSection	m_cs;
 
 public:
 	template<typename TYPE>
 	void			Set( const String& strKey, TYPE value ){
+		MT::CSingleLock		lock(&m_cs);
+
 		std::stringstream	ss;
-		ss << value;
-		m_map.insert( Pair(strKey, ss.str()) );
+		ss << value << "\0";
+	//	m_map.insert( Pair(strKey, ss.str()) );
+		m_map[ strKey ]	= ss.str();
 	}
 
 	const char*		Get( const String& strKey ) {
+		MT::CSingleLock		lock(&m_cs);
 		return Find( strKey );
 	}
 
 	const char*		Find( const String& strKey ){
+		MT::CSingleLock		lock(&m_cs);
+
 		Iterator it = m_map.find( strKey );
 		if( it != m_map.end() ){
 			return it->second.c_str();
@@ -31,10 +42,13 @@ public:
 	}
 
 	void			Clear( void ){
+		MT::CSingleLock		lock(&m_cs);
 		m_map.clear();
 	}
 
 	String			ToString( const String& strKey ){
+		MT::CSingleLock		lock(&m_cs);
+
 		String	str;
 		const char* pValue = Find( strKey );
 		if( pValue )
@@ -43,6 +57,8 @@ public:
 	}
 
 	const char*		Begin( void ){
+		MT::CSingleLock		lock(&m_cs);
+
 		m_it	= m_map.begin();
 		if( hasNext() )
 			return(m_it->first.c_str());
@@ -50,10 +66,12 @@ public:
 	}
 
 	bool			hasNext( void ){
+		MT::CSingleLock		lock(&m_cs);
 		return(m_it!=m_map.end());
 	}
 
 	const char*		Next( void ){
+		MT::CSingleLock		lock(&m_cs);
 		m_it++;
 		if( hasNext() ){
 			return m_it->first.c_str();;

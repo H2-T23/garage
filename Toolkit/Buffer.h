@@ -111,6 +111,25 @@ public:
 	}
 
 	void		Clear( void ){
+		if( Size() > 0 ){
+			memset(At(0), 0, Size());
+		}
 		m_Buffer.clear();
+	}
+
+	int			Find( BYTE byte, INDEX idx )
+	{
+		for( INDEX	i=idx; i<m_Buffer.size(); i++ )
+		{
+			if( m_Buffer.at( i ) == byte )
+			{
+				return i; 
+			}
+		}
+		return -1;
+	}
+
+	void		Erace( INDEX a, INDEX b ){
+	//	m_Buffer.erase( a, b );
 	}
 };

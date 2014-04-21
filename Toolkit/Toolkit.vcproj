@@ -281,6 +281,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Trace.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TString.h"
 				>
 			</File>

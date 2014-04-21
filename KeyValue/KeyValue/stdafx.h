@@ -19,3 +19,9 @@
 
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
+#include <vector>
+#include <map>
+#include <list>
+#include <string>
+
+#include "Trace.h"
