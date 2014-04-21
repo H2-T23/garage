@@ -111,6 +111,9 @@ public:
 	}
 
 	void		Clear( void ){
+		if( Size() > 0 ){
+			memset(At(0), 0, Size());
+		}
 		m_Buffer.clear();
 	}
 };

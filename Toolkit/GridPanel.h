@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Trace.h"
 #include "Panel.h"
 #include "ComponentWnd.h"
 
@@ -87,7 +88,7 @@ protected:
 	void	OnListViewDblClk( LPNMHDR lpNmhdr ){
 		LPNMITEMACTIVATE pItem = (LPNMITEMACTIVATE)lpNmhdr;
 		if( pItem ){
-			DBG::TRACE(_T("NM_CLICK(%d, %d)[%d, %d]"), pItem->iItem, pItem->iSubItem, pItem->ptAction.x, pItem->ptAction.y );
+			TRACE(_T("NM_CLICK(%d, %d)[%d, %d]"), pItem->iItem, pItem->iSubItem, pItem->ptAction.x, pItem->ptAction.y );
 
 			CRect	rc;
 			int		nItem		= pItem->iItem;
@@ -107,14 +108,14 @@ protected:
 					LVHITTESTINFO	hit = {0};
 					hit.pt	= pt;
 					m_ListView.HitTest( &hit );
-					DBG::TRACE(_T("ItemHitTest()=(%d, %d)"), hit.iItem, hit.iSubItem );
+					TRACE(_T("ItemHitTest()=(%d, %d)"), hit.iItem, hit.iSubItem );
 				}
 				else
 				{
 					LVHITTESTINFO	hit = {0};
 					hit.pt	= pItem->ptAction;
 					m_ListView.SubItemHitTest( &hit );
-					DBG::TRACE(_T("SubItemHitTest()=(%d, %d)"), hit.iItem, hit.iSubItem );
+					TRACE(_T("SubItemHitTest()=(%d, %d)"), hit.iItem, hit.iSubItem );
 
 					nItem		= hit.iItem;
 					nSubItem	= hit.iSubItem;
@@ -122,7 +123,7 @@ protected:
 				}
 			}
 
-			DBG::TRACE(_T("RECT(%d, %d, %d, %d)"), rc.X(), rc.Y(), rc.Width(), rc.Height() );
+			TRACE(_T("RECT(%d, %d, %d, %d)"), rc.X(), rc.Y(), rc.Width(), rc.Height() );
 			BeginEditLabel( nItem, nSubItem );
 		}
 	}
