@@ -52,6 +52,7 @@ public:
 	typedef TTable<TString>							TABLE;
 	typedef std::map<TString, TStringList>			TREE;
 	typedef std::list<TString>						LIST;
+	typedef std::map<LPCTSTR,int>					MAP_TABEL;
 
 private:
 	CDocument(const CDocument&);
@@ -60,9 +61,10 @@ private:
 	CDocument() : m_UpdateTable(FALSE), m_UpdateTree(FALSE) {
 	}
 
-	TABLE			tbl;
-	TREE			tree;
+	TABLE			m_Table;
+	TREE			m_Tree;
 	LIST			m_SelectedItems;
+	MAP_TABEL		m_mapTable;
 
 	BOOL			m_UpdateTable;
 	BOOL			m_UpdateTree;
@@ -83,8 +85,8 @@ public:
 	BOOL		IsUpdateTable( void ) const {		return m_UpdateTable;	}
 	BOOL		IsUpdateTree( void ) const {		return m_UpdateTree;	}
 
-	TABLE&		GetTable( void )		{	return tbl;	}
-	TREE&		GetTree( void )			{	return tree;}
+	TABLE&		GetTable( void )		{	return m_Table;	}
+	TREE&		GetTree( void )			{	return m_Tree;	}
 	LIST&		GetSelctedItem( void )	{	return m_SelectedItems; }
 
 public:
@@ -98,7 +100,7 @@ public:
 	}
 
 	void	SetTable( int nRow, int nCol, TString& str ){
-		tbl[ nRow ][ nCol ]	= str;
+		m_Table[ nRow ][ nCol ]	= str;
 		UpdateTable();
 	}
 
@@ -108,7 +110,7 @@ public:
 	}
 
 	void	AppendTree( TString& strParent, TString& strChild ){
-		tree[ strParent ].push_back( strChild );
+		m_Tree[ strParent ].push_back( strChild );
 		UpdateTree();
 	}
 
@@ -146,7 +148,7 @@ public:
 				TString	str1, str2;
 				str1.assign( &strList[ i ].at( 0 ), idx );
 				str2.assign( &strList[ i ].at( idx+1 ) );
-				tree[ str1 ].push_back( str2 );
+				m_Tree[ str1 ].push_back( str2 );
 			}
 		}
 
@@ -162,8 +164,8 @@ public:
 
 		TString		str;
 
-		TREE::iterator	it1 = tree.begin();
-		for( ; it1!=tree.end(); it1++ )
+		TREE::iterator	it1 = m_Tree.begin();
+		for( ; it1!=m_Tree.end(); it1++ )
 		{
 			TStringList::iterator	it2	= it1->second.begin();
 			for( ; it2!=(it1->second.end()); it2++ )

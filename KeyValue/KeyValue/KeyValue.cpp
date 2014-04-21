@@ -270,6 +270,8 @@ protected:
 				str = "Set system.version 1.123\n";
 				sock.Send( (LPVOID)str.c_str(), str.length() );
 
+				Sleep( 1000 );
+
 				sock.Shutdown( 2 );
 			}
 			sock.Close();

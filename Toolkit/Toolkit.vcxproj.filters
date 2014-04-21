@@ -6,7 +6,7 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="SourceFiles">
-      <UniqueIdentifier>{316f8df7-6a85-4340-a51a-cae6b677eb2c}</UniqueIdentifier>
+      <UniqueIdentifier>{3d4df1aa-ee89-44fa-87fe-dce19f8c9c29}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -31,13 +31,16 @@
     <ClInclude Include="Database.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="DB.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
     <ClInclude Include="DBG.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="DC.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="DC.old.h">
+    <ClInclude Include="File.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="Form.h">
@@ -121,16 +124,16 @@
     <ClInclude Include="UseToolkit.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
+    <ClInclude Include="Variant.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
     <ClInclude Include="Wnd.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="XmlRpcProtocol.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="DB.h">
-      <Filter>HeaderFiles</Filter>
-    </ClInclude>
-    <ClInclude Include="Variant.h">
+    <ClInclude Include="SSL.h">
       <Filter>HeaderFiles</Filter>
     </ClInclude>
   </ItemGroup>

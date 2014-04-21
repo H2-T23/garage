@@ -221,3 +221,5 @@ pip-log.txt
 /Lib/Variant.cpp
 /Lib/Variant.h
 /Lib
+/TableData/*.sln
+/KeyValue/*.sln

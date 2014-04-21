@@ -79,7 +79,7 @@
     <ClInclude Include="DB.h" />
     <ClInclude Include="DBG.h" />
     <ClInclude Include="DC.h" />
-    <ClInclude Include="DC.old.h" />
+    <ClInclude Include="File.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="Generic.h" />
     <ClInclude Include="GridPanel.h" />
@@ -98,6 +98,7 @@
     <ClInclude Include="Panel.h" />
     <ClInclude Include="SpinCtrl.h" />
     <ClInclude Include="Splitter.h" />
+    <ClInclude Include="SSL.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreeDMath.h" />
