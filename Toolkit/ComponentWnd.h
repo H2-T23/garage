@@ -651,6 +651,10 @@ public:
 		ListView_SetSelectedColumn(m_hWnd, nCol);
 	}
 
+	BOOL	EnsureVisible(int item, BOOL bPartialOK = FALSE) const {
+		return ListView_EnsureVisible(m_hWnd, item, bPartialOK);
+	}
+
 public:// CHECKSTATE
 	// Determines if an item in a list-view control is selected.
 	BOOL	GetCheckState( UINT nIdx ) const				{ return ListView_GetCheckState(m_hWnd, nIdx);		}

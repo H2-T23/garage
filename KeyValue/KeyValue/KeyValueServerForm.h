@@ -33,7 +33,7 @@ protected:
 			ListView.SetItem( i, 1, _T("-") );
 		}
 
-		SetTimer(m_hWnd, 1234, 1000, NULL);
+		SetTimer(1234, 1000, NULL);
 
 		return TRUE;
 	}
@@ -81,7 +81,7 @@ class CKeyValueServerFormThread : public IRunnable {
 public:
 	virtual void	run(){
 		CKeyValueServerForm	Form;
-		if( Form.Create(_T("Viewer"), 0, 0, 100, 100, 600, 600) ){
+		if( Form.Create(_T("KeyValue Viewer"), 0, 0, 100, 100, 600, 600) ){
 			Form.ShowWindow( SW_SHOW );
 			Form.UpdateWindow();
 			Form.MessageLoop();

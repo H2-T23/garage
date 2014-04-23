@@ -14,7 +14,7 @@ protected:
 	virtual	DWORD					DesiredAccess( void ) const			{ return(GENERIC_READ|GENERIC_WRITE);	}
 	virtual DWORD					ShareMode( void ) const				{ return(0);	}
 	virtual LPSECURITY_ATTRIBUTES	SecurityAttributes( void ) const	{ return(NULL);	}
-    virtual DWORD					CreationDisposition( void ) const	{ return(OPEN_ALWAYS);	}
+    virtual DWORD					CreationDisposition( void ) const	{ return(CREATE_ALWAYS);	}
     virtual DWORD					FlagsAndAttributes( void ) const	{ return(0);	}
     virtual HANDLE					TemplateFile( void ) const			{ return(NULL);	}
 

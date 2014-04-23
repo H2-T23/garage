@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DC.old.h"
+				>
+			</File>
+			<File
 				RelativePath=".\File.h"
 				>
 			</File>
@@ -241,6 +245,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Menu.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MessageClient.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MessageStructure.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NotifyListener.h"
 				>
 			</File>
@@ -254,6 +270,10 @@
 			</File>
 			<File
 				RelativePath=".\Panel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SessionProtocol.h"
 				>
 			</File>
 			<File

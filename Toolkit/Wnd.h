@@ -45,6 +45,7 @@
 #include "TString.h"
 #include "Dbg.h"
 
+#include "Menu.h"
 
 /****************************************************************************************
  *
@@ -95,6 +96,14 @@ protected:
     virtual DWORD				WindowExStyle( void ) const		{return 0;}
 
 public:
+	UINT_PTR	SetTimer( UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc = NULL ){
+		return ::SetTimer(m_hWnd, nIDEvent, uElapse, lpTimerFunc);
+	}
+
+	BOOL		KillTimer( UINT_PTR nIDEvent ){
+		return ::KillTimer(m_hWnd, nIDEvent);
+	}
+
 	BOOL		GetClientRect( LPRECT lpRect ) const							{ return ::GetClientRect(m_hWnd,lpRect);				}
 	BOOL        GetWindowRect( LPRECT lpRect ) const							{ return ::GetWindowRect(m_hWnd, lpRect);				}
 	HWND        GetParent( void ) const											{ return ::GetParent(m_hWnd);							}

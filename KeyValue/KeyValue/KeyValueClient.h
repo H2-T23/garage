@@ -22,7 +22,9 @@ protected:
 		IDC_BTN_SEND			,
 		IDC_BTN_RECV			,
 		IDC_BTN_SHUTDOWN		,
-		IDC_BTN_TEST			,
+		IDC_BTN_TEST1			,
+		IDC_BTN_TEST2			,
+
 		IDC_EDT_HOSTNAME		,
 		IDC_EDT_SENDMSG			,
 		IDC_EDT_RECVMSG			,
@@ -32,7 +34,8 @@ protected:
 	CButton			m_btnSend;
 	CButton			m_btnRecv;
 	CButton			m_btnShutdown;
-	CButton			m_btnTest;
+	CButton			m_btnTest1;
+	CButton			m_btnTest2;
 
 	CEdit			m_edtHostName;
 	CEdit			m_edtSendMsg;
@@ -49,7 +52,8 @@ protected:
 		m_btnSend.Create(this, 10, 35, 80, 25, IDC_BTN_SEND, _T("SEND"));
 		m_btnRecv.Create(this, 10, 60, 80, 25, IDC_BTN_RECV, _T("RECV"));
 		m_btnShutdown.Create(this, 10, 85, 80, 25, IDC_BTN_SHUTDOWN, _T("SHUTDOWN"));
-		m_btnTest.Create(this, 10, 115, 80, 25, IDC_BTN_TEST, _T("TEST"));
+		m_btnTest1.Create(this, 10, 115, 80, 25, IDC_BTN_TEST1, _T("TEST1"));
+		m_btnTest2.Create(this, 10, 140, 80, 25, IDC_BTN_TEST2, _T("TEST2"));
 	
 		m_edtHostName.Create(this, 100, 10, 320, 25, IDC_EDT_HOSTNAME, _T("127.0.0.1"));
 		m_edtSendMsg.Create(this, 100, 35, 320, 25, IDC_EDT_SENDMSG, _T("Set Key Value"));
@@ -61,7 +65,8 @@ protected:
 		cmd.Register( IDC_BTN_SEND, &CClientForm::OnBtnSend );
 		cmd.Register( IDC_BTN_RECV, &CClientForm::OnBtnRecv );
 		cmd.Register( IDC_BTN_SHUTDOWN, &CClientForm::OnBtnShutdown );
-		cmd.Register( IDC_BTN_TEST, &CClientForm::OnBtnTest );
+		cmd.Register( IDC_BTN_TEST1, &CClientForm::OnBtnTest1 );
+		cmd.Register( IDC_BTN_TEST2, &CClientForm::OnBtnTest2 );
 
 		SetFontChildren();
 		return TRUE;
@@ -153,7 +158,7 @@ protected:
 		}
 	}
 
-	void	OnBtnTest( void ){
+	void	OnBtnTest1( void ){
 		if( m_sock.IsValid() )
 		{
 			char	buf[256];
@@ -165,6 +170,32 @@ protected:
 
 				str = buf;
 				m_sock.Send( (LPVOID)str.c_str(), str.length() );
+			}
+		}
+	}
+
+	void	OnBtnTest2( void ){
+		if( m_sock.IsValid() )
+		{
+			char	buf[256];
+			std::string	str;
+			for( int i=0; i<3200; i++ )
+			{
+				sprintf( buf, "Get Key%d\n\0", i+1 );
+				TRACE("Send: %s", buf);
+
+				str = buf;
+				m_sock.Send( (LPVOID)str.c_str(), str.length() );
+				int nRet = m_sock.Recv( buf, 256 );
+				if( nRet > 0 )
+				{
+					buf[nRet] = '\0';
+					TRACE("Result: %s\n", buf);
+				}
+				else
+				{
+					TRACE("Result: ERR\n");
+				}
 			}
 		}
 	}

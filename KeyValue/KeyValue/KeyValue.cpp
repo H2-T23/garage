@@ -14,22 +14,35 @@
 #include "KeyValueClient.h"
 #include "KeyValueServerForm.h"
 
+#include "SessionProtocol.h"
+
+#include "MessageClient.h"
+
 using namespace INET;
 using namespace MT;
-
+using namespace GENERIC;
 
 class CKeyValueProtocol : public IEventHandler {
 public:
 	CBuffer				m_RecvBuffer;
 	CBuffer				m_SendBuffer;
 
+	CMessageClient		m_msg;
+
+	CKeyValueProtocol( void )
+	{
+		m_msg.Connect("127.0.0.1", 5511);
+	}
 
 	void	Done( std::string& str ){
 		char	strCmd[256], strKey[256], strValue[256];
 
 		str.append( "\0" );
 		sscanf( str.c_str(), "%s %s %s\n", strCmd, strKey, strValue );
-		TRACE( str.c_str() );
+		if( m_msg.IsConnected() ){
+			m_msg.Send( str.c_str() );
+			TRACE( str.c_str() );
+		}
 
 		if( str.compare(0, 3, "Set") == 0 )
 		{
@@ -47,15 +60,15 @@ public:
 	int		OnRead( LPVOID lpParam ){
 
 		CBuffer*	pBuff	= (CBuffer*)(lpParam);
-		//if( pBuff )
-		//{
-		//	BYTE* p = pBuff->At( 0 );
-		//	while( *p ){
-		//		TRACE("%c ",(char)*p);
-		//		p++;
-		//	}
-		//	TRACE("\n");
-		//}
+		if( pBuff )
+		{
+			//BYTE* p = pBuff->At( 0 );
+			//while( *p ){
+			//	TRACE("%c ",(char)*p);
+			//	p++;
+			//}
+			//TRACE("\n");
+		}
 
 		m_RecvBuffer.Append( *pBuff );
 
@@ -94,36 +107,6 @@ public:
 		
 			return 1;
 		}
-
-		//std::string		str( (char*)m_RecvBuffer.At( 0 ) );
-
-		//int idx	= str.find( '\n', 0 );
-		//if( idx > 0 )
-		//{
-		//	char	strCmd[256], strKey[256], strValue[256];
-
-		//	str.append( "\0" );
-		//	sscanf( str.c_str(), "%s %s %s\n", strCmd, strKey, strValue );
-		//	TRACE( str.c_str() );
-
-		//	if( str.compare(0, 3, "Set") == 0 )
-		//	{
-		//		CKeyValue::Instance().Set( strKey, strValue );
-		//	}
-		//	else 
-		//	if( str.compare(0, 3, "Get") == 0 )
-		//	{
-		//		std::string	str( CKeyValue::Instance().Get( strKey ) );
-		//		str.append( "\n" );
-		//		m_SendBuffer.Set( (LPBYTE)str.c_str(), str.length() );
-		//	}
-
-		//	m_RecvBuffer.Clear();
-
-		//	return 1;
-		//}
-
-		//return 0;
 	}
 
 	int		OnWrite( LPVOID lpParam ){
@@ -145,180 +128,6 @@ public:
 	void	OnClose( void ){
 	}
 };
-
-class CSession : public IEventHandler {
-public:
-	OVERLAPPED			m_ol;
-	WSABUF				m_wsaBuf;
-	CBuffer				m_Buffer;
-	CSocket*			m_pSocket;
-	IEventHandler*		m_pProtocol;
-	int					m_op;
-
-	CSession( SOCKET s )
-		: m_pSocket(new CSocket(s)), m_pProtocol(new CKeyValueProtocol())
-	{
-		unsigned	nSize	= 0xFFFF;
-		m_Buffer.Resize( nSize );
-	}
-
-	~CSession( void ){
-		OnClose();
-	}
-
-	void		OnEvent( int operation ){
-		switch( operation ){
-		case OP_CONNECT:
-			OnConnect( NULL );
-			Recv();
-			break;
-
-		case OP_READ:
-			if( m_pProtocol->OnRead( &m_Buffer ) > 0 )
-			{
-				m_Buffer.Clear();
-				m_pProtocol->OnWrite( &m_Buffer );
-				
-				if( m_Buffer.Size() > 0 )
-				{
-					Send();
-				}
-				else
-				{
-					m_Buffer.Clear();
-
-					unsigned	nSize	= 0xFFFF;
-					m_Buffer.Resize( nSize );
-
-					Recv();
-				}
-			}
-			else
-			{
-				Recv();
-			}
-			break;
-
-		case OP_WRITE:
-			if( m_pProtocol->OnWrite( &m_Buffer ) > 0 )
-			{
-				m_Buffer.Clear();
-
-				unsigned	nSize	= 0xFFFF;
-				m_Buffer.Resize( nSize );
-
-				Recv();
-			}
-			else
-			{
-				Send();
-			}
-			break;
-		}
-	}
-
-	void		OnEvent( void ){
-		CSession::OnEvent( m_op );
-	}
-
-	void		OnClose( void ){
-		if( m_pProtocol ){
-			m_pProtocol->OnClose();
-			delete m_pProtocol;
-			m_pProtocol	= NULL;
-		}
-
-		if( m_pSocket ){
-			m_pSocket->Close();
-			delete m_pSocket;
-			m_pSocket	= NULL;
-		}
-	}
-
-	BOOL		Recv( void ){
-		DWORD	dwFlags	= 0;
-
-		m_wsaBuf.buf	= (char*)m_Buffer.At( 0 );
-		m_wsaBuf.len	= m_Buffer.Size();
-
-		memset(&m_ol, 0, sizeof(WSAOVERLAPPED));
-		m_op	= OP_READ;
-
-		if( m_pSocket->WSARecv(&m_wsaBuf, 1, NULL, &dwFlags, &m_ol, NULL) == SOCKET_ERROR )
-		{
-			if( ::WSAGetLastError() == WSA_IO_PENDING )
-			{
-				return TRUE;
-			}
-			return FALSE;
-		}
-		return TRUE;
-	}
-
-	BOOL		Send( void ){
-		DWORD	dwFlags	= 0;
-
-		m_wsaBuf.buf	= (char*)m_Buffer.At( 0 );
-		m_wsaBuf.len	= m_Buffer.Size();
-
-		memset(&m_ol, 0, sizeof(WSAOVERLAPPED));
-		m_op	= OP_WRITE;
-
-		if( m_pSocket->WSASend(&m_wsaBuf, 1, NULL, dwFlags, &m_ol, NULL) == SOCKET_ERROR )
-		{
-			if( ::WSAGetLastError() == WSA_IO_PENDING )
-			{
-				return TRUE;
-			}
-			return FALSE;
-		}
-		return TRUE;
-	}
-};
-
-class CSessionManager {
-public:
-	typedef std::map<DWORD, CSession*>		MAP;
-	typedef std::pair<DWORD, CSession*>		PAIR;
-
-private:
-	static MAP		m_map;
-
-public:
-	static LPVOID		New( DWORD dwKey, LPVOID lpParam ){
-		CSession* pSession = new CSession( *(SOCKET*)lpParam );
-		if( pSession )
-		{
-			m_map.insert( PAIR(dwKey, pSession) );
-			return (LPVOID)pSession;
-		}
-		return NULL;
-	}
-
-	static void			Delete( DWORD dwKey ){
-		MAP::iterator	it = m_map.find( dwKey );
-		if( it != m_map.end() )
-		{
-			CSession*	pSession = it->second;
-			m_map.erase( it );
-
-			if( pSession )
-				delete pSession;
-		}
-	}
-
-	static CSession*	Find( DWORD dwKey ){
-		MAP::iterator	it = m_map.find( dwKey );
-		if( it != m_map.end() )
-		{
-			return it->second;
-		}
-		return NULL;
-	}
-};
-
-CSessionManager::MAP		CSessionManager::m_map;
-
 
 class CIOCPWorker	: public IRunnable {
 public:
@@ -342,22 +151,20 @@ public:
 
 			if( (bReturn == FALSE) || ((bReturn == TRUE) && (dwBytesTransfered == 0))	)
 			{
-				CSessionManager::Delete( (DWORD)pSession->m_pSocket->m_hHandle );
+				CSessionManager::Instance().Delete( (DWORD)pSession->m_pSocket->m_hHandle );
 				continue;
 			}
 
-			pSession->OnEvent();
+			pSession->OnEvent( dwBytesTransfered );
 		}
 	}
 };
 
 class CIOCPServer	: public IRunnable {
 public:
-	CEvent				m_evntShutdown;
-
-	CListenSocket		m_sockListen;
-
 	CIOCP				m_IOCP;
+	CEvent				m_evntShutdown;
+	CListenSocket		m_sockListen;
 
 	CThread*			m_pThreads[ 4 ];
 
@@ -383,12 +190,12 @@ public:
 				if( sock.IsValid() )
 				{
 					SOCKET	s	= sock.Detach();
-					CSession*	pSession	= (CSession*)CSessionManager::New( (DWORD)s, (LPVOID)&s );
+					CSession*	pSession	= (CSession*)CSessionManager::Instance().New<CKeyValueProtocol>( (DWORD)s, (LPVOID)&s );
 					if( pSession )
 					{
-						m_IOCP.IoCompletionPort( (HANDLE)s, (ULONG_PTR)pSession );
+						m_IOCP.IoCompletionPort( s, (ULONG_PTR)pSession );
 
-						pSession->OnEvent( IEventHandler::OP_CONNECT );
+						pSession->OnEvent( OP_CONNECT );
 					}
 				}
 			}
@@ -407,7 +214,7 @@ protected:
 	void		run( void )
 	{
 		CClientForm	Form;
-		if( Form.Create(_T("Client"), 0, 0, 100, 100, 600, 600) ){
+		if( Form.Create(_T("KeyValue Client"), 0, 0, 100, 100, 600, 300) ){
 			Form.ShowWindow( SW_SHOW );
 			Form.UpdateWindow();
 			Form.MessageLoop();

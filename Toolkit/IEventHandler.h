@@ -1,5 +1,9 @@
 #pragma once
 
+enum {
+	OP_READ	= 0, OP_WRITE, OP_ACCEPT, OP_CLOSE, OP_CONNECT
+};
+
 /**********************************************************************************
  */
 class IEventHandler {
@@ -8,18 +12,18 @@ public:
 		OP_READ	= 0, OP_WRITE, OP_ACCEPT, OP_CLOSE, OP_CONNECT
 	};
 
-	virtual int		Preform( EnumType nType, CBuffer* pBuffer = NULL ){
+	virtual int		Preform( EnumType nType, LPVOID* pParam = NULL ){
 		switch( nType ){
 		case OP_READ:
-			OnRead( pBuffer );
+			OnRead( pParam );
 			break;
 
 		case OP_WRITE:
-			OnWrite( pBuffer );
+			OnWrite( pParam );
 			break;
 
 		case OP_ACCEPT:
-			OnAccept( pBuffer );
+			OnAccept( pParam );
 			break;
 
 		case OP_CLOSE:
@@ -27,7 +31,7 @@ public:
 			break;
 
 		case OP_CONNECT:
-			OnConnect( pBuffer );
+			OnConnect( pParam );
 			break;
 
 		default:
