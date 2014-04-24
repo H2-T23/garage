@@ -37,9 +37,7 @@ public:
 			break;
 
 		case OP_READ:
-			m_Buffer.Resize( dwSize );
-
-			if( m_pProtocol->OnRead( &m_Buffer ) > 0 )
+			if( m_pProtocol->OnRead(&m_Buffer, dwSize) > 0 )
 			{
 				m_Buffer.Clear();
 				m_pProtocol->OnWrite( &m_Buffer );

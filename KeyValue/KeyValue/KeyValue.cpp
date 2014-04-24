@@ -57,7 +57,7 @@ public:
 		}
 	}
 
-	int		OnRead( LPVOID lpParam ){
+	int		OnRead( LPVOID lpParam, DWORD dwSize ){
 
 		CBuffer*	pBuff	= (CBuffer*)(lpParam);
 		if( pBuff )
@@ -214,7 +214,7 @@ protected:
 	void		run( void )
 	{
 		CClientForm	Form;
-		if( Form.Create(_T("KeyValue Client"), 0, 0, 100, 100, 600, 300) ){
+		if( Form.Create(_T("KeyValue Client"), 0, 0, 100, 100, 600, 200) ){
 			Form.ShowWindow( SW_SHOW );
 			Form.UpdateWindow();
 			Form.MessageLoop();

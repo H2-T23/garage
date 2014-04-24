@@ -17,6 +17,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+
 	INET::WinInet::Startup();
 
 	CThread*	pMessageReciverUIThread		= new CThread( new CMessageReciverUIThread() );

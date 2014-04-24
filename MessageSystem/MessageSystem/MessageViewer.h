@@ -73,6 +73,7 @@ protected:
 		}
 
 		if( m_wndList.Create(this, 0, 0, 0, 0, IDC_LISTVIEW) ){
+			m_wndList.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
 			m_wndList.InsertColumn( 0, _T("ID") );
 			m_wndList.InsertColumn( 1, _T("Time") );
 			m_wndList.InsertColumn( 2, _T("Subject") );

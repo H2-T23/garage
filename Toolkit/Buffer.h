@@ -104,7 +104,8 @@ public:
 	}
 
 	SIZE		Resize( SIZE sz ){
-		if( sz > m_Buffer.size() ){
+	//	if( sz > m_Buffer.size() ){
+		if( sz > 0 ){
 			m_Buffer.resize( sz );
 		}
 		return Size();

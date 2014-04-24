@@ -83,6 +83,149 @@ PVecThreadEntry		CreateThreadSnapShot(DWORD dwPID){
  *
  *
  */
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CPEFile {
+protected:
+	BYTE*						m_pBase;
+	IMAGE_DOS_HEADER*			m_pDosHeader;
+	IMAGE_NT_HEADERS*			m_pNtHeaders;
+	IMAGE_SECTION_HEADER*		m_pSectionTable;
+
+public:
+	BYTE*						GetBase( void ) const				{ return(m_pBase);							}
+	IMAGE_DOS_HEADER*			GetDosHeader( void ) const			{ return(m_pDosHeader);						}
+	IMAGE_NT_HEADERS*			GetNtHeader( void ) const			{ return(m_pNtHeaders);						}
+	IMAGE_FILE_HEADER*			GetFileHeader( void ) const			{ return(&m_pNtHeaders->FileHeader);		}
+	IMAGE_OPTIONAL_HEADER32*	GetOptionalHeader( void ) const		{ return(&m_pNtHeaders->OptionalHeader);	}
+	IMAGE_SECTION_HEADER*		GetSectionHeader( int nIdx ) const	{ return(&m_pSectionTable[ nIdx ]);			}
+
+public:
+	explicit CPEFile( const CHAR* pImageFile )
+		: m_pBase(NULL)
+		, m_pDosHeader(NULL)
+		, m_pNtHeaders(NULL)
+		, m_pSectionTable(NULL)
+	{
+	}
+
+	~CPEFile( void ){
+		UnloadImageFile();
+	}
+
+public:
+	bool	LoadImageFile( const CHAR* pImageFile ){
+
+		BYTE*	pData	= NULL;
+		if( pData == NULL ){
+			return(false);
+		}
+
+		IMAGE_DOS_HEADER*		pDosHeader		= (IMAGE_DOS_HEADER*)( pData );
+		if( pDosHeader ){
+			if( (pDosHeader->e_magic != *(WORD*)("MZ")) || (pDosHeader->e_lfanew == 0) ){
+				return(false);
+			}
+		}
+
+		IMAGE_NT_HEADERS*		pNtHeaders		= (IMAGE_NT_HEADERS*)( &pData[ pDosHeader->e_lfanew ] );
+		if( pNtHeaders ){
+			if( (pNtHeaders->Signature != *(DWORD*)("PE\0\0")) || (pNtHeaders->OptionalHeader.Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC) ){
+				return(false);
+			}
+		}
+
+		IMAGE_SECTION_HEADER*	pSectionTable	= (IMAGE_SECTION_HEADER*)( pNtHeaders + 1 );
+		if( pSectionTable ){
+
+			BYTE*	pVMem	= (BYTE*)VirtualAlloc( NULL, pNtHeaders->OptionalHeader.SizeOfImage, MEM_COMMIT, PAGE_READWRITE );
+			if( pVMem == NULL ){
+				return(false);
+			}
+
+			memcpy( pVMem, pData, pNtHeaders->OptionalHeader.SizeOfHeaders );
+
+			for( unsigned i=0; i<pNtHeaders->FileHeader.NumberOfSections; i++ )
+			{
+				if( pSectionTable[ i ].PointerToRawData )
+				{
+					memcpy( &pVMem[ pSectionTable[ i ].VirtualAddress ], &pData[ pSectionTable[ i ].PointerToRawData ], pSectionTable[ i ].SizeOfRawData );
+				}
+			}
+
+			m_pBase	= pVMem;
+		}
+
+		if( m_pBase )
+		{
+			m_pDosHeader	= reinterpret_cast<IMAGE_DOS_HEADER*>( m_pBase );
+			m_pNtHeaders	= reinterpret_cast<IMAGE_NT_HEADERS*>( m_pBase + m_pDosHeader->e_lfanew );
+			m_pSectionTable	= reinterpret_cast<IMAGE_SECTION_HEADER*>( m_pNtHeaders + 1 );
+
+			return(true);
+		}
+
+		return(false);
+	}
+
+	void	UnloadImageFile( void ){
+		if( m_pBase ){
+			VirtualFree( m_pBase, 0, MEM_RELEASE );
+			m_pBase	= NULL;
+		}
+	}
+
+public:
+	BYTE*	GetDirEntryData( int idx ) const {
+		if( m_pBase ){
+			if( (0 <= idx) && (idx < IMAGE_NUMBEROF_DIRECTORY_ENTRIES) 
+			&&	(GetOptionalHeader()->DataDirectory[ idx ].VirtualAddress)
+			&&	(GetOptionalHeader()->DataDirectory[ idx ].Size)			)
+			{
+				return(m_pBase + GetOptionalHeader()->DataDirectory[ idx ].VirtualAddress);
+			}
+		}
+		return(NULL);
+	}
+
+	DWORD	GetDirEntryDataSize( int idx ) const {
+		if( m_pBase ){
+			if( (0 <= idx) && (idx < IMAGE_NUMBEROF_DIRECTORY_ENTRIES) )
+			{
+				return(GetOptionalHeader()->DataDirectory[ idx ].Size);
+			}
+		}
+		return(0);
+	}
+
+	IMAGE_IMPORT_DESCRIPTOR*	GetImportDir( void ) const {
+		return (IMAGE_IMPORT_DESCRIPTOR*)GetDirEntryData( IMAGE_DIRECTORY_ENTRY_IMPORT );
+	}
+
+	void	GetImportDllNames( std::vector<const char*>& vec ) const {
+		vec.clear();
+
+		IMAGE_IMPORT_DESCRIPTOR*	pImpDesc	= GetImportDir();
+		if( pImpDesc ){
+			for( int i=0; pImpDesc[ i ].FirstThunk; i++ ){
+				vec.push_back( (const char*)(pImpDesc[ i ].Name) );
+			}
+		}
+	}
+
+	template<typename T>
+	T	GetData( DWORD dw ){
+		return (T)(m_pBase + dw);
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
 enum {
 	ID_MENU				= 100	,
 	ID_FILE						,

@@ -497,6 +497,10 @@ protected:
 	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT);	}
 
 public:
+	int		InsertItem( LVITEM& Item ){
+		return ListView_InsertItem(m_hWnd, &Item);
+	}
+
 	int		InsertItem( int nItem, LPTSTR lpszText ){
 		return this->InsertItem(nItem, 0, lpszText);
 	}
@@ -509,6 +513,10 @@ public:
 		item.pszText	= lpszText;
 		ListView_InsertItem( m_hWnd, &item );
 		return nItem;
+	}
+
+	int		SetItem( LVITEM& Item ){
+		return ListView_SetItem(m_hWnd, &Item);
 	}
 
 	int		SetItem( int nItem, int nSubItem, LPTSTR lpszText ){

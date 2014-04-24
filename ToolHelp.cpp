@@ -9,6 +9,11 @@
 #include <memory>
 
 
+/**********************************************************************************
+ *
+ *
+ *
+ */
 typedef std::vector<PROCESSENTRY32>		VecProcessEntry;
 typedef std::auto_ptr<VecProcessEntry>	PVecProcessEntry;
 
@@ -17,16 +22,20 @@ PVecProcessEntry	CreateProcessShapShot(void){
 
 	HANDLE	hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
 	if(hSnapShot != INVALID_HANDLE_VALUE){
-		PROCESSENTRY32 pe = { sizeof(PROCESSENTRY32) };
-		BOOL bProcess = Process32First(hSnapShot, &pe);
-		for( ; bProcess; bProcess=Process32Next(hSnapShot,&pe) ){
-			p->push_back( pe );
+		PROCESSENTRY32 entry = { sizeof(PROCESSENTRY32) };
+		BOOL bProcess = Process32First(hSnapShot, &entry);
+		for( ; bProcess; bProcess=Process32Next(hSnapShot,&entry) ){
+			p->push_back( entry );
 		}
 		CloseHandle( hSnapShot );
 	}
 	return(p);
 }
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 typedef std::vector<MODULEENTRY32>		VecModuleEntry;
 typedef std::auto_ptr<VecModuleEntry>	PVecModuleEntry;
 
@@ -35,16 +44,44 @@ PVecModuleEntry		CreateModuleSnapShot(DWORD dwPID){
 
 	HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,dwPID);
 	if(hSnapShot != INVALID_HANDLE_VALUE){
-		MODULEENTRY32 me = { sizeof(MODULEENTRY32) };
-		BOOL bModule = Module32First(hSnapShot, &me);
-		for( ; bModule; bModule=Module32Next(hSnapShot,&me) ){
-			p->push_back( me );
+		MODULEENTRY32 entry = { sizeof(MODULEENTRY32) };
+		BOOL bModule = Module32First(hSnapShot, &entry);
+		for( ; bModule; bModule=Module32Next(hSnapShot,&entry) ){
+			p->push_back( entry );
 		}
 		CloseHandle(hSnapShot);
 	}
 	return(p);
 }
+/**********************************************************************************
+ *
+ *
+ *
+ */
+typedef std::vector<THREADENTRY32>		VecThreadEntry;
+typedef std::auto_ptr<VecThreadEntry>	PVecThreadEntry;
 
+PVecThreadEntry		CreateThreadSnapShot(DWORD dwPID){
+	PVecThreadEntry	p( new VecThreadEntry() );
+
+	HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+	if(hSnapShot != INVALID_HANDLE_VALUE){
+		THREADENTRY32 entry = { sizeof(THREADENTRY32) };
+		BOOL bModule = Thread32First(hSnapShot, &entry);
+		for( ; bModule; bModule=Thread32Next(hSnapShot,&entry) ){
+			if( dwPID == entry.th32OwnerProcessID ){
+				p->push_back( entry );
+			}
+		}
+		CloseHandle(hSnapShot);
+	}
+	return(p);
+}
+/**********************************************************************************
+ *
+ *
+ *
+ */
 BOOL	InjectDLL(DWORD dwPID, LPCSTR lpszLibPath){
 	printf("%s(%d,%s)\n",__FUNCTION__,dwPID,lpszLibPath);
 
@@ -103,7 +140,11 @@ BOOL	InjectDLL(DWORD dwPID, LPCSTR lpszLibPath){
 
 	return bResult;
 }
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 BOOL	EjectDLL(DWORD dwPID,LPCSTR lpszLibPath){
 	printf("%s(%d,%s)\n",__FUNCTION__,dwPID,lpszLibPath);
 
@@ -160,7 +201,11 @@ BOOL	EjectDLL(DWORD dwPID,LPCSTR lpszLibPath){
 
 	return bResult;
 }
-	
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CProcessSnapShot {
 public:
 	typedef std::auto_ptr<CProcessSnapShot>		PSnapShot;
@@ -219,9 +264,11 @@ public:
 		return(pSnapShot);
 	}
 };
-
-
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 int main(int argc,TCHAR** argv)
 {
 	CProcessSnapShot::PSnapShot pSnapShot = CProcessSnapShot::Create();

@@ -58,7 +58,7 @@ public:
 	}
 
 public:
-	CSplitter( void ) : m_dwSplitterPos(200){
+	CSplitter( void ) : m_pParentWnd(NULL), m_dwSplitterPos(200){
 	}
 
 	virtual ~CSplitter( void ){
@@ -94,6 +94,9 @@ public:
 	}
 
 	void	MoveSplitter( int x, int y ){
+		if( m_pParentWnd == NULL )
+			return;
+
 		CRect	rc;
 		m_pParentWnd->GetClientRect( &rc );
 
@@ -105,6 +108,9 @@ public:
 	}
 
 	void	AdjustWindow( int cx, int cy ){
+		if( m_pParentWnd == NULL )
+			return;
+
 		if( MINIMUM_SIZE >= cx )
 			return;
 
@@ -139,6 +145,9 @@ public:
 	}
 
 	void	MoveSplitter( int x, int y ){
+		if( m_pParentWnd == NULL )
+			return;
+
 		CRect	rc;
 		m_pParentWnd->GetClientRect( &rc );
 
@@ -150,6 +159,9 @@ public:
 	}
 
 	void	AdjustWindow( int cx, int cy ){
+		if( m_pParentWnd == NULL )
+			return;
+
 		if( MINIMUM_SIZE >= cy )
 			return;
 

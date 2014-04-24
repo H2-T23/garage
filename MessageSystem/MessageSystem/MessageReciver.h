@@ -22,13 +22,18 @@ public:
 	CBuffer			m_Buffer;
 
 
-	int		OnRead( LPVOID lpParam ){
+	int		OnRead( LPVOID lpParam, DWORD dwSize ){
 		CBuffer*	pBuffer = (CBuffer*)lpParam;
 		if( pBuffer ){
 			CMessageHeader* pMsg = (CMessageHeader*)pBuffer->At(0);
-			if( pMsg ){
-				CMessagePool::Instance().Append( pMsg );
-				TRACE( pMsg->subject );
+			if( pMsg )
+			{
+				TRACE( "%d/%d\n", dwSize, sizeof(CMessageHeader) );
+				for( int i=0; i<(dwSize/sizeof(CMessageHeader)); i++ )
+				{
+					CMessagePool::Instance().Append( &pMsg[ i ] );
+					TRACE( "%s", pMsg[ i ].subject );
+				}
 				return 1;
 			}
 		}
