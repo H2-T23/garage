@@ -256,12 +256,12 @@ protected:
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		if( m_wndListModule.Create(this,0,0,0,0,IDC_LIST_MODULE) ){
 			m_wndListModule.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
-			m_wndListModule.InsertColumn(0,_T("Module"));
-			m_wndListModule.InsertColumn(1,_T("ExePath"));
-			m_wndListModule.InsertColumn(2,_T("ModuleID"));
-			m_wndListModule.InsertColumn(3,_T("ProcessID"));
-			m_wndListModule.InsertColumn(4,_T("Global Usage"));
-			m_wndListModule.InsertColumn(5,_T("Process Usage"));
+			m_wndListModule.InsertColumn(0,_T("Module Name"));
+			m_wndListModule.InsertColumn(1,_T("Executable"));
+			m_wndListModule.InsertColumn(2,_T("Process ID"));
+			m_wndListModule.InsertColumn(3,_T("Module ID"));
+			m_wndListModule.InsertColumn(4,_T("Ref Count(G)"));
+			m_wndListModule.InsertColumn(5,_T("Ref Count(P)"));
 			m_wndListModule.InsertColumn(6,_T("Base Address"));
 			m_wndListModule.InsertColumn(7,_T("Base Size"));
 			m_wndListModule.InsertColumn(8,_T("Handle"));
@@ -269,11 +269,11 @@ protected:
 
 		if( m_wndListThread.Create(this,0,0,0,0,IDC_LIST_THREAD) ){
 			m_wndListThread.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
-			m_wndListThread.InsertColumn(0,_T("ThreadID"));
-			m_wndListThread.InsertColumn(1,_T("OwnerProcessID"));
+			m_wndListThread.InsertColumn(0,_T("Thread ID"));
+			m_wndListThread.InsertColumn(1,_T("Owner Process ID"));
 			m_wndListThread.InsertColumn(2,_T("Usage"));
-			m_wndListThread.InsertColumn(3,_T("BasePri"));
-			m_wndListThread.InsertColumn(4,_T("DeltaPri"));
+			m_wndListThread.InsertColumn(3,_T("Base Priority"));
+			m_wndListThread.InsertColumn(4,_T("Delta Priority"));
 			m_wndListThread.InsertColumn(5,_T("Flags"));
 		}
 
@@ -300,10 +300,10 @@ public:
 				str.Format(_T("%s\0"), (*pModuleList)[ i ].szExePath );
 				m_wndListModule.SetItem( i, 1,  (LPTSTR)str );
 
-				str.Format(_T("0x%X\0"), (*pModuleList)[ i ].th32ModuleID );
+				str.Format(_T("0x%X\0"), (*pModuleList)[ i ].th32ProcessID );
 				m_wndListModule.SetItem( i, 2,  (LPTSTR)str );
 
-				str.Format(_T("0x%X\0"), (*pModuleList)[ i ].th32ProcessID );
+				str.Format(_T("0x%X\0"), (*pModuleList)[ i ].th32ModuleID );
 				m_wndListModule.SetItem( i, 3,  (LPTSTR)str );
 
 				str.Format(_T("%d\0"), (*pModuleList)[ i ].GlblcntUsage );
@@ -369,12 +369,13 @@ protected:
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
 		if( m_wndListProcess.Create(this,0,0,0,0,IDC_LIST_PROCESS) ){
 			m_wndListProcess.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
-			m_wndListProcess.InsertColumn(0,_T("ProcessName"));
-			m_wndListProcess.InsertColumn(1,_T("ProcessID"));
-			m_wndListProcess.InsertColumn(2,_T("ParentProcessID"));
-			m_wndListProcess.InsertColumn(3,_T("Usage"));
-			m_wndListProcess.InsertColumn(4,_T("Threads"));
-			m_wndListProcess.InsertColumn(5,_T("Flags"));
+			m_wndListProcess.InsertColumn(0,_T("Process Name"));
+			m_wndListProcess.InsertColumn(1,_T("Process ID"));
+			m_wndListProcess.InsertColumn(2,_T("Thread Count"));
+			m_wndListProcess.InsertColumn(3,_T("Parent Process ID"));
+			m_wndListProcess.InsertColumn(4,_T("Priority base"));
+			m_wndListProcess.InsertColumn(5,_T("Usage"));
+			m_wndListProcess.InsertColumn(6,_T("Flags"));
 		}
 
 		notify.Initialize(this);
@@ -438,17 +439,20 @@ public:
 				str.Format(_T("0x%X\0"), dwPID );
 				m_wndListProcess.SetItem( i, 1, (LPTSTR)str );
 
-				str.Format(_T("0x%X\0"), (*pProcessList)[ i ].th32ParentProcessID );
+				str.Format(_T("%d\0"), (*pProcessList)[ i ].cntThreads );
 				m_wndListProcess.SetItem( i, 2, (LPTSTR)str );
 
-				str.Format(_T("%d\0"), (*pProcessList)[ i ].cntUsage );
+				str.Format(_T("0x%X\0"), (*pProcessList)[ i ].th32ParentProcessID );
 				m_wndListProcess.SetItem( i, 3, (LPTSTR)str );
 
-				str.Format(_T("%d\0"), (*pProcessList)[ i ].cntThreads );
+				str.Format(_T("%d\0"), (*pProcessList)[ i ].pcPriClassBase );
 				m_wndListProcess.SetItem( i, 4, (LPTSTR)str );
 
-				str.Format(_T("0x%X\0"), (*pProcessList)[ i ].dwFlags );
+				str.Format(_T("%d\0"), (*pProcessList)[ i ].cntUsage );
 				m_wndListProcess.SetItem( i, 5, (LPTSTR)str );
+
+				str.Format(_T("0x%X\0"), (*pProcessList)[ i ].dwFlags );
+				m_wndListProcess.SetItem( i, 6, (LPTSTR)str );
 
 				LVITEM	item = {0};
 				item.mask	= LVIF_PARAM;
