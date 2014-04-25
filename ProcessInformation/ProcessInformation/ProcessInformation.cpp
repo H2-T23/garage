@@ -8,8 +8,105 @@
 #include "UseToolkit.h"
 #include "DBG.h"
 
-#include <tlhelp32.h>
+#include "Thread.h"
+using namespace MT;
 
+#include <tlhelp32.h>
+#include <psapi.h>
+
+#pragma comment(lib,"psapi.lib")
+
+//#define	PEFILE
+#ifdef PEFILE
+#include "LoadFile.h"
+#include "PEFile.h"
+#endif
+
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CProcessInfo {
+public:
+	DWORD				m_dwPID;
+	HANDLE				m_hProcess;
+
+	inline bool		IsValid( void ) const {
+		return(m_hProcess ? true : false);
+	}
+
+	inline bool		IsInvalid( void ) const {
+		return !IsValid();
+	}
+
+	operator DWORD () { return(m_dwPID); }
+	operator HANDLE () { return(m_hProcess); }
+
+	CProcessInfo( void ) : m_dwPID(0), m_hProcess(NULL) {
+	}
+
+	CProcessInfo( DWORD dwPID ) : m_dwPID(dwPID), m_hProcess(NULL) {
+		GetProcessHandle();
+	}
+
+	~CProcessInfo( void ){
+		if( m_hProcess )
+			::CloseHandle( m_hProcess );
+		m_hProcess	= NULL;
+	}
+
+	HANDLE		SetPID( DWORD dwPID ){
+		return GetProcessHandle( m_dwPID = dwPID );
+	}
+
+	HANDLE		GetProcessHandle( DWORD dwPID ){
+		return(m_hProcess = ::OpenProcess(GENERIC_ALL, FALSE, dwPID));
+	}
+
+	HANDLE		GetProcessHandle( void ){
+		return GetProcessHandle(m_dwPID);
+	}
+
+	DWORD		GetProcessImageFlleName( LPTSTR lpszImageFileName, DWORD dwSize ){
+		return ::GetProcessImageFileName(m_hProcess, lpszImageFileName, dwSize);
+	}
+
+	DWORD		GetProcessImageFileNameEx( LPTSTR lpszImageFileName, DWORD dwSize )
+	{
+		DWORD	dwRet	= GetProcessImageFlleName(lpszImageFileName, dwSize);
+		if( dwRet )
+		{
+			WCHAR* pszSlash = wcschr(&lpszImageFileName[1], L'\\');
+			if( pszSlash )
+				pszSlash	= wcschr(pszSlash + 1, L'\\');
+			if( !pszSlash )
+				return 0;
+
+			WCHAR	cSave	= *pszSlash;
+			*pszSlash		= 0;
+
+			WCHAR	szNTPath[ MAX_PATH ];
+			WCHAR	szDrive[ MAX_PATH ]		= L"A:";
+
+			for( WCHAR cDrive = L'A'; cDrive < L'Z'; cDrive++ )
+			{
+				szDrive[ 0 ]	= cDrive;
+				szNTPath[ 0 ]	= 0;
+				if( 0 != ::QueryDosDevice(szDrive, szNTPath, _countof(szNTPath))
+				&&	0 == _wcsicmp(szNTPath, lpszImageFileName)	)
+				{
+					wcscat_s(szDrive, _countof(szDrive), L"\\");
+					wcscat_s(szDrive, _countof(szDrive), pszSlash + 1);
+					wcscpy_s(lpszImageFileName, dwSize, szDrive);
+					return dwRet;
+				}
+			}
+			*pszSlash	= cSave;
+		}
+		return 0;
+	}
+};
 /**********************************************************************************
  *
  *
@@ -83,6 +180,188 @@ PVecThreadEntry		CreateThreadSnapShot(DWORD dwPID){
  *
  *
  */
+class CModuleForm : public CForm {
+public:
+	CModuleForm( void ) : CForm(), m_dwPID(0) {}
+	CModuleForm( DWORD dwPID ) : CForm(), m_dwPID(dwPID) {}
+
+protected:
+	DWORD				m_dwPID;
+	CListView			m_wndList;
+
+	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		if( m_wndList.Create(this, 0, 0, lpCreateStruct->cx, lpCreateStruct->cy, 1001) ){
+			m_wndList.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
+			m_wndList.InsertColumn(0, _T("Module"));
+			m_wndList.InsertColumn(1, _T("Base Address"));
+			m_wndList.InsertColumn(2, _T("Size of Image"));
+		}
+
+		if( m_dwPID )
+		{
+			TCHAR	szBuf[MAX_PATH];
+			CProcessInfo	psinfo(m_dwPID);
+			psinfo.GetProcessImageFileNameEx(szBuf, _countof(szBuf));
+
+			if( psinfo.IsValid() )
+			{
+				TString		str;
+				TCHAR		szName[256];
+				DWORD		dwSize;
+				HMODULE		modules[100];
+				::EnumProcessModules( (HANDLE)psinfo, modules, sizeof(modules), &dwSize );
+
+				MODULEINFO	mi	= {0};
+
+				for( int i=0; i<(dwSize/sizeof(HMODULE)); i++ ){
+					::GetModuleBaseName( (HANDLE)psinfo, modules[ i ], szName, sizeof(szName) );
+					::GetModuleInformation( (HANDLE)psinfo, modules[ i ], &mi, sizeof(mi) );
+
+					str.Format(_T("%s\0"), szName );
+					m_wndList.InsertItem( i , (LPTSTR)str );
+
+					str.Format(_T("0x%X\0"), mi.lpBaseOfDll );
+					m_wndList.SetItem( i, 1, (LPTSTR)str );
+
+					str.Format(_T("0x%X\0"), mi.SizeOfImage );
+					m_wndList.SetItem( i, 2, (LPTSTR)str );
+				}
+			}
+		}
+
+		return TRUE;
+	}
+
+	void	OnSize(UINT, int cx, int cy){
+		if( cx < 0 || cy < 0 )
+			return;
+
+		m_wndList.MoveWindow(0, 0, cx, cy);
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CModuleUIThread : public IRunnable {
+public:
+	DWORD	m_dwPID;
+
+	CModuleUIThread( DWORD dwPID ) : m_dwPID(dwPID) {
+	}
+
+	void		run( void ){
+		CModuleForm	Form(m_dwPID);
+		if( Form.Create(_T("Module"), 0, 0, 100, 100, 300, 300) ){
+			Form.ShowWindow( SW_SHOW );
+			Form.UpdateWindow();
+			Form.MessageLoop();
+		}
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CPEFileForm : public CForm {
+public:
+	CPEFileForm( void ) : CForm(), m_strPEFilename(_T("")) {
+	}
+
+	CPEFileForm( LPCTSTR lpPEFilename ) : CForm(), m_strPEFilename(lpPEFilename) {
+	}
+
+protected:
+	TString			m_strPEFilename;
+	CListView		m_wndList;
+
+	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		if( m_wndList.Create(this, 0, 0, lpCreateStruct->cx, lpCreateStruct->cy, 1001) ){
+			m_wndList.SetExtendedLitViewStyle( LVS_EX_FULLROWSELECT );
+			m_wndList.InsertColumn(0, _T("DLL"));
+			m_wndList.InsertColumn(1, _T("RVA"));
+			m_wndList.InsertColumn(2, _T("Symbol"));
+			m_wndList.InsertColumn(3, _T("hint"));
+			m_wndList.InsertColumn(4, _T("Ordinal"));
+		}
+
+#ifdef PEFILE
+		AString		str;
+		WCHAR		szBuf[256];
+
+		PEFile		pe((LPTSTR)m_strPEFilename);
+		std::vector<const char*>	dlls	= pe.GetImportDllNames();
+
+		unsigned item = 0;
+		for( unsigned i=0; i<dlls.size(); i++ )
+		{
+			std::vector<ImportSymbol>	symbols	= pe.GetImportSymbols( dlls[ i ] );
+
+			for( unsigned j=0; j<symbols.size(); j++ )
+			{
+				str.Format( "%s\0", dlls[ i ] );
+				TString::A2W( &str.at(0), str.Length()+1, szBuf, _countof(szBuf) );
+				m_wndList.InsertItem( item, szBuf );
+
+				str.Format( "0x%08X", symbols[ j ].iat_entry_rva );
+				TString::A2W( &str.at(0), str.Length()+1, szBuf, _countof(szBuf) );
+				m_wndList.SetItem( item, 1, szBuf );
+
+				if( symbols[ j ].import_by_name )
+				{
+					str.Format( "%s\0", symbols[ j ].name );
+					TString::A2W( &str.at(0), str.Length()+1, szBuf, _countof(szBuf) );
+					m_wndList.SetItem( item, 2, szBuf );
+					
+					str.Format( "%04d", symbols[ j ].hint );
+					TString::A2W( &str.at(0), str.Length()+1, szBuf, _countof(szBuf) );
+					m_wndList.SetItem( item, 3, szBuf );
+				}
+				else
+				{
+					str.Format( "%d\0", symbols[ j ].ordinal );
+					TString::A2W( &str.at(0), str.Length()+1, szBuf, _countof(szBuf) );
+					m_wndList.SetItem( item, 4, szBuf );
+				}
+
+
+				item++;
+			}
+		}
+#endif
+		return TRUE;
+	}
+
+	void	OnSize(UINT, int cx, int cy){
+		if( cx < 0 || cy < 0 ){
+			return;
+		}
+		m_wndList.MoveWindow(0, 0, cx, cy);
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CPEFileUIThread : public IRunnable {
+public:
+	TString		m_strPEFilename;
+
+	CPEFileUIThread( LPCTSTR lpPEFilename ) : m_strPEFilename(lpPEFilename) {
+	}
+
+	void	run( void ){
+		CPEFileForm	Form(m_strPEFilename);
+		if( Form.Create(_T("PE File"), 0, 0, 100, 100, 300, 300) ){
+			Form.ShowWindow( SW_SHOW );
+			Form.UpdateWindow();
+			Form.MessageLoop();
+		}
+	}
+};
 /**********************************************************************************
  *
  *
@@ -294,6 +573,14 @@ public:
 			TString	str;
 			for( int i=0; i<siz; i++ )
 			{
+				if( i == 0 )
+				{
+					CThread* pThread	= new CThread( new CPEFileUIThread( (*pModuleList)[ 0 ].szExePath ) );
+					if( pThread ){
+						pThread->Start();
+					}
+				}
+
 				str.Format(_T("%s\0"), (*pModuleList)[ i ].szModule );
 				m_wndListModule.InsertItem( i, (LPTSTR)str );
 
@@ -416,6 +703,11 @@ public:
 
 				::PostMessage(GetParent(), WM_SNAPSHOT_MODULE, 0, item.lParam );
 				::PostMessage(GetParent(), WM_SNAPSHOT_THREAD, 0, item.lParam );
+
+				CThread* pThread = new CThread( new CModuleUIThread(item.lParam) );
+				if( pThread ){
+					pThread->Start();
+				}
 			}
 		}
 	}

@@ -346,6 +346,7 @@ namespace MT {
 			CThread* pThread	= static_cast<CThread*>( lpParam );
 			if( pThread ){
 				pThread->run();
+				delete pThread;
 			}
 			return 0;
 		}

@@ -49,6 +49,7 @@
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				ForcedIncludeFiles="StdAfx.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
