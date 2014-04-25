@@ -1,9 +1,12 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcessInformation", "ProcessInformation\ProcessInformation.vcxproj", "{AE5E868D-BD5B-4027-892F-E08FD3377CB7}"
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProcessInformation", "ProcessInformation\ProcessInformation.vcproj", "{AE5E868D-BD5B-4027-892F-E08FD3377CB7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{861E7381-4398-41A6-83F5-90C6A08F746D} = {861E7381-4398-41A6-83F5-90C6A08F746D}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcxproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
