@@ -493,8 +493,9 @@ public:
  */
 class CListView : public CComponentWnd {
 protected:
-	virtual LPCTSTR			ClassName( void ) const		{	return(WC_LISTVIEW);	}
-	virtual DWORD			WindowStyle( void ) const	{	return(CComponentWnd::WindowStyle() | LVS_REPORT);	}
+	virtual LPCTSTR			ClassName( void ) const		{ return(WC_LISTVIEW);	}
+	virtual DWORD			WindowStyle( void ) const	{ return(CComponentWnd::WindowStyle() | LVS_REPORT);	}
+    virtual DWORD			WindowExStyle( void ) const { return(CComponentWnd::WindowExStyle() | LVS_EX_FULLROWSELECT);	}
 
 public:
 	int		InsertItem( LVITEM& Item ){

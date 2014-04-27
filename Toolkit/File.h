@@ -19,6 +19,8 @@ protected:
     virtual HANDLE					TemplateFile( void ) const			{ return(NULL);	}
 
 public:
+	operator HANDLE () { return(m_hFile); }
+
 	CFile( void ) : m_hFile(NULL) {
 	}
 
