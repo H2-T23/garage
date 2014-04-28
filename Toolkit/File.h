@@ -38,7 +38,14 @@ public:
 
 	virtual BOOL		Create( LPCTSTR lpszFilename ){
 		Close();
-		m_hFile	= ::CreateFile(lpszFilename, DesiredAccess(), ShareMode(), SecurityAttributes(), CreationDisposition(), FlagsAndAttributes(), TemplateFile() );
+		m_hFile	= ::CreateFile(lpszFilename
+							, DesiredAccess()
+							, ShareMode()
+							, SecurityAttributes()
+							, CreationDisposition()
+							, FlagsAndAttributes()
+							, TemplateFile() 
+							);
 		return IsOpen();
 	}
 
@@ -111,6 +118,36 @@ public:
  *
  *
  */
+class CReadOnlyFile : public CFile {
+protected:
+ 	virtual DWORD			DesiredAccess( void ) const			{ return(GENERIC_READ);		}
+    virtual DWORD			CreationDisposition( void ) const	{ return(OPEN_EXISTING);	}
+
+public:
+ 	CReadOnlyFile( LPCTSTR lpszFilename ) : CFile() {
+		Create( lpszFilename );
+	}
+
+	virtual BOOL		Create( LPCTSTR lpszFilename ){
+		Close();
+		m_hFile	= ::CreateFile(lpszFilename
+							, DesiredAccess()
+							, ShareMode()
+							, SecurityAttributes()
+							, CreationDisposition()
+							, FlagsAndAttributes()
+							, TemplateFile() 
+							);
+		return IsOpen();
+	}
+};
+/****************************************************************************************
+ *
+ *
+ *
+ *
+ *
+ */
 class CTxtFile : public CFile {
 public:
 	CTxtFile( LPCTSTR lpszFilename ) : CFile(lpszFilename) {
@@ -124,6 +161,4 @@ public:
 	int			WriteString( const TString& str ){
 		return CFile::Write( (LPVOID)(LPCTSTR)str, str.Length()*sizeof(TCHAR) );
 	}
-
-
 };

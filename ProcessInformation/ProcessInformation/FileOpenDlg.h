@@ -11,7 +11,6 @@
  */
 class CFileOpenDlg {
 protected:
-	TCHAR			m_szFullPath[ MAX_PATH ];
 	TCHAR			m_szFileName[ MAX_PATH ];
 
 	virtual LPTSTR			Title( void ) const		{ return _T("File Open");	}
@@ -21,18 +20,15 @@ protected:
 
 public:
 	BOOL	DoModal( HWND hWnd ){
-		ZeroMemory(m_szFullPath, sizeof(m_szFullPath));
 		ZeroMemory(m_szFileName, sizeof(m_szFileName));
 
 		OPENFILENAME		ofn;
 		ZeroMemory(&ofn, sizeof(ofn));
-		ofn.lStructSize		= sizeof(ofn);
+		ofn.lStructSize		= sizeof(OPENFILENAME);
 		ofn.hwndOwner		= hWnd;
 		ofn.lpstrFilter		= Filter();
-		ofn.lpstrFile		= m_szFullPath;
-		ofn.lpstrFileTitle	= m_szFileName;
+		ofn.lpstrFile		= m_szFileName;
 		ofn.nMaxFile		= MAX_PATH;
-		ofn.nMaxFileTitle	= MAX_PATH;
 		ofn.Flags			= Flags();
 		ofn.lpstrFileTitle	= Title();
 		ofn.lpstrDefExt		= DefExt();
