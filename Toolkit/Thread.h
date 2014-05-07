@@ -368,7 +368,9 @@ namespace MT {
 		CThread( void ) : m_pRunnable(NULL) {
 		}
 
-		CThread( IRunnable* runnable ) : m_pRunnable(runnable) {
+		CThread( IRunnable* runnable, bool bStart = false ) : m_pRunnable(runnable) {
+			if( bStart )
+				Start();
 		}
 
 		virtual ~CThread( void ){

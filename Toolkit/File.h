@@ -36,7 +36,7 @@ public:
 		return(NULL!=m_hFile?TRUE:FALSE);
 	}
 
-	virtual BOOL		Create( LPCTSTR lpszFilename ){
+	BOOL			Create( LPCTSTR lpszFilename ){
 		Close();
 		m_hFile	= ::CreateFile(lpszFilename
 							, DesiredAccess()
@@ -46,6 +46,9 @@ public:
 							, FlagsAndAttributes()
 							, TemplateFile() 
 							);
+		if( m_hFile == INVALID_HANDLE_VALUE ){
+			Close();
+		}
 		return IsOpen();
 	}
 
@@ -138,6 +141,9 @@ public:
 							, FlagsAndAttributes()
 							, TemplateFile() 
 							);
+		if( m_hFile == INVALID_HANDLE_VALUE ){
+			Close();
+		}
 		return IsOpen();
 	}
 };
