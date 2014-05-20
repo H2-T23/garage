@@ -1,4 +1,4 @@
-// KeyValue.cpp : アプリケーションのエントリ ポイントを定義します。
+// KeyValue.cpp : 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ縺ｮ繧ｨ繝ｳ繝医Μ 繝昴う繝ｳ繝医ｒ螳夂ｾｩ縺励∪縺吶�
 //
 
 #include "stdafx.h"
@@ -21,7 +21,13 @@
 using namespace INET;
 using namespace MT;
 using namespace GENERIC;
+using namespace IOCP;
 
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CKeyValueProtocol : public IEventHandler {
 public:
 	CBuffer				m_RecvBuffer;
@@ -128,87 +134,61 @@ public:
 	void	OnClose( void ){
 	}
 };
-
-class CIOCPWorker	: public IRunnable {
-public:
-	CIOCP*			m_pIOCP;
-	CEvent*			m_pEventShutdown;
-
-	CIOCPWorker( CIOCP* pIOCP, CEvent* pEvent )
-	 : m_pIOCP(pIOCP), m_pEventShutdown(pEvent) {
-	}
-
-	void	run( void ){
-		while( WAIT_OBJECT_0 != ::WaitForSingleObject(m_pEventShutdown->m_hObject, 0) )
-		{
-			LPOVERLAPPED		lpOverlapped		= NULL;
-			DWORD				dwBytesTransfered	= 0;
-			CSession*			pSession			= NULL;
-			BOOL	bReturn	= m_pIOCP->GetQueuedCompletionStatus( &dwBytesTransfered, (LPDWORD)&pSession, &lpOverlapped, INFINITE );
-			if( pSession == NULL ){
-				break;
-			}
-
-			if( (bReturn == FALSE) || ((bReturn == TRUE) && (dwBytesTransfered == 0))	)
-			{
-				CSessionManager::Instance().Delete( (DWORD)pSession->m_pSocket->m_hHandle );
-				continue;
-			}
-
-			pSession->OnEvent( dwBytesTransfered );
-		}
-	}
-};
-
-class CIOCPServer	: public IRunnable {
-public:
-	CIOCP				m_IOCP;
-	CEvent				m_evntShutdown;
-	CListenSocket		m_sockListen;
-
-	CThread*			m_pThreads[ 4 ];
-
-	void	run( void )
-	{
-		m_evntShutdown.m_hObject	= ::CreateEvent(NULL, TRUE, FALSE, NULL);
-
-		m_IOCP.Create();
-
-		for( int i=0; i<4; i++ ){
-			m_pThreads[ i ]	= new CThread( new CIOCPWorker(&m_IOCP, &m_evntShutdown) );
-			m_pThreads[ i ]->Start();
-		}
-
-
-		if( m_sockListen.Create( 54321 ) )
-		{
-			while( WAIT_OBJECT_0 != ::WaitForSingleObject(m_evntShutdown.m_hObject, 0) )
-			{
-				SOCKADDR_IN		addr;
-				int	len	= sizeof(addr);
-				CSocket	sock	= m_sockListen.Accept( (LPSOCKADDR)&addr, len );
-				if( sock.IsValid() )
-				{
-					SOCKET	s	= sock.Detach();
-					CSession*	pSession	= (CSession*)CSessionManager::Instance().New<CKeyValueProtocol>( (DWORD)s, (LPVOID)&s );
-					if( pSession )
-					{
-						m_IOCP.IoCompletionPort( s, (ULONG_PTR)pSession );
-
-						pSession->OnEvent( OP_CONNECT );
-					}
-				}
-			}
-		}
-
-		for( int i=0; i<4; i++ ){
-			m_pThreads[ i ]->exit();
-		}
-	}
-};
-
-
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
+//class CIOCPServer	: public IRunnable {
+//public:
+//	CIOCP				m_IOCP;
+//	CEvent				m_evntShutdown;
+//	CListenSocket		m_sockListen;
+//
+//	CThread*			m_pThreads[ 4 ];
+//
+//	void	run( void )
+//	{
+//		m_evntShutdown.m_hObject	= ::CreateEvent(NULL, TRUE, FALSE, NULL);
+//
+//		m_IOCP.Create();
+//
+//		for( int i=0; i<4; i++ ){
+//			m_pThreads[ i ]	= new CThread( new CIOCPWorker(&m_IOCP, &m_evntShutdown) );
+//			m_pThreads[ i ]->Start();
+//		}
+//
+//		if( m_sockListen.Create( 54321 ) )
+//		{
+//			while( WAIT_OBJECT_0 != ::WaitForSingleObject(m_evntShutdown.m_hObject, 0) )
+//			{
+//				SOCKADDR_IN		addr;
+//				int	len	= sizeof(addr);
+//				CSocket	sock	= m_sockListen.Accept( (LPSOCKADDR)&addr, len );
+//				if( sock.IsValid() )
+//				{
+//					SOCKET	s	= sock.Detach();
+//					CSession*	pSession	= (CSession*)CSessionManager::Instance().New<CKeyValueProtocol>( (DWORD)s, (LPVOID)&s );
+//					if( pSession )
+//					{
+//						m_IOCP.IoCompletionPort( s, (ULONG_PTR)pSession );
+//
+//						pSession->OnEvent( OP_CONNECT );
+//					}
+//				}
+//			}
+//		}
+//
+//		for( int i=0; i<4; i++ ){
+//			m_pThreads[ i ]->exit();
+//		}
+//	}
+//};
+/**********************************************************************************
+ *
+ *
+ *
+ */
 class CKeyValueClient	: public IRunnable {
 protected:
 	void		run( void )
@@ -221,8 +201,11 @@ protected:
 		}
 	}
 };
-
-
+/**********************************************************************************
+ *
+ *
+ *
+ */
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
@@ -240,7 +223,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 
-	CThread*	pThreadServer	= new CThread( new CIOCPServer() );
+//	CThread*	pThreadServer	= new CThread( new CIOCPServer() );
+	CThread*	pThreadServer	= new CThread( new TIOCPServer<CKeyValueProtocol, 54321>() );
 	if( pThreadServer )
 	{
 		pThreadServer->Start();
