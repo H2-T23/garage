@@ -13,7 +13,7 @@ public:
 	};
 
 	virtual int		Preform( EnumType nType, LPVOID* pParam = NULL ){
-		switch( nType ){
+		//switch( nType ){
 		//case OP_READ:
 		//	OnRead( pParam );
 		//	break;
@@ -34,9 +34,9 @@ public:
 		//	OnConnect( pParam );
 		//	break;
 
-		default:
-			return -1;
-		}
+		//default:
+		//	return -1;
+		//}
 		return 1;
 	}
 
