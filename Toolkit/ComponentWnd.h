@@ -343,6 +343,10 @@ public:
 		return TabCtrl_DeleteAllItems(m_hWnd);
 	}
 
+	int		GetItemCount( void ) const {
+		return TabCtrl_GetItemCount(m_hWnd);
+	}
+
 	BOOL	GetItemRect( int nItem, LPRECT lpRect ) const {
 		return TabCtrl_GetItemRect(m_hWnd, nItem, lpRect);
 	}
@@ -628,8 +632,8 @@ public:
 		col.mask	= LVCF_WIDTH | LVCF_TEXT;
 		col.cx		= nWidth ? nWidth : 100;
 		col.pszText	= lpszText;
-		ListView_InsertColumn( m_hWnd, idx, &col );
-		return idx;
+		return ListView_InsertColumn( m_hWnd, idx, &col );
+		//return idx;
 	}
 
 	BOOL	DeleteColumn( int nCol ) const {
