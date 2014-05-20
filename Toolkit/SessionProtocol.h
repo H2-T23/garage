@@ -7,6 +7,7 @@
 
 using namespace GENERIC;
 using namespace INET;
+using namespace MT;
 
 /**********************************************************************************
  */
