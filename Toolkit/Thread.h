@@ -368,14 +368,13 @@ namespace MT {
 		CThread( void ) : m_pRunnable(NULL) {
 		}
 
-		CThread( IRunnable* runnable, bool bStart = false ) : m_pRunnable(runnable) {
-			if( bStart )
-				Start();
+		CThread( IRunnable* runnable ) : m_pRunnable(runnable) {
 		}
 
 		virtual ~CThread( void ){
 			if(m_pRunnable){
 				delete m_pRunnable;
+				::CloseHandle(m_hThread);
 			}
 			m_pRunnable	= NULL;
 		}
