@@ -11,3 +11,4 @@
 #include "Splitter.h"
 #include "Observar.h"
 #include "File.h"
+#include "FileOpenDlg.h"
