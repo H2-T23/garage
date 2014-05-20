@@ -1,7 +1,7 @@
 #pragma once
 
-class CBuffer;
-class IEventHandler;
+#include "Buffer.h"
+#include "IEventHandler.h"
 /**********************************************************************************
  */
 class CHttpProtocol		: public IEventHandler {
@@ -38,18 +38,20 @@ public:
 		return 0;
 	}
 
-	int				ReadLine( const CBuffer* pBuffer, int iStart, std::string& str ){
-		int idx = pBuffer->find( '\n', iStart );
-		if( (idx > 0) && (idx > iStart) ){
-			str.assign( &pBuffer->at( iStart ), (idx - iStart + 1) );
-			return idx + 1;
-		}
-		return 0;
-	}
+//	int				ReadLine( const CBuffer* pBuffer, int iStart, std::string& str ){
+//		int idx = pBuffer->find( '\n', iStart );
+//		if( (idx > 0) && (idx > iStart) ){
+//			str.assign( &pBuffer->at( iStart ), (idx - iStart + 1) );
+//			return idx + 1;
+//		}
+//		return 0;
+//	}
 
-	virtual int		OnRead( LPVOID lpParam )
+	int		OnRead( LPVOID lpParam, DWORD dwSize )
 	{
-		CBuffer* pBuffer = (CBuffer*)lpParam;
+	//	CBuffer* pBuffer = (CBuffer*)lpParam;
+		std::string		buf( (char*)((CBuffer*)lpParam)->At(0) );
+		std::string*	pBuffer	= &buf;
 
 		int	len	= pBuffer->length();
 		int	idx	= 0;
@@ -60,6 +62,7 @@ public:
 			if( idx <= 0 )
 			{
 				m_RequestHeader.append( &pBuffer->at( 0 ), len );
+				TRACE(m_RequestHeader.c_str());
 
 				int i = m_RequestHeader.find("\n\n", 0);
 				if( i > 0 )
@@ -99,7 +102,7 @@ public:
 	//				}
 	//			}
 	//			break;
-
+	//
 	//		case REQUEST_HEADER:
 	//			{
 	//				int	iStart	= m_Header.length();
@@ -109,35 +112,35 @@ public:
 	//				}
 	//			}
 	//			break;
-
+	//
 	//		case REQUEST_BODY:
 	//			{
 	//			}
 	//			break;
 	//		}
-
+	//
 	//		isNext	= bool(len - idx);
 	//	}
-
+	//
 	//	if( state <= REQUEST_BODY ){
 	//		return 0;
 	//	}
-
+	//
 	////	int	cnt = 0;
 	//	int siz	= -1;
-
+	//
 	////	while( 1 )
 	//	do
 	//	{
 	//		int len	= 0;
-
+	//
 	//		siz = pBuffer->find('\n', idx);
 	//		if( siz > 0 ){
 	//			len	= siz - idx;
 	//		}else{
 	//			len	= pBuffer->length() - idx;
 	//		}
-
+	//
 	//		if( len > 0 )
 	//		{
 	//			switch( state ){
@@ -148,7 +151,7 @@ public:
 	//					state++;
 	//				}
 	//				break;
-
+	//
 	//			case REQUEST_HEADER:
 	//				m_Header.append( &pBuffer->at( idx ), len );
 	//				if( siz > 0 ){
@@ -160,7 +163,7 @@ public:
 	//					}
 	//				}
 	//				break;
-
+	//
 	//			case REQUEST_BODY:
 	//				m_Body.append( &pBuffer->at( idx ), len );
 	//				if( siz > 0 ){
@@ -169,7 +172,7 @@ public:
 	//				}
 	//				break;
 	//			}
-
+	//
 	//			if( siz > 0 )
 	//			{
 	//				idx = (siz + 1);
@@ -185,11 +188,11 @@ public:
 	//		}
 	////	}
 	//	} while( siz > 0 );
-
+	//
 	//	if( state <= REQUEST_BODY ){
 	//		return 0;
 	//	}
-
+	//
 //		TRACE( m_Req.c_str() );
 //		TRACE( m_Header.c_str() );
 		TRACE( m_Body.c_str() );
