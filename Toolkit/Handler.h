@@ -47,7 +47,6 @@ public:
 		return 0;
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -94,7 +93,6 @@ public:
 		}
 	}
 };
-
 /**********************************************************************************
  *
  *
@@ -146,7 +144,26 @@ public:
 		}
 	}
 };
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class CForm;
+template<class DERIVE_CLASS, class BASE_CLASS = CForm>
+class IHandlerEx : public BASE_CLASS {
+protected:
+	TCommandHandler<DERIVE_CLASS>	cmd;
+	TNotifyHandler<DERIVE_CLASS>	notify;
+public:
+	void	OnCommand(UINT nID, HWND, UINT nCodeNotify){
+		cmd.Dispach(nID,nCodeNotify);
+	}
 
+	void	OnNotify(WPARAM wParam, LPARAM lParam){
+		notify.Dispach(wParam,lParam);
+	}
+};
 /**********************************************************************************
  * Example: TNotifyListener
  *
