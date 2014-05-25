@@ -18,9 +18,12 @@
  */
 class COpenGL {
 public:
+	BOOL		m_IsValid;
 	HGLRC		m_hRC;
 
-	COpenGL( void ) : m_hRC(NULL) {
+	inline BOOL	IsValid(void) const { return(m_IsValid); }
+
+	COpenGL( void ) : m_IsValid(FALSE), m_hRC(NULL) {
 	}
 	virtual ~COpenGL( void ){
 		Cleanup();
@@ -57,12 +60,17 @@ public:
 		if( m_hRC == NULL )
 			return FALSE;
 
-		return ::wglMakeCurrent( hDC, m_hRC );
+		return(m_IsValid = ::wglMakeCurrent( hDC, m_hRC ));
 	}
 
-	void	Cleanup( void ){
-		::wglMakeCurrent( NULL, NULL );
-		::wglDeleteContext( m_hRC );
+	void	Cleanup( HDC hDC = NULL ){
+		if( hDC ){
+			::wglMakeCurrent( hDC, NULL );
+		}
+		if( m_hRC ){
+			::wglDeleteContext( m_hRC );
+			m_hRC	= NULL;
+		}
 	}
 };
 /**********************************************************************************
@@ -97,10 +105,15 @@ protected:
 	}
 
 	void	OnDestroy( void ){
-		gl.Cleanup();
+		if( !gl.IsValid() )
+			return;
+		HDC	hDC = ::GetDC(m_hWnd);
+		gl.Cleanup(hDC);
 	}
 
 	void	OnPaint( HDC hDC ){
+		if( !gl.IsValid() )
+			return;
 		this->Display();
 		glFinish();
 		SwapBuffers( hDC );
@@ -109,6 +122,66 @@ protected:
 	void	OnSize( UINT state, int cx, int cy ){
 		if( cx <= 0 || cy <= 0 )
 			return;
+		if( !gl.IsValid() )
+			return;
 		this->Resize( cx, cy );
+	}
+};
+/**********************************************************************************
+ *
+ *
+ *
+ */
+class IOpenGLForm : public CForm, public IOpenGLView {
+protected:
+    virtual DWORD				WindowStyle( void ) const		{return(CForm::WindowStyle() | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);}
+
+	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
+		return TRUE;
+		HDC	hDC = ::GetDC( m_hWnd );
+
+		if( gl.Startup( hDC ) ){
+			this->Init();
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	void	OnDestroy( void ){
+		if( !gl.IsValid() )
+			return;
+		HDC	hDC = ::GetDC(m_hWnd);
+		gl.Cleanup(hDC);
+	}
+
+	void	OnPaint( HDC hDC ){
+		if( !gl.IsValid() ){
+			if( gl.Startup(hDC) ){
+				this->Init();
+			}
+		}
+		if( !gl.IsValid() )
+			return;
+		::wglMakeCurrent(hDC, gl.m_hRC);
+		this->Display();
+		glFinish();
+		SwapBuffers( hDC );
+		::wglMakeCurrent(NULL,NULL);
+	}
+
+	void	OnSize( UINT state, int cx, int cy ){
+		if( cx <= 0 || cy <= 0 )
+			return;
+		if( !gl.IsValid() )
+			return;
+		HDC hDC = ::GetDC(m_hWnd);
+		::wglMakeCurrent(hDC, gl.m_hRC);
+		this->Resize( cx, cy );
+		::wglMakeCurrent(NULL, NULL);
+		Invalidate();
+	}
+
+	void	OnWndMsg( UINT uMsg, WPARAM wParam, LPARAM lParam ){
+		Invalidate(FALSE);
 	}
 };
