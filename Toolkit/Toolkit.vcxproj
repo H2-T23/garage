@@ -69,6 +69,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="APIHook.h" />
     <ClInclude Include="Base64.h" />
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="CommandListener1.h" />
@@ -79,7 +80,9 @@
     <ClInclude Include="DB.h" />
     <ClInclude Include="DBG.h" />
     <ClInclude Include="DC.h" />
+    <ClInclude Include="DC.old.h" />
     <ClInclude Include="File.h" />
+    <ClInclude Include="FileOpenDlg.h" />
     <ClInclude Include="Form.h" />
     <ClInclude Include="Generic.h" />
     <ClInclude Include="GridPanel.h" />
@@ -92,10 +95,14 @@
     <ClInclude Include="ISocket.h" />
     <ClInclude Include="KeyValue.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="MessageClient.h" />
+    <ClInclude Include="MessageStructure.h" />
     <ClInclude Include="NotifyListener.h" />
     <ClInclude Include="Observar.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="Panel.h" />
+    <ClInclude Include="SessionProtocol.h" />
     <ClInclude Include="SpinCtrl.h" />
     <ClInclude Include="Splitter.h" />
     <ClInclude Include="SSL.h" />
@@ -103,6 +110,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="ThreeDMath.h" />
     <ClInclude Include="ToolHelpEx.h" />
+    <ClInclude Include="Trace.h" />
     <ClInclude Include="TString.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="UseGUIToolkit.h" />

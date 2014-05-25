@@ -96,6 +96,10 @@ protected:
     virtual DWORD				WindowExStyle( void ) const		{return 0;}
 
 public:
+	BOOL		SetMenu( HMENU hMenu ) const {
+		return ::SetMenu(m_hWnd, hMenu);
+	}
+
 	UINT_PTR	SetTimer( UINT_PTR nIDEvent, UINT uElapse, TIMERPROC lpTimerFunc = NULL ){
 		return ::SetTimer(m_hWnd, nIDEvent, uElapse, lpTimerFunc);
 	}
