@@ -2,14 +2,14 @@
 #pragma comment(lib,"opengl32.lib")
 #pragma comment(lib,"glu32.lib")
 
+#include <math.h>
 #include <Windows.h>
 #include <GL/GL.h>
 #include <GL/glu.h>
 
+#include "Wnd.h"
+#include "Form.h"
 #include "Panel.h"
-
-#define	ZERO	(0.0)
-#define	ONE		(1.0)
 
 /**********************************************************************************
  *
@@ -25,6 +25,7 @@ public:
 
 	COpenGL( void ) : m_IsValid(FALSE), m_hRC(NULL) {
 	}
+
 	virtual ~COpenGL( void ){
 		Cleanup();
 	}
@@ -67,6 +68,7 @@ public:
 		if( hDC ){
 			::wglMakeCurrent( hDC, NULL );
 		}
+
 		if( m_hRC ){
 			::wglDeleteContext( m_hRC );
 			m_hRC	= NULL;
@@ -162,11 +164,11 @@ protected:
 		}
 		if( !gl.IsValid() )
 			return;
-		::wglMakeCurrent(hDC, gl.m_hRC);
+		::wglMakeCurrent( hDC, gl.m_hRC );
 		this->Display();
 		glFinish();
 		SwapBuffers( hDC );
-		::wglMakeCurrent(NULL,NULL);
+		::wglMakeCurrent( NULL, NULL );
 	}
 
 	void	OnSize( UINT state, int cx, int cy ){
