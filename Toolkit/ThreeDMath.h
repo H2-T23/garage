@@ -5,9 +5,9 @@ namespace ThreeDMath {
 	const double	ONE		= 1.0;
 	const double	PI		= 3.14159265359;
 
-	// “x		= ƒ‰ƒWƒAƒ“ x 180 / ‰~Žü—¦ 
+	// åº¦		= ãƒ©ã‚¸ã‚¢ãƒ³ x 180 / å††å‘¨çŽ‡ 
 	inline double	DEGREE( double dRadius ){ return(dRadius * 180.0 / PI); }
-	// ƒ‰ƒWƒAƒ“	= “x x ‰~Žü—¦ / 180
+	// ãƒ©ã‚¸ã‚¢ãƒ³	= åº¦ x å††å‘¨çŽ‡ / 180
 	inline double	RADIUS( double dDegree ){ return(dDegree * PI / 180.0);	}
 	/**********************************************************************************
 	 */
