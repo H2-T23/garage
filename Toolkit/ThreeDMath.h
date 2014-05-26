@@ -70,10 +70,6 @@ namespace ThreeDMath {
 			z /= len;	if(fabs(z) < EPS) z = ZERO;
 		}
 
-		void	Zero( void ){
-			Set( 0, 0, 0 );
-		}
-
 		double				Length( void ){
 			return double(sqrt(SQUARE(x) + SQUARE(y) + SQUARE(z)));
 		}
@@ -143,7 +139,7 @@ namespace ThreeDMath {
 					idxA	= (i * elements + k);
 					idxB	= (k * elements + j);
 
-					DBG::TRACE(_T("%d, %d, %d"), idx, idxA, idxB );
+					TRACE(_T("%d, %d, %d"), idx, idxA, idxB );
 
 					*(pMat + i * elements + j) += *(pMatA + i * elements + k) * *(pMatB + k * elements + j);
 				}
@@ -247,6 +243,14 @@ namespace ThreeDMath {
 			mat[ 12 ]=m30;	mat[ 13 ]=m31;	mat[ 14 ]=m32;	mat[ 15 ]=m33;
 		}
 
+		void	Set( const double m[16] ){
+			memcpy( mat, m, sizeof(mat) );
+		}
+
+		void	Set( const double m[4][4] ){
+			memcpy( mat, m, sizeof(mat) );
+		}
+
 		void	Identity( void ){
 			Set(	1, 0, 0, 0
 				,	0, 1, 0, 0
@@ -264,6 +268,8 @@ namespace ThreeDMath {
 		double	Det( void ){
 			return 0.0;
 		}
+
+		operator double*() { return(mat); }
 	};
 	/**********************************************************************************
 	 */
@@ -323,6 +329,25 @@ namespace ThreeDMath {
 			m[3][1] = 0.0;
 			m[3][2] = 0.0;
 			m[3][3] = 1.0;
+		}
+
+		void	GetRotation( CMatrix4x4& mtx ){
+			mtx.mat[0] = 1.0 - 2.0 * (V.y * V.y + V.z * V.z);
+			mtx.mat[1] =       2.0 * (V.x * V.y - V.z * S);
+			mtx.mat[2] =       2.0 * (V.z * V.x + S * V.y);
+			mtx.mat[3] = 0.0;
+			mtx.mat[4] =       2.0 * (V.x * V.y + V.z * S);
+			mtx.mat[5] = 1.0 - 2.0 * (V.z * V.z + V.x * V.x);
+			mtx.mat[6] =       2.0 * (V.y * V.z - S * V.x);
+			mtx.mat[7] = 0.0;
+			mtx.mat[8] =       2.0 * (V.z * V.x - S * V.y);
+			mtx.mat[9] =       2.0 * (V.y * V.z + V.x * S);
+			mtx.mat[10] = 1.0 - 2.0 * (V.y * V.y + V.x * V.x);
+			mtx.mat[11] = 0.0;
+			mtx.mat[12] = 0.0;
+			mtx.mat[13] = 0.0;
+			mtx.mat[14] = 0.0;
+			mtx.mat[15] = 1.0;
 		}
 
 	public:
