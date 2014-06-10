@@ -73,13 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="ExampleRawsocket.ico" />
-    <None Include="ReadMe.txt" />
-    <None Include="small.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="ExampleRawsocket.h" />
-    <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -89,9 +83,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ExampleRawsocket.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -226,7 +226,7 @@ protected:
 		menuMain.Insert(_T("Adapter")	, ID_ADAPTER	, (HMENU)menuAdapter	);
 		menuMain.Insert(_T("Help")		, ID_HELP		, (HMENU)menuHelp		);
 
-		SetMenu(m_hWnd, (HMENU)menuMain);
+		SetMenu( (HMENU)menuMain);
 	}
 
 	void	InitCtrl( void ){
