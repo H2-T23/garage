@@ -420,7 +420,7 @@ protected:
 		
 		m_ListBox.Create(this,0,0,w,h,IDC_LISTBOX);
 
-		if( m_sock.Create(AF_INET, SOCK_RAW, IPPROTO_IP) )
+		if( m_sock.Create(AF_INET, /*SOCK_STREAM*/SOCK_RAW, IPPROTO_IP) )
 		{
 			DWORD	dwByte	= 0;
 
@@ -454,6 +454,8 @@ protected:
 					;
 				}
 			}
+		}else{
+			return FALSE;
 		}
 
 		cmd.Register(IDC_LISTBOX, LBN_DBLCLK, &CAdapterSelect::OnLvnDblClick);
@@ -554,7 +556,7 @@ protected:
 		menuMain.Insert(_T("Captrue")	, ID_CAPTURE	, (HMENU)menuCapture);
 		menuMain.Insert(_T("Help")		, ID_HELP		, (HMENU)menuHelp);
 
-		SetMenu(m_hWnd, (HMENU)menuMain);
+		SetMenu( (HMENU)menuMain);
 
 		CheckAutoScroll( true );
 	}
