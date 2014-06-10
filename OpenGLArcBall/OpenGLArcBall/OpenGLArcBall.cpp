@@ -342,6 +342,19 @@ protected:
 		SetMenu( menuMain );
 	}
 
+	void	DrawAsix( void ){
+		glBegin( GL_LINES );
+			glVertex2d( -100, 0 );
+			glVertex2d(  100, 0 );
+
+			glVertex2d( 0, -100 );
+			glVertex2d( 0,  100 );
+
+			glVertex3d( 0, 0, -100 );
+			glVertex3d( 0, 0,  100 );
+		glEnd();
+	}
+
 	void	DrawPlane( GLdouble w, GLdouble d, GLdouble h ){
 		GLdouble	norm[]	= {1.0, 0.0, 0.0};
 
@@ -435,6 +448,7 @@ public:
 		glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	//	DrawAsix();
 		DrawPlane(2.0, 2.0, 0.0);
 		DrawStars();
 

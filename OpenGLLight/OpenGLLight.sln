@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGLLight", "OpenGLLight\OpenGLLight.vcxproj", "{AC7D4990-A1EF-488C-8CFF-3A4AB3E808AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC7D4990-A1EF-488C-8CFF-3A4AB3E808AC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AC7D4990-A1EF-488C-8CFF-3A4AB3E808AC}.Debug|Win32.Build.0 = Debug|Win32
+		{AC7D4990-A1EF-488C-8CFF-3A4AB3E808AC}.Release|Win32.ActiveCfg = Release|Win32
+		{AC7D4990-A1EF-488C-8CFF-3A4AB3E808AC}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

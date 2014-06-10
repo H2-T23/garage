@@ -139,9 +139,8 @@ protected:
     virtual DWORD				WindowStyle( void ) const		{return(CForm::WindowStyle() | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);}
 
 	BOOL	OnCreate( LPCREATESTRUCT lpCreateStruct ){
-		return TRUE;
+	//	return TRUE;
 		HDC	hDC = ::GetDC( m_hWnd );
-
 		if( gl.Startup( hDC ) ){
 			this->Init();
 			return TRUE;
