@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\toolkit"
+				AdditionalIncludeDirectories="..\..\..\toolkit"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -206,7 +206,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Toolkit\generic.h"
+				RelativePath="..\..\..\Toolkit\generic.h"
 				>
 			</File>
 			<File

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CheckMail", "CheckMail\CheckMail.vcxproj", "{5D3A0788-BEF4-42A1-9899-890DDB20E87A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcxproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\..\Toolkit\Toolkit.vcxproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -148,7 +148,7 @@ protected:
 		menuMain.Insert(_T("File")	, ID_FILE	, (HMENU)menuFile);
 		menuMain.Insert(_T("Help")	, ID_HELP	, (HMENU)menuHelp);
 		
-		SetMenu(m_hWnd, (HMENU)menuMain);
+		SetMenu((HMENU)menuMain);
 	}
 
 	BOOL		OnCreate( LPCREATESTRUCT lpCreateStruct ){
@@ -190,7 +190,7 @@ protected:
 
 			SetWindowText(str);
 
-			/*CThread* pThread = */new CThread( new CDumpFileThread(str, m_wndList), true );
+			///*CThread* pThread = */new CThread( new CDumpFileThread(str, m_wndList), true );
 			//if( pThread ){
 			//	pThread->Start();
 			//}
@@ -198,7 +198,8 @@ protected:
 	}
 
 	void	OnFileSave( void ){
-		CFileSaveDlg	dlg;
+//		CFileSaveDlg	dlg;
+		CFileOpenDlg	dlg;
 		if( dlg.DoModal(m_hWnd) ){
 			TString	str;
 			dlg.GetFileName(str);

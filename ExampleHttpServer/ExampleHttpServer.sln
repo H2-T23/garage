@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleHttpServer", "ExampleHttpServer\ExampleHttpServer.vcproj", "{FC84FD19-63E3-403B-8B2D-95F3D6AEB439}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

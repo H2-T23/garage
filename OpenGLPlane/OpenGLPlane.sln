@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenGLPlane", "OpenGLPlane\OpenGLPlane.vcxproj", "{7A9659DB-A5FE-44FE-A66B-295D175CA7D6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcxproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\..\Toolkit\Toolkit.vcxproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

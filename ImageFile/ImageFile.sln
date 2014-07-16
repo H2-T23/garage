@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageFile", "ImageFile\ImageFile.vcproj", "{77D7FFD4-B2F2-4100-BFC4-C430D176717E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Toolkit", "..\..\Toolkit\Toolkit.vcproj", "{861E7381-4398-41A6-83F5-90C6A08F746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

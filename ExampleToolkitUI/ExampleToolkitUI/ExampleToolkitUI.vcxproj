@@ -49,7 +49,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\Toolkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\Toolkit;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -88,19 +88,19 @@
     <ResourceCompile Include="ExampleToolkitUI.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Toolkit\CommandListener.h" />
-    <ClInclude Include="..\..\Toolkit\ComponentWnd.h" />
-    <ClInclude Include="..\..\Toolkit\DBG.h" />
-    <ClInclude Include="..\..\Toolkit\DC.h" />
-    <ClInclude Include="..\..\Toolkit\Form.h" />
-    <ClInclude Include="..\..\Toolkit\Observar.h" />
-    <ClInclude Include="..\..\Toolkit\OpenGL.h" />
-    <ClInclude Include="..\..\Toolkit\Panel.h" />
-    <ClInclude Include="..\..\Toolkit\ThreeDMath.h" />
-    <ClInclude Include="..\..\Toolkit\Types.h" />
-    <ClInclude Include="..\..\Toolkit\UseGUIToolkit.h" />
-    <ClInclude Include="..\..\Toolkit\UseOpenGL.h" />
-    <ClInclude Include="..\..\Toolkit\Wnd.h" />
+    <ClInclude Include="..\..\..\Toolkit\CommandListener.h" />
+    <ClInclude Include="..\..\..\Toolkit\ComponentWnd.h" />
+    <ClInclude Include="..\..\..\Toolkit\DBG.h" />
+    <ClInclude Include="..\..\..\Toolkit\DC.h" />
+    <ClInclude Include="..\..\..\Toolkit\Form.h" />
+    <ClInclude Include="..\..\..\Toolkit\Observar.h" />
+    <ClInclude Include="..\..\..\Toolkit\OpenGL.h" />
+    <ClInclude Include="..\..\..\Toolkit\Panel.h" />
+    <ClInclude Include="..\..\..\Toolkit\ThreeDMath.h" />
+    <ClInclude Include="..\..\..\Toolkit\Types.h" />
+    <ClInclude Include="..\..\..\Toolkit\UseGUIToolkit.h" />
+    <ClInclude Include="..\..\..\Toolkit\UseOpenGL.h" />
+    <ClInclude Include="..\..\..\Toolkit\Wnd.h" />
     <ClInclude Include="ExampleToolkitUI.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
