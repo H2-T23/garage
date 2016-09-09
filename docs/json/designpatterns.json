@@ -1,0 +1,124 @@
+var dp = 
+{
+	"Creational":[
+		{
+			"name":			"Abstract Factory",
+			"discription":	"Creates an instance of several familise of classes",
+		}
+		,
+		{
+			"name":			"Builder",
+			"discription":	"Separates object construction from its representation",
+		}
+		,
+		{
+			"name":			"Factory Method",
+			"discription":	"Creates an instance of several derived classes",
+		}
+		,
+		{
+			"name":			"Prototype",
+			"discription":	"A fully initialized instance to be copied or cloned",
+		}
+		,
+		{
+			"name":			"Singleton",
+			"discription":	"A class of which only a single instance can exist",
+		}		
+	],
+
+	"Structural":[
+		{
+			"name":			"Adapter",
+			"discription":	"Match interfaces of different classes",
+		}
+		,
+		{
+			"name":			"Bridge",
+			"discription":	"Separates an object's interface from its implementation",
+		}
+		,
+		{
+			"name":			"Composite",
+			"discription":	"A tree structure of simple and composite objects",
+		}
+		,
+		{
+			"name":			"Decorator",
+			"discription":	"Add resposibilities to objects dynamically",
+		}
+		,
+		{
+			"name":			"Facade",
+			"discription":	"A single class that represents an entire subbsystem",
+		}
+		,
+		{
+			"name":			"Flyweight",
+			"discription":	"A fine-grained instance used for efficient sharing",
+		}
+		,
+		{
+			"name":			"Proxy",
+			"discription":	"An object representing another object",
+		}
+	],
+
+	"Behavioral":[
+		{
+			"name":			"Chain of Resp.",
+			"discription":	"A way of passing a request between a chain of objects",
+		}
+		,
+
+		{
+			"name":			"Command",
+			"discription":	"Encapsulate a command requestt as an object",
+		}
+		,
+		{
+			"name":			"Interpreter",
+			"discription":	"A way to include language elements in program",
+		}
+		,
+		{
+			"name":			"Iterator",
+			"discription":	"SEquentially access the elements of a collection",
+		}
+		,
+		{
+			"name":			"Mediator",
+			"discription":	"Defines simplified communication between classes",
+		}
+		,
+		{
+			"name":			"Memento",
+			"discription":	"Capture and restore an object's internal state",
+		}
+		,
+		{
+			"name":			"Observer",
+			"discription":	"A way of notifying change to a number of changes",
+		}
+		,
+		{
+			"name":			"State",
+			"discription":	"Alter an object's behavior when its state changes",
+		}
+		,
+		{
+			"name":			"Strategy",
+			"discription":	"Encapsulates an algorithm inside a class",
+		}
+		,
+		{
+			"name":			"Template Method",
+			"discription":	"Defer the exact steps of an algorithm to a subclass",
+		}
+		,
+		{
+			"name":			"Visitor",
+			"discription":	"Defines a new operation to a class without change",
+		}
+	],
+}
