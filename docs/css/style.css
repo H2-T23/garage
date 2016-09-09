@@ -1,5 +1,5 @@
 body {
-    background:#0099CC;
+    background:#000000;
     font-family: Georgia, 'Hiragino Mincho Pro', Meiryo, serif;
     color:#000;
     margin:20px auto;
@@ -27,7 +27,7 @@ header, nav, section, footer {
     -moz-box-shadow: 0px 0px 4px #666;
     box-shadow: 0px 0px 4px #666;
     border: 1px solid #d3d3d3;
-    background-color: #fff;
+    background-color: #0099CC;
     margin:5px;
     padding: 0 20px 10px 20px;
     font-size: 12pt;
